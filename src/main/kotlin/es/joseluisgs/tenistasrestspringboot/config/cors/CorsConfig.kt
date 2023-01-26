@@ -34,8 +34,9 @@ class CorsConfig {
             // e indicamos los verbos que queremos usar
             // Debes probar con uncliente desde ese puerto
             override fun addCorsMappings(registry: CorsRegistry) {
-                registry.addMapping("/rest/producto/**")
+                registry.addMapping("/rest/**")
                     .allowedOrigins("http://localhost:6969")
+                    .allowedHeaders("*")
                     .allowedMethods("GET", "POST", "PUT", "DELETE")
                     .maxAge(3600)
             }

@@ -2,19 +2,17 @@ package es.joseluisgs.tenistasrestspringboot.config
 
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Configuration
-import org.springframework.data.jpa.repository.config.EnableJpaAuditing
 
 /**
  * Configuración global para
  */
 @Configuration
-@EnableJpaAuditing // Activamos la auditoria, esto por ejemplo nos permite no meter la fecha si no que la tome automáticamente
-
+// @EnableJpaAuditing // Activamos la auditoria, esto por ejemplo nos permite no meter la fecha si no que la tome automáticamente
 class APIConfig {
     companion object {
         // Versión de la Api y versión del path, tomados de application.properties
         @Value("\${api.path}")
-        const val API_PATH = "/rest"
+        const val API_PATH = "/api"
 
         @Value("\${api.version}")
         const val API_VERSION = "1.0"
@@ -29,7 +27,7 @@ class APIConfig {
         const val PAGINATION_SORT = "id"
 
         @Value("\${project.name}")
-        const val PROJECT_NAME = "Kotlin-Spring-Boot-Rest-Service"
+        const val PROJECT_NAME = "Tenistas API REST Spring Boot"
 
     }
 }
