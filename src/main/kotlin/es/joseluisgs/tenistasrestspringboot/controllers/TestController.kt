@@ -14,11 +14,11 @@ private val logger = KotlinLogging.logger {}
 @RequestMapping(APIConfig.API_PATH + "/test")
 class TestController {
 
-    // GET: /test
+    // GET: /test?text=Hola
     @GetMapping("")
-    fun getAll(): ResponseEntity<List<TestDto>> {
+    fun getAll(@RequestParam texto: String?): ResponseEntity<List<TestDto>> {
         logger.info { "GET ALL Test" }
-        return ResponseEntity.ok(listOf(TestDto("Hola"), TestDto("Mundo")))
+        return ResponseEntity.ok(listOf(TestDto("Hola : Query: $texto"), TestDto("Mundo : Query: $texto")))
     }
 
     // GET: /test/{id}

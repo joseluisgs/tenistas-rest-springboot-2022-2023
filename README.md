@@ -29,7 +29,6 @@ Api REST de Tenistas con Spring Boot para acceso a Datos de 2º de DAM. Curso 20
     - [IoC y DI en SpringBoot](#ioc-y-di-en-springboot)
     - [Spring Data JPA](#spring-data-jpa)
     - [Creando rutas](#creando-rutas)
-      - [Type-Safe Routing y Locations](#type-safe-routing-y-locations)
       - [Comprensión de contenido](#comprensión-de-contenido)
       - [CORS](#cors)
     - [Responses](#responses)
@@ -39,7 +38,6 @@ Api REST de Tenistas con Spring Boot para acceso a Datos de 2º de DAM. Curso 20
       - [Peticiones datos serializados](#peticiones-datos-serializados)
       - [Peticiones con formularios](#peticiones-con-formularios)
       - [Peticiones multiparte](#peticiones-multiparte)
-      - [Subida de información](#subida-de-información)
       - [Request validation](#request-validation)
     - [WebSockets](#websockets)
     - [SSL y Certificados](#ssl-y-certificados)
@@ -77,7 +75,7 @@ El siguiente proyecto es una API REST de Tenistas con Spring Boot para Acceso a 
 marcas de raquetas.
 
 El objetivo es que el alumnado aprenda a crear un servicio REST con Spring Boot, con las operaciones CRUD, securizar el
-servicio con JWT y usar un cliente para consumir el servicio. Se pretende que el servicio completo sea asíncrono y reactivo en lo máximo posible agilizando el servicio mediante una caché.
+servicio con JWT y SSL y usar un cliente para consumir el servicio. Se pretende que el servicio completo sea asíncrono y reactivo en lo máximo posible agilizando el servicio mediante una caché.
 
 Además que permita escuchar cambios en tiempo real usando websocket
 
@@ -179,7 +177,7 @@ Los endpoints que vamos a usar a nivel de api, parten de /api/ y puedes usarlos 
 ### Test
 | Método | Endpoint (/api) | Auth | Descripción | Status Code (OK) | Content |
 | ------ | -------- | ---- | ----------- | ----------- | ------- |
-| GET | /test | No | Devuelve un JSON con datos de prueba | 200 | JSON |
+| GET | /test?texto | No | Devuelve un JSON con datos de prueba y el texto de query opcional | 200 | JSON |
 | GET | /test/{id} | No | Devuelve un JSON con datos de prueba por su id | 200 | JSON |
 | POST | /test | No | Crea un nuevo JSON con datos de prueba | 201 | JSON |
 | PUT | /test/{id} | No | Actualiza un JSON con datos de prueba por su id | 200 | JSON |
@@ -187,7 +185,7 @@ Los endpoints que vamos a usar a nivel de api, parten de /api/ y puedes usarlos 
 | DELETE | /test/{id} | No | Elimina un JSON con datos de prueba por su id | 204 | No Content |
 
 ## Spring Boot
-Spring es un framework de Java que nos permite crear aplicaciones web de forma rápida y sencilla. En este caso, usaremos Spring Boot, que es una versión simplificada de Spring que nos ayuda en la configuración de sus elementos.
+[Spring](https://spring.io/) es un framework de Java VM que nos permite crear aplicaciones web de forma rápida y sencilla. En este caso, usaremos [Spring Boot](https://spring.io/projects/spring-boot), que es una versión simplificada de Spring que nos ayuda en la configuración de sus elementos.
 
 Se caracteriza por implementar el Contenedor de [inversión de control](https://es.wikipedia.org/wiki/Inversi%C3%B3n_de_control): permite la configuración de los componentes de aplicación y la administración del ciclo de vida de los objetos Java, se lleva a cabo principalmente a través de la inyección de dependencias y [programación orientada a aspectos](https://es.wikipedia.org/wiki/Programaci%C3%B3n_orientada_a_aspectos): habilita la implementación de rutinas transversales.
 
@@ -238,22 +236,22 @@ Spring Boot nos ofrece una serie de componentes que nos ayudan a crear aplicacio
 
 ![img_4.png](./images/components.png)
 
-- Controladores: Se etiquetan como @Controller o en nuestro caso al ser una API REST como @RestController. Estos son los controladores que se encargan de recibir las peticiones de los usuarios y devolver respuestas.
+- Controladores: Se etiquetan como *@Controller* o en nuestro caso al ser una API REST como @RestController. Estos son los controladores que se encargan de recibir las peticiones de los usuarios y devolver respuestas.
 
-- Servicios: Se etiquetan como @Service. Se encargan de implementar la parte de negocio o infraestructura. En nuestro caso puede ser el sistema de almacenamiento o parte de la seguridad y perfiles de usuario.
+- Servicios: Se etiquetan como *@Service*. Se encargan de implementar la parte de negocio o infraestructura. En nuestro caso puede ser el sistema de almacenamiento o parte de la seguridad y perfiles de usuario.
 
-- Repositorios: Se etiquetan como @Repository e implementan la interfaz y operaciones de persistencia de la información. En nuestro caso, puede ser una base de datos o una API externa. Podemos extender de repositorios pre establecidos o diseñar el nuestro propio.
+- Repositorios: Se etiquetan como *@Repository* e implementan la interfaz y operaciones de persistencia de la información. En nuestro caso, puede ser una base de datos o una API externa. Podemos extender de repositorios pre establecidos o diseñar el nuestro propio.
 
-- Configuración: Se etiquetan como @Configuration. Se encargan de configurar los componentes de la aplicación. Se se suelen iniciar al comienzo de nuestra aplicación.
+- Configuración: Se etiquetan como *@Configuration*. Se encargan de configurar los componentes de la aplicación. Se se suelen iniciar al comienzo de nuestra aplicación.
 
-- Bean: La anotación @Bean, nos sirve para indicar que este bean será administrado por Spring Boot (Spring Container). La administración de estos beans se realiza mediante a anotaciones como @Configuration.
+- Bean: La anotación *@Bean*, nos sirve para indicar que este bean será administrado por Spring Boot (Spring Container). La administración de estos beans se realiza mediante a anotaciones como @Configuration.
 
 ### IoC y DI en SpringBoot
 La Inversión de control (Inversion of Control en inglés, IoC) es un principio de diseño de software en el que el flujo de ejecución de un programa se invierte respecto a los métodos de programación tradicionales. En su lugar, en la inversión de control se especifican respuestas deseadas a sucesos o solicitudes de datos concretas, dejando que algún tipo de entidad o arquitectura externa lleve a cabo las acciones de control que se requieran en el orden necesario y para el conjunto de sucesos que tengan que ocurrir.
 
 La inyección de dependencias (en inglés Dependency Injection, DI) es un patrón de diseño orientado a objetos, en el que se suministran objetos a una clase en lugar de ser la propia clase la que cree dichos objetos. Esos objetos cumplen contratos que necesitan nuestras clases para poder funcionar (de ahí el concepto de dependencia). Nuestras clases no crean los objetos que necesitan, sino que se los suministra otra clase 'contenedora' que inyectará la implementación deseada a nuestro contrato.
 
-El contenedor Spring IoC lee el elemento de configuración durante el tiempo de ejecución y luego ensambla el Bean a través de la configuración. La inyección de dependencia de Spring se puede lograr a través del constructor, el método Setter y el dominio de entidad. Podemos hacer uso de la anotación @Autowired para inyectar la dependencia en el contexto requerido.
+El contenedor Spring IoC lee el elemento de configuración durante el tiempo de ejecución y luego ensambla el Bean a través de la configuración. La inyección de dependencia de Spring se puede lograr a través del constructor, el método Setter y el dominio de entidad. Podemos hacer uso de la anotación *@Autowired* para inyectar la dependencia en el contexto requerido.
 
 El contenedor llamará al constructor con parámetros al instanciar el bean, y cada parámetro representa la dependencia que queremos establecer. Spring analizará cada parámetro, primero lo analizará por tipo, pero cuando sea incierto, luego lo analizará de acuerdo con el nombre del parámetro (obtenga el nombre del parámetro a través de ParameterNameDiscoverer, implementado por ASM).
 
@@ -285,7 +283,7 @@ class ProductosRestController {
 ```
 
 ### Spring Data JPA
-[Spring Data](https://docs.spring.io/spring-data/jpa/docs/current/reference/html/#preface) es una librería de persistencia que nos permite acceder a bases de datos relacionales de forma sencilla. Para ello podemos extender de la clase JpaRepository, que es una clase de repositorio de Spring Data con más funcionalidades, como pueden ser las operaciones de consulta, inserción, actualización y eliminación, así como las de paginación, ordenación o búsquedas.
+[Spring Data](https://docs.spring.io/spring-data/jpa/docs/current/reference/html/#preface) es una librería de persistencia que nos permite acceder a bases de datos relacionales y no relacionales de forma sencilla gracias a [JPA](https://spring.io/projects/spring-data-jpa). Para ello podemos extender de la clase JpaRepository, que es una clase de repositorio de Spring Data con más funcionalidades, como pueden ser las operaciones de consulta, inserción, actualización y eliminación, así como las de paginación, ordenación o búsquedas.
 
 Los principales son:
 - CrudRepository: tiene las mayoría de las funcionalidades CRUD.
@@ -301,36 +299,188 @@ Podemos definir consultas personalizadas para las entidades de la aplicación. P
 Por otro lado, también podemos definir las consultas en base del nombre del método. Si lo definimos con una signatura determinada con ellos se generará la consulta automáticamente.
 
 ### Creando rutas
+Para crear las rutas vamos a usar on controlador de tipo RestController. Este controlador se encargará de recibir las peticiones y devolver las respuestas. Para ello vamos a usar las anotaciones de Spring Web.
 
+Las peticiones que vamos a recibir serán de tipo GET (GetMapping), POST (PostMapping), PUT (PutMapping), PATCH (PatchMapping) y/o DELETE (DeleteMapping).
 
-#### Type-Safe Routing y Locations
+Además, podemos usar ResponseEntity para devolver el código de estado de la respuesta, así como el cuerpo de la misma.
 
+```kotlin
+@RestController
+class ProductosRestController
+@Autowired constructor(
+    private val productosRepository: ProductosRepository,
 
+) {
+    @GetMapping("/productos")
+    fun getProducts(): List<Producto> {
+        return productosRepository.findAll()
+    }
+}
+```
 #### Comprensión de contenido
+Podemos activar la comprensión de contenido para las peticiones y respuestas desde nuestro fichero de propiedades. Para ello debemos añadir la siguiente propiedad:
+
+```properties
+# Compresion de datos
+server.compression.enabled=${COMPRESS_ENABLED:true}
+server.compression.mime-types=text/html,text/xml,text/plain,text/css,application/json,application/javascript
+server.compression.min-response-size=1024
+```
 
 #### CORS
+Si se supone que su servidor debe manejar solicitudes de origen cruzado (CORS), debe [instalar y configurar](https://www.baeldung.com/spring-cors) el complemento CORS. Este complemento le permite configurar hosts permitidos, métodos HTTP, encabezados establecidos por el cliente, etc. Para ello lo vamos a hacer en un bean de tipo CorsConfiguration
 
+```kotlin
+@Configuration
+class CorsConfig {
+    //	@Bean
+    // Cors para permitir cualquier petición
+	public WebMvcConfigurer corsConfigurer() {
+		return new WebMvcConfigurer() {
+			@Override
+			public void addCorsMappings(CorsRegistry registry) {
+				registry.addMapping("/ **");
+			}
+		};
+	}
+}
+```
 ### Responses
+Para devolver las respuestas vamos a usar la clase ResponseEntity. Esta clase nos permite devolver el código de estado de la respuesta, así como el cuerpo de la misma.
+
+```kotlin
+@GetMapping("/productos")
+fun getProducts(): ResponseEntity<List<Producto>> {
+    return ResponseEntity.ok(productosRepository.findAll())
+}
+
+@GetMapping("/productos/{id}")
+fun getProduct(@PathVariable id: Long): ResponseEntity<Producto> {
+    return ResponseEntity.ok(productosRepository.findById(id).get())
+}
+
+@PostMapping("/productos")
+fun createProduct(@RequestBody producto: Producto): ResponseEntity<Producto> {
+    return ResponseEntity.status(HttpStatus.CREATED).body(productosRepository.save(producto))
+}
+
+@PutMapping("/productos/{id}")
+fun updateProduct(@PathVariable id: Long, @RequestBody producto: Producto): ResponseEntity<Producto> {
+    return ResponseEntity.ok(productosRepository.save(producto))
+}
+
+@DeleteMapping("/productos/{id}")
+fun deleteProduct(@PathVariable id: Long): ResponseEntity<Void> {
+    productosRepository.deleteById(id)
+    return ResponseEntity.noContent().build()
+}
+```
 
 ### Requests
+Las peticiones podemos hacerlas con usando los verbos http, y las anotaciones de Spring Web: GetMapping, PostMapping, PutMapping, PatchMapping y DeleteMapping...
 
 #### Parámetros de ruta
+Podemos usar los parámetros de ruta para obtener información de la petición. Para ello debemos usar la anotación @PathVariable
 
+```kotlin
+@GetMapping("/productos/{id}")
+fun getById(@PathVariable id: Long): ResponseEntity<Producto> {
+    return ResponseEntity.ok(productosRepository.findById(id).get())
+}
+```
 #### Parámetros de consulta
+Podemos usar los parámetros de consulta para obtener información de la petición. Para ello debemos usar la anotación @RequestParam, si la tipamos como nula, o indicamos que no es requerida, podremos usarla como opcional.
 
+```kotlin
+@GetMapping("/productos")
+fun getProducts(@RequestParam(required = false) nombre: String?): ResponseEntity<List<Producto>> {
+    return ResponseEntity.ok(productosRepository.findByNombre(nombre))
+}
+```
 #### Peticiones datos serializados
+Podemos enviar datos serializados en el cuerpo de la petición. Para ello debemos usar la anotación @RequestBody
+
+```kotlin
+@PostMapping("/productos")
+fun createProduct(@RequestBody producto: Producto): ResponseEntity<Producto> {
+    return ResponseEntity.status(HttpStatus.CREATED).body(productosRepository.save(producto))
+}
+```
 
 #### Peticiones con formularios
+Podemos obtener los datos de un [formulario](https://www.baeldung.com/spring-url-encoded-form-data) con MediaType.APPLICATION_FORM_URLENCODED_VALUE y aplicarlos a un mapa de datos.
 
+```kotlin
+@PostMapping(
+  path = "/feedback",
+  consumes = [MediaType.APPLICATION_FORM_URLENCODED_VALUE])
+fun handleNonBrowserSubmissions(@RequestParam paramMap MultiValueMap<String,String>): ResponseEntity<String> {
+    return ResponseEntity.ok("Thanks for your feedback!");
+}
+```
 #### Peticiones multiparte
+Podemos obtener los datos de una [petición multiparte](https://www.baeldung.com/sprint-boot-multipart-requests) con MediaType.MULTIPART_FORM_DATA_VALUE y aplicarlos a un mapa de datos.
 
-#### Subida de información
+```kotlin
+@PostMapping(
+    value = ["/create"],
+    consumes = [MediaType.MULTIPART_FORM_DATA_VALUE]
+)
+fun createWithImage(
+    @RequestPart("producto") productoDTO: ProductoCreateDTO,
+    @RequestPart("file") file: MultipartFile
+): ResponseEntity<ProductoDTO> {
+  // ....
+}
+```
 #### Request validation
+Podemos usar la [validación](https://www.baeldung.com/spring-boot-bean-validation) usando la anotación @Valid. Para ello podemos usar las anotaciones de restricción de [javax.validation.constraints](https://www.baeldung.com/javax-validation)
+```kotlin
+@PostMapping("/productos")
+fun createProduct(@Valid @RequestBody producto: Producto): ResponseEntity<Producto> {
+    return ResponseEntity.status(HttpStatus.CREATED).body(productosRepository.save(producto))
+}
+``` 
 
 ### WebSockets
 
 
 ### SSL y Certificados
+Para trabajar con los certificados, los hemos creado y guardado en l carpeta cert de resources. Para ello hemos usado el comando keytool de Java. Además hemos creado nuestra configuración es properties para poder usarlos en el código.
+
+```properties
+server.port=${PORT:6963}
+# SSL
+server.ssl.key-store-type=PKCS12
+server.ssl.key-store=classpath:cert/server_keystore.p12
+# The password used to generate the certificate
+server.ssl.key-store-password=1234567
+# The alias mapped to the certificate
+server.ssl.key-alias=serverKeyPair
+server.ssl.enabled=true
+```
+
+Además, hemos configurado nuestro servicio para que ademas responda a peticiones http, y que redirija a https en SSConfig.
+
+```kotlin
+@Configuration
+class SSLConfig {
+    // (User-defined Property)
+    @Value("\${server.http.port}")
+    private val httpPort = "6969"
+
+    // Creamos un bean que nos permita configurar el puerto de conexión sin SSL
+    @Bean
+    fun servletContainer(): ServletWebServerFactory {
+        val connector = Connector(TomcatServletWebServerFactory.DEFAULT_PROTOCOL)
+        connector.port = httpPort.toInt()
+        val tomcat = TomcatServletWebServerFactory()
+        tomcat.addAdditionalTomcatConnectors(connector)
+        return tomcat
+    }
+}
+```
 
 ### Autenticación y Autorización con JWT
 ### Testing
@@ -347,7 +497,7 @@ Por otro lado, también podemos definir las consultas en base del nombre del mé
 ## Reactividad
 Como todo concepto que aunque complicado de conseguir implica una serie de condiciones. La primera de ellas es asegurar la asincronía en todo momento. Cosa que se ha hecho mediante Ktor y el uso de corrutinas. 
 
-Por otro lado el acceso de la base de datos no debe ser bloqueante, por lo que no se ha usado la librería Exposed de Kotlin para acceder a la base de datos y que trabaja por debajo con el driver JDBC. Sabemos que esto se puede podemos acercarnos a la Asincronía pura usando corrutinas y el manejo de [contexto de transaccion asíncrono](https://github.com/JetBrains/Exposed/wiki/Transactions).
+Por otro lado el acceso de la base de datos no debe ser bloqueante, por lo que no se ha usado la librería Exposed de Kotlin para acceder a la base de datos y que trabaja por debajo con el driver JDBC. Sabemos que esto se puede podemos acercarnos a la Asincronía pura usando corrutinas y el manejo de [contexto de transacción asíncrono](https://github.com/JetBrains/Exposed/wiki/Transactions).
 
 En cualquier caso, hemos decidido usar el driver R2DBC con el objetivo que el acceso a la base de datos sea no bloqueante y así poder aprovechar el uso de Flows en Kotlin y así poder usar la reactividad total en la base de datos con las corrutinas y Ktor.
 
@@ -392,7 +542,7 @@ Además, podemos hacer uso de las funciones de serialización para enviar objeto
 ![observer](./images/observer.png)
 
 ## Proveedor de Dependencias
-
+Usaremos el propio [Autowired](https://www.baeldung.com/spring-autowire) de Spring para inyectar las dependencias en las clases que las necesiten. De esta manera, no tendremos que crear objetos de las clases que necesitemos, sino que Spring se encargará de crearlos y de inyectarlos en las clases que las necesiten.
 
 ## Seguridad de las comunicaciones
 
