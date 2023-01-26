@@ -18,12 +18,12 @@ repositories {
     maven { url = uri("https://repo.spring.io/snapshot") }
 }
 
+
 dependencies {
     // Dependencias de Spring Boot y Spring Data Reactive
     implementation("org.springframework.boot:spring-boot-starter-data-r2dbc")
     // Dependencias de Seguridad Lo usaremos más adelante
     // implementation("org.springframework.boot:spring-boot-starter-security")
-
     // Validaciones de Spring Boot
     implementation("org.springframework.boot:spring-boot-starter-validation")
     // Webflux y Reactividad
