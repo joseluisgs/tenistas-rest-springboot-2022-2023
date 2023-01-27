@@ -1,7 +1,13 @@
 package es.joseluisgs.tenistasrestspringboot.services.representantes
 
+import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import es.joseluisgs.tenistasrestspringboot.config.websocket.ServerWebSocketConfig
+import es.joseluisgs.tenistasrestspringboot.config.websocket.ServerWebSocketService
 import es.joseluisgs.tenistasrestspringboot.exceptions.RepresentanteNotFoundException
+import es.joseluisgs.tenistasrestspringboot.mappers.toDto
+import es.joseluisgs.tenistasrestspringboot.models.Notificacion
 import es.joseluisgs.tenistasrestspringboot.models.Representante
+import es.joseluisgs.tenistasrestspringboot.models.RepresentantesNotification
 import es.joseluisgs.tenistasrestspringboot.repositories.representantes.RepresentantesCachedRepository
 import kotlinx.coroutines.flow.Flow
 import mu.KotlinLogging
@@ -14,8 +20,12 @@ private val logger = KotlinLogging.logger {}
 
 @Service
 class RepresentanteServiceImpl constructor(
-    private val representantesRepository: RepresentantesCachedRepository
+    private val representantesRepository: RepresentantesCachedRepository, // Repositorio de datos
+    private val webSocketConfig: ServerWebSocketConfig // Para enviar mensajes a los clientes ws normales
+    // private val simpMessagingTemplate: SimpMessagingTemplate // Para enviar mensajes a los clientes ws STOP
 ) : RepresentantesService {
+
+    val webSocketService = webSocketConfig.webSocketHandler() as ServerWebSocketService
 
     init {
         logger.info { "Iniciando Servicio de Representantes" }
@@ -52,12 +62,14 @@ class RepresentanteServiceImpl constructor(
         logger.debug { "Servicio de representantes save representante: $representante" }
 
         return representantesRepository.save(representante)
+            .also { onChange(Notificacion.Tipo.CREATE, it.uuid, it) }
     }
 
     override suspend fun update(uuid: UUID, representante: Representante): Representante {
         logger.debug { "Servicio de representantes update representante con id: $uuid " }
 
         return representantesRepository.update(uuid, representante)
+            ?.also { onChange(Notificacion.Tipo.UPDATE, it.uuid, it) }
             ?: throw RepresentanteNotFoundException("No se ha encontrado el representante con uuid: $uuid")
     }
 
@@ -65,6 +77,7 @@ class RepresentanteServiceImpl constructor(
         logger.debug { "Servicio de representantes delete representante: $representante" }
 
         return representantesRepository.delete(representante)
+            ?.also { onChange(Notificacion.Tipo.DELETE, it.uuid, it) }
             ?: throw RepresentanteNotFoundException("No se ha encontrado el representante con uuid: ${representante.uuid}")
     }
 
@@ -72,6 +85,7 @@ class RepresentanteServiceImpl constructor(
         logger.debug { "Servicio de representantes deleteByUuid con uuid: $uuid" }
 
         return representantesRepository.deleteByUuid(uuid)
+            ?.also { onChange(Notificacion.Tipo.DELETE, it.uuid, it) }
             ?: throw RepresentanteNotFoundException("No se ha encontrado el representante con uuid: $uuid")
     }
 
@@ -91,6 +105,25 @@ class RepresentanteServiceImpl constructor(
         logger.debug { "Servicio de representantes countAll" }
 
         return representantesRepository.countAll()
+    }
+
+    // Enviamos la notificación a los clientes ws
+    suspend fun onChange(tipo: Notificacion.Tipo, id: UUID, data: Representante? = null) {
+        logger.debug { "Servicio de representantes onChange con tipo: $tipo, id: $id, data: $data" }
+
+        // data to json
+        val mapper = jacksonObjectMapper()
+        val json = mapper.writeValueAsString(RepresentantesNotification("Representantes", tipo, id, data?.toDto()))
+        // Enviamos la notificación a los clientes ws
+
+        // Siguiendo el modelo STOMP
+        //simpMessagingTemplate.convertAndSend("/updates/representantes", json)
+        //simpMessagingTemplate.convertAndSend("/updates/representantes2", json)
+
+        // Siguiendo el modelo WebSockets, compatible con Postman
+        logger.info { "Enviando mensaje a los clientes ws" }
+
+        webSocketService.sendMessage(json)
     }
 
 }

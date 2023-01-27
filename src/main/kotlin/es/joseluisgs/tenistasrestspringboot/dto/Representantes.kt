@@ -13,7 +13,7 @@ data class RepresentantesPageDto(
     val totalPages: Long,
     val totalElements: Long,
     val sort: String,
-    val createdAt: LocalDateTime? = LocalDateTime.now()
+    val createdAt: String = LocalDateTime.now().toString()
 )
 
 /**
@@ -26,8 +26,8 @@ data class RepresentanteDto(
     val metadata: MetaData? = null,
 ) {
     data class MetaData(
-        val createdAt: LocalDateTime? = LocalDateTime.now(),
-        val updatedAt: LocalDateTime? = LocalDateTime.now(),
+        val createdAt: String = LocalDateTime.now().toString(),
+        val updatedAt: String = LocalDateTime.now().toString(),
         val deleted: Boolean = false
     )
 }
