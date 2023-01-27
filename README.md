@@ -42,7 +42,6 @@ Api REST de Tenistas con Spring Boot para acceso a Datos de 2º de DAM. Curso 20
       - [Peticiones multiparte](#peticiones-multiparte)
       - [Request validation](#request-validation)
     - [WebSockets](#websockets)
-    - [SSL y Certificados](#ssl-y-certificados)
     - [Autenticación y Autorización con JWT](#autenticación-y-autorización-con-jwt)
     - [Testing](#testing)
     - [Despliegue](#despliegue)
@@ -211,6 +210,7 @@ usaremos Postman:
 | PUT    | /representantes/{id}                   | No   | Actualiza un representante por su id                    | 200              | JSON       |
 | DELETE | /representantes/{id}                   | No   | Elimina un representante por su id                      | 204              | No Content |
 | GET    | /representantes/find?nombre=X          | No   | Devuelve los representantes con nombre X                | 200              | JSON       |
+| WS     | /updates                     | No   | Devuelve los cambios en representantes en tiempo real              | ---            | ---       |
 
 ### Test
 
@@ -581,6 +581,13 @@ fun createProduct(@Valid @RequestBody producto: Producto): ResponseEntity<Produc
 ``` 
 
 ### WebSockets
+En Spring podemos usar WebSockets para crear servicios de comunicación en tiempo real, gracias al starter: org.springframework.boot:spring-boot-starter-websocket.
+
+Tenemos dons formas de usarlo, con SockJS y [STOMP](https://www.baeldung.com/websockets-spring), o con [WebSockets puros](https://www.baeldung.com/postman-websocket-apis).
+
+Se ha dejado la configuración de ambos y un cliente para STOMP, pero nos hemos decantado por usar WebSockets puros para poder seguir usando el cliente de Postman.
+
+```kotlin
 
 ### SSL y Certificados
 
