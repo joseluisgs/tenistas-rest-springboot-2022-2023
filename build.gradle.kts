@@ -30,6 +30,8 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-webflux")
     // Websocket
     implementation("org.springframework.boot:spring-boot-starter-websocket")
+    // Cache
+    implementation("org.springframework.boot:spring-boot-starter-cache")
 
     // Jackson y serialización
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
