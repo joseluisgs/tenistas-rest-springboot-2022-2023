@@ -20,6 +20,7 @@ Api REST de Tenistas con Spring Boot para acceso a Datos de 2º de DAM. Curso 20
   - [Proyectos y documentación anteriores](#proyectos-y-documentación-anteriores)
   - [Arquitectura](#arquitectura)
   - [Endpoints](#endpoints)
+    - [Representantes](#representantes)
     - [Test](#test)
   - [Spring Boot](#spring-boot)
     - [Creando un proyecto](#creando-un-proyecto)
@@ -32,6 +33,7 @@ Api REST de Tenistas con Spring Boot para acceso a Datos de 2º de DAM. Curso 20
       - [Comprensión de contenido](#comprensión-de-contenido)
       - [CORS](#cors)
     - [Responses](#responses)
+      - [Paginación y ordenamiento](#paginación-y-ordenamiento)
     - [Requests](#requests)
       - [Parámetros de ruta](#parámetros-de-ruta)
       - [Parámetros de consulta](#parámetros-de-consulta)
@@ -75,7 +77,8 @@ El siguiente proyecto es una API REST de Tenistas con Spring Boot para Acceso a 
 marcas de raquetas.
 
 El objetivo es que el alumnado aprenda a crear un servicio REST con Spring Boot, con las operaciones CRUD, securizar el
-servicio con JWT y SSL y usar un cliente para consumir el servicio. Se pretende que el servicio completo sea asíncrono y reactivo en lo máximo posible agilizando el servicio mediante una caché.
+servicio con JWT y SSL y usar un cliente para consumir el servicio. Se pretende que el servicio completo sea asíncrono y
+reactivo en lo máximo posible agilizando el servicio mediante una caché.
 
 Además que permita escuchar cambios en tiempo real usando websocket
 
@@ -84,124 +87,175 @@ Se realizará inyección de dependencias y un sistema de logging.
 Tendrá una página web de presentación como devolución de recursos estáticos.
 
 ### Advertencia
-Esta API REST no está pensada para ser usada en producción. Es un proyecto de aprendizaje y por tanto algunas cosas no se profundizan y otras están pensadas para poder realizarlas en clase de una manera más simple con el objetivo que el alumnado pueda entenderlas mejor. No se trata de montar la mejor arquitectura o el mejor servicio, sino de aprender a crear un servicio REST en el tiempo exigido por el calendario escolar.
 
-Este proyecto está en constante evolución y se irán añadiendo nuevas funcionalidades y mejoras para el alumnado. De la misma manera se irá completando la documentación asociada. 
+Esta API REST no está pensada para ser usada en producción. Es un proyecto de aprendizaje y por tanto algunas cosas no
+se profundizan y otras están pensadas para poder realizarlas en clase de una manera más simple con el objetivo que el
+alumnado pueda entenderlas mejor. No se trata de montar la mejor arquitectura o el mejor servicio, sino de aprender a
+crear un servicio REST en el tiempo exigido por el calendario escolar.
+
+Este proyecto está en constante evolución y se irán añadiendo nuevas funcionalidades y mejoras para el alumnado. De la
+misma manera se irá completando la documentación asociada.
 
 Si quieres colaborar, puedes hacerlo contactando [conmigo](#contacto).
 
 ### Tecnologías
 
-- Servidor Web: [Spring Boot](https://spring.io/projects/spring-boot) - Framework para crear servicios usando Kotlin y Java como lenguaje.
+- Servidor Web: [Spring Boot](https://spring.io/projects/spring-boot) - Framework para crear servicios usando Kotlin y
+  Java como lenguaje.
 - Autenticación: [JWT](https://jwt.io/) - JSON Web Token para la autenticación y autorización.
 - Encriptado: [Bcrypt](https://en.wikipedia.org/wiki/Bcrypt) - Algoritmo de hash para encriptar contraseñas.
-- Asincronía: [Coroutines](https://kotlinlang.org/docs/coroutines-overview.html) - Librería de Kotlin para la programación asíncrona.
+- Asincronía: [Coroutines](https://kotlinlang.org/docs/coroutines-overview.html) - Librería de Kotlin para la
+  programación asíncrona.
 - Logger: [Kotlin Logging](https://github.com/MicroUtils/kotlin-logging) - Framework para la gestión de logs.
-- Caché: [Cache4k](https://reactivecircus.github.io/cache4k/) - Versión 100% Kotlin asíncrona y multiplataforma de [Caffeine](https://github.com/ben-manes/caffeine).
-- Base de datos: [H2](https://www.h2database.com/) - Base de datos relacional que te permite trabajar en memoria, fichero y servidor.
-- Testing: [JUnit 5](https://junit.org/junit5/) - Framework para la realización de tests unitarios, [Mockk](https://mockk.io/) librería de Mocks para Kotlin, así como las propias herramientas de Spring Boot.
-
+- Caché: [Cache4k](https://reactivecircus.github.io/cache4k/) - Versión 100% Kotlin asíncrona y multiplataforma
+  de [Caffeine](https://github.com/ben-manes/caffeine).
+- Base de datos: [H2](https://www.h2database.com/) - Base de datos relacional que te permite trabajar en memoria,
+  fichero y servidor.
+- Testing: [JUnit 5](https://junit.org/junit5/) - Framework para la realización de tests
+  unitarios, [Mockk](https://mockk.io/) librería de Mocks para Kotlin, así como las propias herramientas de Spring Boot.
 
 ## Dominio
 
 Gestionar tenistas, raquetas y representantes de marcas de raquetas. Sabemos que:
-- Una raqueta tiene un representante y el representante es solo de una marca de raqueta (1-1). No puede haber raquetas sin representante y no puede haber representantes sin raquetas.
-- Un tenista solo puede o no tener contrato con una raqueta y una raqueta o modelo de raqueta puede ser usada por varios tenistas (1-N). Puede haber tenistas sin raqueta y puede haber raquetas sin tenistas.
-- Por otro lado tenemos usuarios con roles de administrador y usuarios que se pueden registrar, loguear consultar los datos y acceder a los datos de los usuarios (solo administradores).
+
+- Una raqueta tiene un representante y el representante es solo de una marca de raqueta (1-1). No puede haber raquetas
+  sin representante y no puede haber representantes sin raquetas.
+- Un tenista solo puede o no tener contrato con una raqueta y una raqueta o modelo de raqueta puede ser usada por varios
+  tenistas (1-N). Puede haber tenistas sin raqueta y puede haber raquetas sin tenistas.
+- Por otro lado tenemos usuarios con roles de administrador y usuarios que se pueden registrar, loguear consultar los
+  datos y acceder a los datos de los usuarios (solo administradores).
 
 ### Representante
 
-| Campo | Tipo | Descripción |
-| --- | --- | --- |
-| id | UUID | Identificador único |
+| Campo  | Tipo   | Descripción              |
+|--------|--------|--------------------------|
+| id     | UUID   | Identificador único      |
 | nombre | String | Nombre del representante |
-| email | String | Email del representante |
+| email  | String | Email del representante  |
 
 ### Raqueta
-| Campo | Tipo | Descripción |
-| --- | --- | --- |
-| id | UUID | Identificador único |
-| marca | String | Marca de la raqueta |
-| precio | Double | Precio de la raqueta |
+
+| Campo         | Tipo          | Descripción                           |
+|---------------|---------------|---------------------------------------|
+| id            | UUID          | Identificador único                   |
+| marca         | String        | Marca de la raqueta                   |
+| precio        | Double        | Precio de la raqueta                  |
 | representante | Representante | Representante de la raqueta (no nulo) |
 
 ### Tenista
-| Campo | Tipo | Descripción |
-| --- | --- | --- |
-| id | UUID | Identificador único |
-| nombre | String | Nombre del tenista |
-| ranking | Int | Ranking del tenista |
-| fechaNacimiento | LocalDate | Fecha de nacimiento del tenista |
-| añoProfesional | Int | Año en el que se convirtió en profesional |
-| altura | Double | Altura del tenista |
-| peso | Double | Peso del tenista |
-| manoDominante | String | Mano dominante del tenista (DERECHA/IZQUIERDA) |
-| tipoReves | String | Tipo de revés del tenista (UNA_MANO/DOS_MANOS)|
-| puntos | Int | Puntos del tenista |
-| pais | String | País del tenista |
-| raquetaID | UUID | Identificador de la raqueta (puede ser nulo) |
+
+| Campo           | Tipo      | Descripción                                    |
+|-----------------|-----------|------------------------------------------------|
+| id              | UUID      | Identificador único                            |
+| nombre          | String    | Nombre del tenista                             |
+| ranking         | Int       | Ranking del tenista                            |
+| fechaNacimiento | LocalDate | Fecha de nacimiento del tenista                |
+| añoProfesional  | Int       | Año en el que se convirtió en profesional      |
+| altura          | Double    | Altura del tenista                             |
+| peso            | Double    | Peso del tenista                               |
+| manoDominante   | String    | Mano dominante del tenista (DERECHA/IZQUIERDA) |
+| tipoReves       | String    | Tipo de revés del tenista (UNA_MANO/DOS_MANOS) |
+| puntos          | Int       | Puntos del tenista                             |
+| pais            | String    | País del tenista                               |
+| raquetaID       | UUID      | Identificador de la raqueta (puede ser nulo)   |
 
 ### Usuario
-| Campo | Tipo | Descripción |
-| --- | --- | --- |
-| id | UUID | Identificador único |
-| nombre | String | Nombre del usuario |
-| email | String | Email del usuario |
-| username | String | Rol del usuario |
-| password | String | Contraseña del usuario |
-| avatar | String | Avatar del usuario |
-| rol | Rol | Rol del usuario (ADMIN o USER) |
 
+| Campo    | Tipo   | Descripción                    |
+|----------|--------|--------------------------------|
+| id       | UUID   | Identificador único            |
+| nombre   | String | Nombre del usuario             |
+| email    | String | Email del usuario              |
+| username | String | Rol del usuario                |
+| password | String | Contraseña del usuario         |
+| avatar   | String | Avatar del usuario             |
+| rol      | Rol    | Rol del usuario (ADMIN o USER) |
 
 ## Proyectos y documentación anteriores
+
 Parte de los contenidos a desarrollar en este proyecto se han desarrollado en proyectos anteriores. En este caso:
+
 - [Kotlin-Ktor-REST-Service](https://github.com/joseluisgs/Kotlin-Ktor-REST-Service)
 - [SpringBoot-Productos-REST-DAM-2021-2022](https://github.com/joseluisgs/SpringBoot-Productos-REST-DAM-2021-2022)
 
-Para la parte de reactividad te recomiendo leer: ["Ya no sé programar si no es reactivo"](https://joseluisgs.dev/blogs/2022/2022-12-06-ya-no-se-programar-sin-reactividad.html)
+Para la parte de reactividad te recomiendo
+leer: ["Ya no sé programar si no es reactivo"](https://joseluisgs.dev/blogs/2022/2022-12-06-ya-no-se-programar-sin-reactividad.html)
 
 ## Arquitectura
-Nos centraremos en la arquitectura de la API REST. Para ello, usaremos el patrón de diseño MVC (Modelo Vista Controlador) en capas.
+
+Nos centraremos en la arquitectura de la API REST. Para ello, usaremos el patrón de diseño MVC (Modelo Vista
+Controlador) en capas.
 
 ![img_1.png](./images/layers.png)
 
 ![img_2.png](./images/expla.png)
 
 ## Endpoints
+
 Recuerda que puedes conectarte de forma segura:
+
 - Para la API REST: http://localhost:6969/api y https://localhost:6963/api
 - Para la página web estática: http://localhost:6969/web y https://localhost:6963/web
 
-Los endpoints que vamos a usar a nivel de api, parten de /api/ y puedes usarlos con tu cliente favorito. En este caso, usaremos Postman:
+Los endpoints que vamos a usar a nivel de api, parten de /api/ y puedes usarlos con tu cliente favorito. En este caso,
+usaremos Postman:
+
+### Representantes
+
+| Método | Endpoint (/api)                        | Auth | Descripción                                             | Status Code (OK) | Content    |
+|--------|----------------------------------------|------|---------------------------------------------------------|------------------|------------|
+| GET    | /representantes                        | No   | Devuelve todos los representantes                       | 200              | JSON       |
+| GET    | /representantes?page=X&size=Y&sortBy=Z | No   | Devuelve representantes paginados y ordenados por campo | 200              | JSON       |
+| GET    | /representantes/{id}                   | No   | Devuelve un representante por su id                     | 200              | JSON       |
+| POST   | /representantes                        | No   | Crea un nuevo representante                             | 201              | JSON       |
+| PUT    | /representantes/{id}                   | No   | Actualiza un representante por su id                    | 200              | JSON       |
+| DELETE | /representantes/{id}                   | No   | Elimina un representante por su id                      | 204              | No Content |
+| GET    | /representantes/find?nombre=X          | No   | Devuelve los representantes con nombre X                | 200              | JSON       |
 
 ### Test
-| Método | Endpoint (/api) | Auth | Descripción | Status Code (OK) | Content |
-| ------ | -------- | ---- | ----------- | ----------- | ------- |
-| GET | /test?texto | No | Devuelve un JSON con datos de prueba y el texto de query opcional | 200 | JSON |
-| GET | /test/{id} | No | Devuelve un JSON con datos de prueba por su id | 200 | JSON |
-| POST | /test | No | Crea un nuevo JSON con datos de prueba | 201 | JSON |
-| PUT | /test/{id} | No | Actualiza un JSON con datos de prueba por su id | 200 | JSON |
-| PATCH | /test/{id} | No | Actualiza un JSON con datos de prueba por su id | 200 | JSON |
-| DELETE | /test/{id} | No | Elimina un JSON con datos de prueba por su id | 204 | No Content |
+
+| Método | Endpoint (/api) | Auth | Descripción                                                       | Status Code (OK) | Content    |
+|--------|-----------------|------|-------------------------------------------------------------------|------------------|------------|
+| GET    | /test?texto     | No   | Devuelve un JSON con datos de prueba y el texto de query opcional | 200              | JSON       |
+| GET    | /test/{id}      | No   | Devuelve un JSON con datos de prueba por su id                    | 200              | JSON       |
+| POST   | /test           | No   | Crea un nuevo JSON con datos de prueba                            | 201              | JSON       |
+| PUT    | /test/{id}      | No   | Actualiza un JSON con datos de prueba por su id                   | 200              | JSON       |
+| PATCH  | /test/{id}      | No   | Actualiza un JSON con datos de prueba por su id                   | 200              | JSON       |
+| DELETE | /test/{id}      | No   | Elimina un JSON con datos de prueba por su id                     | 204              | No Content |
 
 ## Spring Boot
-[Spring](https://spring.io/) es un framework de Java VM que nos permite crear aplicaciones web de forma rápida y sencilla. En este caso, usaremos [Spring Boot](https://spring.io/projects/spring-boot), que es una versión simplificada de Spring que nos ayuda en la configuración de sus elementos.
 
-Se caracteriza por implementar el Contenedor de [inversión de control](https://es.wikipedia.org/wiki/Inversi%C3%B3n_de_control): permite la configuración de los componentes de aplicación y la administración del ciclo de vida de los objetos Java, se lleva a cabo principalmente a través de la inyección de dependencias y [programación orientada a aspectos](https://es.wikipedia.org/wiki/Programaci%C3%B3n_orientada_a_aspectos): habilita la implementación de rutinas transversales.
+[Spring](https://spring.io/) es un framework de Java VM que nos permite crear aplicaciones web de forma rápida y
+sencilla. En este caso, usaremos [Spring Boot](https://spring.io/projects/spring-boot), que es una versión simplificada
+de Spring que nos ayuda en la configuración de sus elementos.
+
+Se caracteriza por implementar el Contenedor
+de [inversión de control](https://es.wikipedia.org/wiki/Inversi%C3%B3n_de_control): permite la configuración de los
+componentes de aplicación y la administración del ciclo de vida de los objetos Java, se lleva a cabo principalmente a
+través de la inyección de dependencias
+y [programación orientada a aspectos](https://es.wikipedia.org/wiki/Programaci%C3%B3n_orientada_a_aspectos): habilita la
+implementación de rutinas transversales.
 
 ![img_3.png](./images/springboot.jpeg)
 
 ### Creando un proyecto
-Podemos crear un proyecto Spring Boot usando el plugin IntelliJ, desde su web. Con estos [asistentes](https://start.spring.io/) podemos crear un proyecto Ktor con las opciones que queramos (plugins), destacamos el routing, el uso de json, etc.
+
+Podemos crear un proyecto Spring Boot usando el plugin IntelliJ, desde su web. Con
+estos [asistentes](https://start.spring.io/) podemos crear un proyecto Ktor con las opciones que queramos (plugins),
+destacamos el routing, el uso de json, etc.
 
 ### Punto de Entrada
 
 El servidor tiene su entrada y configuración en la clase Application. Esta lee la configuración en base
-al [fichero de configuración](./src/main/resources/application.properties) y a partir de aquí se crea una instancia de la
+al [fichero de configuración](./src/main/resources/application.properties) y a partir de aquí se crea una instancia de
+la
 clase principal etiquetada con @SpringBootApplication
 
 ### Parametrizando la aplicación
-La aplicación está parametrizada en el fichero de configuración [application.properties](./src/main/resources/application.properties) que se encuentra en el directorio resources. En este fichero podemos configurar el puerto, el modo de ejecución, etc. 
+
+La aplicación está parametrizada en el fichero de
+configuración [application.properties](./src/main/resources/application.properties) que se encuentra en el directorio
+resources. En este fichero podemos configurar el puerto, el modo de ejecución, etc.
 
 Podemos tener distintos ficheros por ejemplo para desarrollo y producción.
 
@@ -232,35 +286,59 @@ spring.profiles.active=dev
 ```
 
 ### Componentes de Spring Boot
-Spring Boot nos ofrece una serie de componentes que nos ayudan a crear aplicaciones web de forma rápida y sencilla. Nuestros componentes principales se etiquetarán con @ para que el framework Spring lo reconozca (módulo de inversión de control y posterior inyección de dependencias). Cada uno tiene una misión en nuestra arquitectura:
+
+Spring Boot nos ofrece una serie de componentes que nos ayudan a crear aplicaciones web de forma rápida y sencilla.
+Nuestros componentes principales se etiquetarán con @ para que el framework Spring lo reconozca (módulo de inversión de
+control y posterior inyección de dependencias). Cada uno tiene una misión en nuestra arquitectura:
 
 ![img_4.png](./images/components.png)
 
-- Controladores: Se etiquetan como *@Controller* o en nuestro caso al ser una API REST como @RestController. Estos son los controladores que se encargan de recibir las peticiones de los usuarios y devolver respuestas.
+- Controladores: Se etiquetan como *@Controller* o en nuestro caso al ser una API REST como @RestController. Estos son
+  los controladores que se encargan de recibir las peticiones de los usuarios y devolver respuestas.
 
-- Servicios: Se etiquetan como *@Service*. Se encargan de implementar la parte de negocio o infraestructura. En nuestro caso puede ser el sistema de almacenamiento o parte de la seguridad y perfiles de usuario.
+- Servicios: Se etiquetan como *@Service*. Se encargan de implementar la parte de negocio o infraestructura. En nuestro
+  caso puede ser el sistema de almacenamiento o parte de la seguridad y perfiles de usuario.
 
-- Repositorios: Se etiquetan como *@Repository* e implementan la interfaz y operaciones de persistencia de la información. En nuestro caso, puede ser una base de datos o una API externa. Podemos extender de repositorios pre establecidos o diseñar el nuestro propio.
+- Repositorios: Se etiquetan como *@Repository* e implementan la interfaz y operaciones de persistencia de la
+  información. En nuestro caso, puede ser una base de datos o una API externa. Podemos extender de repositorios pre
+  establecidos o diseñar el nuestro propio.
 
-- Configuración: Se etiquetan como *@Configuration*. Se encargan de configurar los componentes de la aplicación. Se se suelen iniciar al comienzo de nuestra aplicación.
+- Configuración: Se etiquetan como *@Configuration*. Se encargan de configurar los componentes de la aplicación. Se se
+  suelen iniciar al comienzo de nuestra aplicación.
 
-- Bean: La anotación *@Bean*, nos sirve para indicar que este bean será administrado por Spring Boot (Spring Container). La administración de estos beans se realiza mediante a anotaciones como @Configuration.
+- Bean: La anotación *@Bean*, nos sirve para indicar que este bean será administrado por Spring Boot (Spring Container).
+  La administración de estos beans se realiza mediante a anotaciones como @Configuration.
 
 ### IoC y DI en SpringBoot
-La Inversión de control (Inversion of Control en inglés, IoC) es un principio de diseño de software en el que el flujo de ejecución de un programa se invierte respecto a los métodos de programación tradicionales. En su lugar, en la inversión de control se especifican respuestas deseadas a sucesos o solicitudes de datos concretas, dejando que algún tipo de entidad o arquitectura externa lleve a cabo las acciones de control que se requieran en el orden necesario y para el conjunto de sucesos que tengan que ocurrir.
 
-La inyección de dependencias (en inglés Dependency Injection, DI) es un patrón de diseño orientado a objetos, en el que se suministran objetos a una clase en lugar de ser la propia clase la que cree dichos objetos. Esos objetos cumplen contratos que necesitan nuestras clases para poder funcionar (de ahí el concepto de dependencia). Nuestras clases no crean los objetos que necesitan, sino que se los suministra otra clase 'contenedora' que inyectará la implementación deseada a nuestro contrato.
+La Inversión de control (Inversion of Control en inglés, IoC) es un principio de diseño de software en el que el flujo
+de ejecución de un programa se invierte respecto a los métodos de programación tradicionales. En su lugar, en la
+inversión de control se especifican respuestas deseadas a sucesos o solicitudes de datos concretas, dejando que algún
+tipo de entidad o arquitectura externa lleve a cabo las acciones de control que se requieran en el orden necesario y
+para el conjunto de sucesos que tengan que ocurrir.
 
-El contenedor Spring IoC lee el elemento de configuración durante el tiempo de ejecución y luego ensambla el Bean a través de la configuración. La inyección de dependencia de Spring se puede lograr a través del constructor, el método Setter y el dominio de entidad. Podemos hacer uso de la anotación *@Autowired* para inyectar la dependencia en el contexto requerido.
+La inyección de dependencias (en inglés Dependency Injection, DI) es un patrón de diseño orientado a objetos, en el que
+se suministran objetos a una clase en lugar de ser la propia clase la que cree dichos objetos. Esos objetos cumplen
+contratos que necesitan nuestras clases para poder funcionar (de ahí el concepto de dependencia). Nuestras clases no
+crean los objetos que necesitan, sino que se los suministra otra clase 'contenedora' que inyectará la implementación
+deseada a nuestro contrato.
 
-El contenedor llamará al constructor con parámetros al instanciar el bean, y cada parámetro representa la dependencia que queremos establecer. Spring analizará cada parámetro, primero lo analizará por tipo, pero cuando sea incierto, luego lo analizará de acuerdo con el nombre del parámetro (obtenga el nombre del parámetro a través de ParameterNameDiscoverer, implementado por ASM).
+El contenedor Spring IoC lee el elemento de configuración durante el tiempo de ejecución y luego ensambla el Bean a
+través de la configuración. La inyección de dependencia de Spring se puede lograr a través del constructor, el método
+Setter y el dominio de entidad. Podemos hacer uso de la anotación *@Autowired* para inyectar la dependencia en el
+contexto requerido.
+
+El contenedor llamará al constructor con parámetros al instanciar el bean, y cada parámetro representa la dependencia
+que queremos establecer. Spring analizará cada parámetro, primero lo analizará por tipo, pero cuando sea incierto, luego
+lo analizará de acuerdo con el nombre del parámetro (obtenga el nombre del parámetro a través de
+ParameterNameDiscoverer, implementado por ASM).
 
 ```kotlin
 class ProductosRestController
 @Autowired constructor(
     private val productosRepository: ProductosRepository,
 
-) {
+    ) {
     @GetMapping("/productos")
     fun getProducts(): List<Producto> {
         return productosRepository.findAll()
@@ -269,8 +347,9 @@ class ProductosRestController
 ```
 
 A nivel de setter
-Spring primero instancia el Bean y luego llama al método Setter que debe inyectarse para lograr la inyección de dependencia. No recomendado
-    
+Spring primero instancia el Bean y luego llama al método Setter que debe inyectarse para lograr la inyección de
+dependencia. No recomendado
+
 ```kotlin
 class ProductosRestController {
     private lateinit var productosRepository: ProductosRepository
@@ -283,25 +362,38 @@ class ProductosRestController {
 ```
 
 ### Spring Data JPA
-[Spring Data](https://docs.spring.io/spring-data/jpa/docs/current/reference/html/#preface) es una librería de persistencia que nos permite acceder a bases de datos relacionales y no relacionales de forma sencilla gracias a [JPA](https://spring.io/projects/spring-data-jpa). Para ello podemos extender de la clase JpaRepository, que es una clase de repositorio de Spring Data con más funcionalidades, como pueden ser las operaciones de consulta, inserción, actualización y eliminación, así como las de paginación, ordenación o búsquedas.
+
+[Spring Data](https://docs.spring.io/spring-data/jpa/docs/current/reference/html/#preface) es una librería de
+persistencia que nos permite acceder a bases de datos relacionales y no relacionales de forma sencilla gracias
+a [JPA](https://spring.io/projects/spring-data-jpa). Para ello podemos extender de la clase JpaRepository, que es una
+clase de repositorio de Spring Data con más funcionalidades, como pueden ser las operaciones de consulta, inserción,
+actualización y eliminación, así como las de paginación, ordenación o búsquedas.
 
 Los principales son:
+
 - CrudRepository: tiene las mayoría de las funcionalidades CRUD.
 - PagingAndSortingRepository: ofrece mecanismos de paginación, ordenación y búsqueda.
-- JpaRepository: proporciona algunos métodos relacionados con JPA, como vaciar el contexto de persistencia y eliminar registros en un lote.
+- JpaRepository: proporciona algunos métodos relacionados con JPA, como vaciar el contexto de persistencia y eliminar
+  registros en un lote.
 - CoroutinesRepository: proporciona métodos de suspensión para usar con Kotlin Coroutines.
 - MongoRepository: proporciona funcionalidades específicas de MongoDB.
 
-Usaremos las anotaciones de JPA para definir entidades o colecciones, sus atributos y características de los mismos, así como las relacionales existentes.
+Usaremos las anotaciones de JPA para definir entidades o colecciones, sus atributos y características de los mismos, así
+como las relacionales existentes.
 
-Podemos definir consultas personalizadas para las entidades de la aplicación. Para ello podemos usar la anotación @Query con JPQL o @NativeQuery y usar el lenguaje del motor de Base de Datos.
+Podemos definir consultas personalizadas para las entidades de la aplicación. Para ello podemos usar la anotación @Query
+con JPQL o @NativeQuery y usar el lenguaje del motor de Base de Datos.
 
-Por otro lado, también podemos definir las consultas en base del nombre del método. Si lo definimos con una signatura determinada con ellos se generará la consulta automáticamente.
+Por otro lado, también podemos definir las consultas en base del nombre del método. Si lo definimos con una signatura
+determinada con ellos se generará la consulta automáticamente.
 
 ### Creando rutas
-Para crear las rutas vamos a usar on controlador de tipo RestController. Este controlador se encargará de recibir las peticiones y devolver las respuestas. Para ello vamos a usar las anotaciones de Spring Web.
 
-Las peticiones que vamos a recibir serán de tipo GET (GetMapping), POST (PostMapping), PUT (PutMapping), PATCH (PatchMapping) y/o DELETE (DeleteMapping).
+Para crear las rutas vamos a usar on controlador de tipo RestController. Este controlador se encargará de recibir las
+peticiones y devolver las respuestas. Para ello vamos a usar las anotaciones de Spring Web.
+
+Las peticiones que vamos a recibir serán de tipo GET (GetMapping), POST (PostMapping), PUT (PutMapping), PATCH (
+PatchMapping) y/o DELETE (DeleteMapping).
 
 Además, podemos usar ResponseEntity para devolver el código de estado de la respuesta, así como el cuerpo de la misma.
 
@@ -311,15 +403,18 @@ class ProductosRestController
 @Autowired constructor(
     private val productosRepository: ProductosRepository,
 
-) {
+    ) {
     @GetMapping("/productos")
     fun getProducts(): List<Producto> {
         return productosRepository.findAll()
     }
 }
 ```
+
 #### Comprensión de contenido
-Podemos activar la comprensión de contenido para las peticiones y respuestas desde nuestro fichero de propiedades. Para ello debemos añadir la siguiente propiedad:
+
+Podemos activar la comprensión de contenido para las peticiones y respuestas desde nuestro fichero de propiedades. Para
+ello debemos añadir la siguiente propiedad:
 
 ```properties
 # Compresion de datos
@@ -329,25 +424,33 @@ server.compression.min-response-size=1024
 ```
 
 #### CORS
-Si se supone que su servidor debe manejar solicitudes de origen cruzado (CORS), debe [instalar y configurar](https://www.baeldung.com/spring-cors) el complemento CORS. Este complemento le permite configurar hosts permitidos, métodos HTTP, encabezados establecidos por el cliente, etc. Para ello lo vamos a hacer en un bean de tipo CorsConfiguration
+
+Si se supone que su servidor debe manejar solicitudes de origen cruzado (CORS),
+debe [instalar y configurar](https://www.baeldung.com/spring-cors) el complemento CORS. Este complemento le permite
+configurar hosts permitidos, métodos HTTP, encabezados establecidos por el cliente, etc. Para ello lo vamos a hacer en
+un bean de tipo CorsConfiguration
 
 ```kotlin
 @Configuration
 class CorsConfig {
     //	@Bean
     // Cors para permitir cualquier petición
-	public WebMvcConfigurer corsConfigurer() {
-		return new WebMvcConfigurer() {
-			@Override
-			public void addCorsMappings(CorsRegistry registry) {
-				registry.addMapping("/ **");
-			}
-		};
-	}
+    public WebMvcConfigurer corsConfigurer()
+    {
+        return new WebMvcConfigurer () {
+            @Override
+            public void addCorsMappings(CorsRegistry registry) {
+                registry.addMapping("/ **")
+            }
+        }
+    }
 }
 ```
+
 ### Responses
-Para devolver las respuestas vamos a usar la clase ResponseEntity. Esta clase nos permite devolver el código de estado de la respuesta, así como el cuerpo de la misma.
+
+Para devolver las respuestas vamos a usar la clase ResponseEntity. Esta clase nos permite devolver el código de estado
+de la respuesta, así como el cuerpo de la misma.
 
 ```kotlin
 @GetMapping("/productos")
@@ -377,11 +480,30 @@ fun deleteProduct(@PathVariable id: Long): ResponseEntity<Void> {
 }
 ```
 
+#### Paginación y ordenamiento
+En Spring Data podemos hacer la paginación de las respuestas de las consultas y su ordenamiento. Para ello debemos usar la clase [Pageable](https://www.baeldung.com/spring-data-jpa-pagination-sorting) siempre que estemos en un JPARepository.
+
+Pero en otros repositorios debemos adaptarnos a su filosofía de trabajo. Por ejemplo, en MongoDB podemos usar la clase [PageRequest](https://www.baeldung.com/queries-in-spring-data-mongodb) para hacer la paginación. De la misma debemos hacerlo con [Spring Data Reactive](https://www.vinsguru.com/r2dbc-pagination/), luego ajustando la respuesta.
+
+```kotlin
+suspend fun findAllPage(pageRequest: PageRequest): Flow<Page<Representante>> {
+return representantRepository.findAllBy(pageRequest)
+    toList()
+    .windowed(pageRequest.pageSize, pageRequest.pageSize, true)
+    .map { PageImpl(it, pageRequest, representanteRepository.count()) }
+    .asFlow()
+}
+```
+
 ### Requests
-Las peticiones podemos hacerlas con usando los verbos http, y las anotaciones de Spring Web: GetMapping, PostMapping, PutMapping, PatchMapping y DeleteMapping...
+
+Las peticiones podemos hacerlas con usando los verbos http, y las anotaciones de Spring Web: GetMapping, PostMapping,
+PutMapping, PatchMapping y DeleteMapping...
 
 #### Parámetros de ruta
-Podemos usar los parámetros de ruta para obtener información de la petición. Para ello debemos usar la anotación @PathVariable
+
+Podemos usar los parámetros de ruta para obtener información de la petición. Para ello debemos usar la anotación
+@PathVariable
 
 ```kotlin
 @GetMapping("/productos/{id}")
@@ -389,8 +511,11 @@ fun getById(@PathVariable id: Long): ResponseEntity<Producto> {
     return ResponseEntity.ok(productosRepository.findById(id).get())
 }
 ```
+
 #### Parámetros de consulta
-Podemos usar los parámetros de consulta para obtener información de la petición. Para ello debemos usar la anotación @RequestParam, si la tipamos como nula, o indicamos que no es requerida, podremos usarla como opcional.
+
+Podemos usar los parámetros de consulta para obtener información de la petición. Para ello debemos usar la anotación
+@RequestParam, si la tipamos como nula, o indicamos que no es requerida, podremos usarla como opcional.
 
 ```kotlin
 @GetMapping("/productos")
@@ -398,7 +523,9 @@ fun getProducts(@RequestParam(required = false) nombre: String?): ResponseEntity
     return ResponseEntity.ok(productosRepository.findByNombre(nombre))
 }
 ```
+
 #### Peticiones datos serializados
+
 Podemos enviar datos serializados en el cuerpo de la petición. Para ello debemos usar la anotación @RequestBody
 
 ```kotlin
@@ -409,18 +536,24 @@ fun createProduct(@RequestBody producto: Producto): ResponseEntity<Producto> {
 ```
 
 #### Peticiones con formularios
-Podemos obtener los datos de un [formulario](https://www.baeldung.com/spring-url-encoded-form-data) con MediaType.APPLICATION_FORM_URLENCODED_VALUE y aplicarlos a un mapa de datos.
+
+Podemos obtener los datos de un [formulario](https://www.baeldung.com/spring-url-encoded-form-data) con
+MediaType.APPLICATION_FORM_URLENCODED_VALUE y aplicarlos a un mapa de datos.
 
 ```kotlin
 @PostMapping(
-  path = "/feedback",
-  consumes = [MediaType.APPLICATION_FORM_URLENCODED_VALUE])
-fun handleNonBrowserSubmissions(@RequestParam paramMap MultiValueMap<String,String>): ResponseEntity<String> {
-    return ResponseEntity.ok("Thanks for your feedback!");
+    path = "/feedback",
+    consumes = [MediaType.APPLICATION_FORM_URLENCODED_VALUE]
+)
+fun handleNonBrowserSubmissions(@RequestParam paramMap MultiValueMap<String, String>): ResponseEntity<String> {
+    return ResponseEntity.ok("Thanks for your feedback!")
 }
 ```
+
 #### Peticiones multiparte
-Podemos obtener los datos de una [petición multiparte](https://www.baeldung.com/sprint-boot-multipart-requests) con MediaType.MULTIPART_FORM_DATA_VALUE y aplicarlos a un mapa de datos.
+
+Podemos obtener los datos de una [petición multiparte](https://www.baeldung.com/sprint-boot-multipart-requests) con
+MediaType.MULTIPART_FORM_DATA_VALUE y aplicarlos a un mapa de datos.
 
 ```kotlin
 @PostMapping(
@@ -431,11 +564,15 @@ fun createWithImage(
     @RequestPart("producto") productoDTO: ProductoCreateDTO,
     @RequestPart("file") file: MultipartFile
 ): ResponseEntity<ProductoDTO> {
-  // ....
+    // ....
 }
 ```
+
 #### Request validation
-Podemos usar la [validación](https://www.baeldung.com/spring-boot-bean-validation) usando la anotación @Valid. Para ello podemos usar las anotaciones de restricción de [javax.validation.constraints](https://www.baeldung.com/javax-validation)
+
+Podemos usar la [validación](https://www.baeldung.com/spring-boot-bean-validation) usando la anotación @Valid. Para ello
+podemos usar las anotaciones de restricción de [javax.validation.constraints](https://www.baeldung.com/javax-validation)
+
 ```kotlin
 @PostMapping("/productos")
 fun createProduct(@Valid @RequestBody producto: Producto): ResponseEntity<Producto> {
@@ -445,9 +582,10 @@ fun createProduct(@Valid @RequestBody producto: Producto): ResponseEntity<Produc
 
 ### WebSockets
 
-
 ### SSL y Certificados
-Para trabajar con los certificados, los hemos creado y guardado en l carpeta cert de resources. Para ello hemos usado el comando keytool de Java. Además hemos creado nuestra configuración es properties para poder usarlos en el código.
+
+Para trabajar con los certificados, los hemos creado y guardado en l carpeta cert de resources. Para ello hemos usado el
+comando keytool de Java. Además hemos creado nuestra configuración es properties para poder usarlos en el código.
 
 ```properties
 server.port=${PORT:6963}
@@ -461,7 +599,8 @@ server.ssl.key-alias=serverKeyPair
 server.ssl.enabled=true
 ```
 
-Además, hemos configurado nuestro servicio para que ademas responda a peticiones http, y que redirija a https en SSConfig.
+Además, hemos configurado nuestro servicio para que ademas responda a peticiones http, y que redirija a https en
+SSConfig.
 
 ```kotlin
 @Configuration
@@ -483,6 +622,7 @@ class SSLConfig {
 ```
 
 ### Autenticación y Autorización con JWT
+
 ### Testing
 
 ### Despliegue
@@ -490,37 +630,60 @@ class SSLConfig {
 #### JAR
 
 #### Aplicación
+
 #### Docker
 
 ### Documentación
 
 ## Reactividad
-Como todo concepto que aunque complicado de conseguir implica una serie de condiciones. La primera de ellas es asegurar la asincronía en todo momento. Cosa que se ha hecho mediante Ktor y el uso de corrutinas. 
 
-Por otro lado el acceso de la base de datos no debe ser bloqueante, por lo que no se ha usado la librería Exposed de Kotlin para acceder a la base de datos y que trabaja por debajo con el driver JDBC. Sabemos que esto se puede podemos acercarnos a la Asincronía pura usando corrutinas y el manejo de [contexto de transacción asíncrono](https://github.com/JetBrains/Exposed/wiki/Transactions).
+Como todo concepto que aunque complicado de conseguir implica una serie de condiciones. La primera de ellas es asegurar
+la asincronía en todo momento. Cosa que se ha hecho mediante Ktor y el uso de corrutinas.
 
-En cualquier caso, hemos decidido usar el driver R2DBC con el objetivo que el acceso a la base de datos sea no bloqueante y así poder aprovechar el uso de Flows en Kotlin y así poder usar la reactividad total en la base de datos con las corrutinas y Ktor.
+Por otro lado el acceso de la base de datos no debe ser bloqueante, por lo que no se ha usado la librería Exposed de
+Kotlin para acceder a la base de datos y que trabaja por debajo con el driver JDBC. Sabemos que esto se puede podemos
+acercarnos a la Asincronía pura usando corrutinas y el manejo
+de [contexto de transacción asíncrono](https://github.com/JetBrains/Exposed/wiki/Transactions).
+
+En cualquier caso, hemos decidido usar el driver R2DBC con el objetivo que el acceso a la base de datos sea no
+bloqueante y así poder aprovechar el uso de Flows en Kotlin y así poder usar la reactividad total en la base de datos
+con las corrutinas y Ktor.
 
 ![reactividad](./images/reactive.gif)
 
 
 > **Programación reactiva: programación asíncrona de flujos observables**
-> 
-> Programar reactivamente una api comienza desde observar y procesar las colecciones existentes de manera asíncrona desde la base de datos hasta la respuesta que se ofrezca.
+>
+> Programar reactivamente una api comienza desde observar y procesar las colecciones existentes de manera asíncrona
+> desde la base de datos hasta la respuesta que se ofrezca.
 
 ## Inmutabilidad
-Es importante que los datos sean inmutables, es decir, que no se puedan modificar una vez creados en todo el proceso de las capas de nuestra arquitectura. Esto nos permite tener un código más seguro y predecible. En Kotlin, por defecto, podemos hacer que una clase sea inmutable, añadiendo el modificador val a sus propiedades.
 
-Para los POKOS (Plain Old Kotlin Objects) usaremos Data Classes, que son clases inmutables por defecto y crearemos objetos nuevos con las modificaciones que necesitemos con la función copy().
+Es importante que los datos sean inmutables, es decir, que no se puedan modificar una vez creados en todo el proceso de
+las capas de nuestra arquitectura. Esto nos permite tener un código más seguro y predecible. En Kotlin, por defecto,
+podemos hacer que una clase sea inmutable, añadiendo el modificador val a sus propiedades.
+
+Para los POKOS (Plain Old Kotlin Objects) usaremos Data Classes, que son clases inmutables por defecto y crearemos
+objetos nuevos con las modificaciones que necesitemos con la función copy().
 
 ## Caché
-La [caché](https://es.wikipedia.org/wiki/Cach%C3%A9_(inform%C3%A1tica)) es una forma de almacenar datos en memoria/disco para que se puedan recuperar rápidamente. Además de ser una forma de optimizar el rendimiento, también es una forma de reducir el coste de almacenamiento de datos y tiempo de respuesta pues los datos se almacenan en memoria y no en disco o base de datos que pueden estar en otro servidor y con ello aumentar el tiempo de respuesta. 
 
-Además la caché nos ofrece automáticamente distintos mecanismos de actuación, como por ejemplo, que los elementos en cache tenga un tiempo de vida máximo y se eliminen automáticamente cuando se cumpla. Lo que nos permite tener datos actualizados Y/o los más usados en memoria y eliminar los que no se usan.
+La [caché](https://es.wikipedia.org/wiki/Cach%C3%A9_(inform%C3%A1tica)) es una forma de almacenar datos en memoria/disco
+para que se puedan recuperar rápidamente. Además de ser una forma de optimizar el rendimiento, también es una forma de
+reducir el coste de almacenamiento de datos y tiempo de respuesta pues los datos se almacenan en memoria y no en disco o
+base de datos que pueden estar en otro servidor y con ello aumentar el tiempo de respuesta.
 
-En nuestro proyecto tenemos dos repositorios, uno para la caché y otro para la base de datos. Para ello todas las consultas usamos la caché y si no está, se consulta a la base de datos y se guarda en la caché. Además, podemos tener un proceso en background que actualice la caché cada cierto tiempo solo si así lo configuramos, de la misma manera que el tiempo de refresco.
+Además la caché nos ofrece automáticamente distintos mecanismos de actuación, como por ejemplo, que los elementos en
+cache tenga un tiempo de vida máximo y se eliminen automáticamente cuando se cumpla. Lo que nos permite tener datos
+actualizados Y/o los más usados en memoria y eliminar los que no se usan.
 
-Además, hemos optimizado las operaciones con corrutinas para que se ejecuten en paralelo actualizando la caché y la base de datos.
+En nuestro proyecto tenemos dos repositorios, uno para la caché y otro para la base de datos. Para ello todas las
+consultas usamos la caché y si no está, se consulta a la base de datos y se guarda en la caché. Además, podemos tener un
+proceso en background que actualice la caché cada cierto tiempo solo si así lo configuramos, de la misma manera que el
+tiempo de refresco.
+
+Además, hemos optimizado las operaciones con corrutinas para que se ejecuten en paralelo actualizando la caché y la base
+de datos.
 
 El diagrama seguido es el siguiente
 
@@ -528,71 +691,117 @@ El diagrama seguido es el siguiente
 
 Por otro lado también podemos configurar la Caché de Header a nivel de rutas o tipo de ficheros como se ha indicado.
 
-Para este proyecto hemos usado [Cache4K](https://reactivecircus.github.io/cache4k/). Cache4k proporciona un caché de clave-valor en memoria simple para Kotlin Multiplatform, con soporte para ivalidar items basados ​​en el tiempo (caducidad) y en el tamaño.
+Para este proyecto hemos usado [Cache4K](https://reactivecircus.github.io/cache4k/). Cache4k proporciona un caché de
+clave-valor en memoria simple para Kotlin Multiplatform, con soporte para ivalidar items basados ​​en el tiempo (
+caducidad) y en el tamaño.
 
 ## Notificaciones en tiempo real
-Las notificaciones en tiempo real son una forma de comunicación entre el servidor y el cliente que permite que el servidor envíe información al cliente sin que el cliente tenga que solicitarla. Esto permite que el servidor pueda enviar información al cliente cuando se produzca un evento sin que el cliente tenga que estar constantemente consultando al servidor.
 
-Para ello usaremos [WebSockets](https://developer.mozilla.org/es/docs/Web/API/WebSockets_API) junto al patrón [Observer](https://refactoring.guru/es/design-patterns/observer) para que el servidor pueda enviar información al cliente cuando se produzca un evento sin que el cliente tenga que estar constantemente consultando al servidor.
+Las notificaciones en tiempo real son una forma de comunicación entre el servidor y el cliente que permite que el
+servidor envíe información al cliente sin que el cliente tenga que solicitarla. Esto permite que el servidor pueda
+enviar información al cliente cuando se produzca un evento sin que el cliente tenga que estar constantemente consultando
+al servidor.
 
-Para ello, una vez el cliente se conecta al servidor, se le asigna un ID de sesión y se guarda en una lista de clientes conectados. Cuando se produce un evento, se recorre la lista de clientes conectados y se envía la información a cada uno de ellos, ejecutando la función de callback que se le ha pasado al servidor.
+Para ello usaremos [WebSockets](https://developer.mozilla.org/es/docs/Web/API/WebSockets_API) junto al
+patrón [Observer](https://refactoring.guru/es/design-patterns/observer) para que el servidor pueda enviar información al
+cliente cuando se produzca un evento sin que el cliente tenga que estar constantemente consultando al servidor.
+
+Para ello, una vez el cliente se conecta al servidor, se le asigna un ID de sesión y se guarda en una lista de clientes
+conectados. Cuando se produce un evento, se recorre la lista de clientes conectados y se envía la información a cada uno
+de ellos, ejecutando la función de callback que se le ha pasado al servidor.
 
 Además, podemos hacer uso de las funciones de serialización para enviar objetos complejos como JSON.
 
 ![observer](./images/observer.png)
 
 ## Proveedor de Dependencias
-Usaremos el propio [Autowired](https://www.baeldung.com/spring-autowire) de Spring para inyectar las dependencias en las clases que las necesiten. De esta manera, no tendremos que crear objetos de las clases que necesitemos, sino que Spring se encargará de crearlos y de inyectarlos en las clases que las necesiten.
+
+Usaremos el propio [Autowired](https://www.baeldung.com/spring-autowire) de Spring para inyectar las dependencias en las
+clases que las necesiten. De esta manera, no tendremos que crear objetos de las clases que necesitemos, sino que Spring
+se encargará de crearlos y de inyectarlos en las clases que las necesiten.
 
 ## Seguridad de las comunicaciones
 
 ### SSL/TLS
-Para la seguridad de las comunicaciones usaremos [SSL/TLS](https://es.wikipedia.org/wiki/Seguridad_de_la_capa_de_transporte) que es un protocolo de seguridad que permite cifrar las comunicaciones entre el cliente y el servidor. Para ello usaremos un certificado SSL que nos permitirá cifrar las comunicaciones entre el cliente y el servidor.
 
-De esta manera, conseguiremos que los datos viajen cifrados entre el cliente y el servidor y que no puedan ser interceptados por terceros de una manera sencilla.
+Para la seguridad de las comunicaciones
+usaremos [SSL/TLS](https://es.wikipedia.org/wiki/Seguridad_de_la_capa_de_transporte) que es un protocolo de seguridad
+que permite cifrar las comunicaciones entre el cliente y el servidor. Para ello usaremos un certificado SSL que nos
+permitirá cifrar las comunicaciones entre el cliente y el servidor.
 
-Esto nos ayudará, a la hora de hacer el login de un usuario, a que la contraseña no pueda ser interceptada por terceros y que el usuario pueda estar seguro de que sus datos están protegidos.
+De esta manera, conseguiremos que los datos viajen cifrados entre el cliente y el servidor y que no puedan ser
+interceptados por terceros de una manera sencilla.
+
+Esto nos ayudará, a la hora de hacer el login de un usuario, a que la contraseña no pueda ser interceptada por terceros
+y que el usuario pueda estar seguro de que sus datos están protegidos.
 
 ![tsl](./images/tsl.jpg)
 
 ### Autenticación y Autorización con JWT
-Para la seguridad de las comunicaciones usaremos [JWT](https://jwt.io/) que es un estándar abierto (RFC 7519) que define una forma compacta y autónoma de transmitir información entre partes como un objeto JSON. Esta información puede ser verificada y confiada porque está firmada digitalmente. Las firmas también se pueden usar para asegurar la integridad de los datos.
 
-El funcionamiento de JWT es muy sencillo. El cliente hace una petición para autenticarse la primera vez. El servidor genera un token que contiene la información del usuario y lo envía al cliente. El cliente lo guarda y lo envía en cada petición al servidor. El servidor verifica el token y si es correcto, permite la petición al recurso.
+Para la seguridad de las comunicaciones usaremos [JWT](https://jwt.io/) que es un estándar abierto (RFC 7519) que define
+una forma compacta y autónoma de transmitir información entre partes como un objeto JSON. Esta información puede ser
+verificada y confiada porque está firmada digitalmente. Las firmas también se pueden usar para asegurar la integridad de
+los datos.
+
+El funcionamiento de JWT es muy sencillo. El cliente hace una petición para autenticarse la primera vez. El servidor
+genera un token que contiene la información del usuario y lo envía al cliente. El cliente lo guarda y lo envía en cada
+petición al servidor. El servidor verifica el token y si es correcto, permite la petición al recurso.
 
 ![jwt](./images/tokens.png)
 
 ### CORS
-Para la seguridad de las comunicaciones usaremos [CORS](https://developer.mozilla.org/es/docs/Web/HTTP/CORS) que es un mecanismo que usa cabeceras HTTP adicionales para permitir que un user agent obtenga permiso para acceder a recursos seleccionados desde un servidor, en un origen distinto (dominio) al que pertenece.
+
+Para la seguridad de las comunicaciones usaremos [CORS](https://developer.mozilla.org/es/docs/Web/HTTP/CORS) que es un
+mecanismo que usa cabeceras HTTP adicionales para permitir que un user agent obtenga permiso para acceder a recursos
+seleccionados desde un servidor, en un origen distinto (dominio) al que pertenece.
 
 ![cors](./images/cors.png)
 
 ### BCrypt
-Para la seguridad de las comunicaciones usaremos [Bcrypt](https://en.wikipedia.org/wiki/Bcrypt) que es un algoritmo de hash de contraseñas diseñado por Niels Provos y David Mazières, destinado a ser un método de protección contra ataques de fuerza bruta. Con este algoritmo, se puede almacenar una contraseña en la base de datos de forma segura, ya que no se puede obtener la contraseña original a partir de la contraseña almacenada.
+
+Para la seguridad de las comunicaciones usaremos [Bcrypt](https://en.wikipedia.org/wiki/Bcrypt) que es un algoritmo de
+hash de contraseñas diseñado por Niels Provos y David Mazières, destinado a ser un método de protección contra ataques
+de fuerza bruta. Con este algoritmo, se puede almacenar una contraseña en la base de datos de forma segura, ya que no se
+puede obtener la contraseña original a partir de la contraseña almacenada.
 
 ![bcrypt](./images/bcrypt.png)
 
 ## Testing
-Para testear se ha usado JUnit y MocKK como librerías de apoyo. Además, Hemos usado la propia api de Ktor para testear las peticiones. Con ello podemos simular un Postman para testear las peticiones de manera local, con una instancia de prueba de nuestro servicio.
-![testear](./images/testing.png)
-### Postman
-Para probar con un cliente nuestro servicio usaremos [Postman](https://www.postman.com/) que es una herramienta de colaboración para el desarrollo de APIs. Permite a los usuarios crear y compartir colecciones de peticiones HTTP, así como documentar y probar sus APIs.
 
-El fichero para probar nuestra api lo tienes en la carpera [postman](./postman) y puedes importarlo en tu Postman para probar el resultado.
+Para testear se ha usado JUnit y MocKK como librerías de apoyo. Además, Hemos usado la propia api de Ktor para testear
+las peticiones. Con ello podemos simular un Postman para testear las peticiones de manera local, con una instancia de
+prueba de nuestro servicio.
+![testear](./images/testing.png)
+
+### Postman
+
+Para probar con un cliente nuestro servicio usaremos [Postman](https://www.postman.com/) que es una herramienta de
+colaboración para el desarrollo de APIs. Permite a los usuarios crear y compartir colecciones de peticiones HTTP, así
+como documentar y probar sus APIs.
+
+El fichero para probar nuestra api lo tienes en la carpera [postman](./postman) y puedes importarlo en tu Postman para
+probar el resultado.
 
 ![postman](./images/postman.png)
 
-
 ## Distribución y Despliegue
-Para la distribución de la aplicación usaremos [Docker](https://www.docker.com/) con su [Dockerfile](./Dockerfile). Además,  podemos usar [Docker Compose](https://docs.docker.com/compose/) con [docker-compose.yml](./docker-compose.yml) que es una herramienta para definir y ejecutar aplicaciones Docker de múltiples contenedores.
+
+Para la distribución de la aplicación usaremos [Docker](https://www.docker.com/) con su [Dockerfile](./Dockerfile).
+Además, podemos usar [Docker Compose](https://docs.docker.com/compose/) con [docker-compose.yml](./docker-compose.yml)
+que es una herramienta para definir y ejecutar aplicaciones Docker de múltiples contenedores.
 
 ![docker](./images/docker.jpg)
 
-Por otro lado, podemos usar JAR o Aplicaciones de sistema tal y como hemos descrito en el apartado de [Despliegue](#despliegue).
+Por otro lado, podemos usar JAR o Aplicaciones de sistema tal y como hemos descrito en el apartado
+de [Despliegue](#despliegue).
 
-**Recuerda**: Si haces una imagen Docker mete todos los certificados y recursos que necesites que use adicionalmente nuestra aplicación (directorios), si no no funcionará, pues así los usas en tu fichero de configuración. Recuerda lo que usa tu fichero de [configuración](./src/main/kotlin/../resources/application.conf) para incluirlo.
+**Recuerda**: Si haces una imagen Docker mete todos los certificados y recursos que necesites que use adicionalmente
+nuestra aplicación (directorios), si no no funcionará, pues así los usas en tu fichero de configuración. Recuerda lo que
+usa tu fichero de [configuración](./src/main/kotlin/../resources/application.conf) para incluirlo.
 
 ## Documentación
+
 La documentación sobre los métodos se pueden consultar en HTML realizada con Dokka.
 
 La documentación de los endpoints se puede consultar en HTML realizada con Swagger.

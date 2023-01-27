@@ -161,6 +161,203 @@
 					"response": []
 				}
 			]
+		},
+		{
+			"name": "Representantes",
+			"item": [
+				{
+					"name": "GET ALL",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:6969/api/representantes",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "6969",
+							"path": [
+								"api",
+								"representantes"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "GET ALL Pageable",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:6969/api/representantes/paging?page=0&size=2&sortBy=nombre",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "6969",
+							"path": [
+								"api",
+								"representantes",
+								"paging"
+							],
+							"query": [
+								{
+									"key": "page",
+									"value": "0"
+								},
+								{
+									"key": "size",
+									"value": "2"
+								},
+								{
+									"key": "sortBy",
+									"value": "nombre"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "GET BY ID",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:6969/api/representantes/b39a2fd2-f7d7-405d-b73c-b68a8dedbcdf",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "6969",
+							"path": [
+								"api",
+								"representantes",
+								"b39a2fd2-f7d7-405d-b73c-b68a8dedbcdf"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "POST",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"nombre\": \"CREATED\",\n    \"email\": \"CREATED@CREATED.COM\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:6969/api/representantes",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "6969",
+							"path": [
+								"api",
+								"representantes"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "PUT",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"nombre\": \"UPDATED\",\n    \"email\": \"UPDATED@UPDATED.COM\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:6969/api/representantes/b39a2fd2-f7d7-405d-b73c-b68a8dedbcdf",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "6969",
+							"path": [
+								"api",
+								"representantes",
+								"b39a2fd2-f7d7-405d-b73c-b68a8dedbcdf"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "DELETE",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:6969/api/representantes/b39a2fd2-f7d7-405d-b73c-b68a8dedbcdf",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "6969",
+							"path": [
+								"api",
+								"representantes",
+								"b39a2fd2-f7d7-405d-b73c-b68a8dedbcdf"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "FIND BY",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:6969/api/representantes/find?nombre=ma",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "6969",
+							"path": [
+								"api",
+								"representantes",
+								"find"
+							],
+							"query": [
+								{
+									"key": "nombre",
+									"value": "ma"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
 		}
 	]
 }

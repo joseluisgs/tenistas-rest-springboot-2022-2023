@@ -7,9 +7,12 @@ import java.util.*
  * Representante DTO para paginas de datos
  */
 data class RepresentantesPageDto(
-    val page: Int,
-    val perPage: Int,
-    val data: List<RepresentanteDto>,
+    val content: List<RepresentanteDto>,
+    val currentPage: Int,
+    val pageSize: Int,
+    val totalPages: Long,
+    val totalElements: Long,
+    val sort: String,
     val createdAt: LocalDateTime? = LocalDateTime.now()
 )
 
@@ -17,7 +20,7 @@ data class RepresentantesPageDto(
  * Representante DTO
  */
 data class RepresentanteDto(
-    val uuid: UUID? = null,
+    val id: UUID,
     val nombre: String,
     val email: String,
     val metadata: MetaData? = null,
@@ -28,3 +31,8 @@ data class RepresentanteDto(
         val deleted: Boolean = false
     )
 }
+
+data class RepresentanteRequestDto(
+    val nombre: String,
+    val email: String,
+)

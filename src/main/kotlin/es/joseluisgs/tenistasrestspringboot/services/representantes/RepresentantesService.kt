@@ -2,6 +2,8 @@ package es.joseluisgs.tenistasrestspringboot.services.representantes
 
 import es.joseluisgs.tenistasrestspringboot.models.Representante
 import kotlinx.coroutines.flow.Flow
+import org.springframework.data.domain.Page
+import org.springframework.data.domain.PageRequest
 import java.util.*
 
 interface RepresentantesService {
@@ -14,4 +16,6 @@ interface RepresentantesService {
     suspend fun delete(representante: Representante): Representante
     suspend fun deleteByUuid(uuid: UUID): Representante
     suspend fun deleteById(id: Long)
+    suspend fun findAllPage(pageRequest: PageRequest): Flow<Page<Representante>>
+    suspend fun countAll(): Long
 }

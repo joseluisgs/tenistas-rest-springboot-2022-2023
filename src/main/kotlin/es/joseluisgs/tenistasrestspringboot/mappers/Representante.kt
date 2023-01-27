@@ -1,13 +1,14 @@
 package es.joseluisgs.tenistasrestspringboot.mappers
 
 import es.joseluisgs.tenistasrestspringboot.dto.RepresentanteDto
+import es.joseluisgs.tenistasrestspringboot.dto.RepresentanteRequestDto
 import es.joseluisgs.tenistasrestspringboot.models.Representante
 
 /**
  * Transformamos un Representante en un RepresentanteDto
  */
 fun Representante.toDto() = RepresentanteDto(
-    uuid = this.uuid, // cambio el id por el uuid
+    id = this.uuid, // cambio el id por el uuid, pero para el dto es id
     nombre = this.nombre,
     email = this.email,
     metadata = RepresentanteDto.MetaData(
@@ -20,7 +21,7 @@ fun Representante.toDto() = RepresentanteDto(
 /**
  * Transformamos un RepresentanteDto en un Representante
  */
-fun RepresentanteDto.toModel() = Representante(
+fun RepresentanteRequestDto.toModel() = Representante(
     nombre = this.nombre,
     email = this.email
 )
