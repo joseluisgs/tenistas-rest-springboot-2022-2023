@@ -5,6 +5,7 @@ import es.joseluisgs.tenistasrestspringboot.dto.RepresentanteDto
 import es.joseluisgs.tenistasrestspringboot.dto.RepresentanteRequestDto
 import es.joseluisgs.tenistasrestspringboot.dto.RepresentantesPageDto
 import es.joseluisgs.tenistasrestspringboot.exceptions.RepresentanteBadRequestException
+import es.joseluisgs.tenistasrestspringboot.exceptions.RepresentanteConflictIntegrityException
 import es.joseluisgs.tenistasrestspringboot.exceptions.RepresentanteNotFoundException
 import es.joseluisgs.tenistasrestspringboot.mappers.toDto
 import es.joseluisgs.tenistasrestspringboot.mappers.toModel
@@ -99,6 +100,8 @@ class RepresentantesController constructor(
             return ResponseEntity.noContent().build()
         } catch (e: RepresentanteNotFoundException) {
             throw ResponseStatusException(HttpStatus.NOT_FOUND, e.message)
+        } catch (e: RepresentanteConflictIntegrityException) {
+            throw ResponseStatusException(HttpStatus.CONFLICT, e.message)
         }
     }
 
