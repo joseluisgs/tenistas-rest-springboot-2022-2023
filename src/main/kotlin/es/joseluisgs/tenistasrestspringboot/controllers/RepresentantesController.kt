@@ -101,7 +101,8 @@ class RepresentantesController constructor(
         } catch (e: RepresentanteNotFoundException) {
             throw ResponseStatusException(HttpStatus.NOT_FOUND, e.message)
         } catch (e: RepresentanteConflictIntegrityException) {
-            throw ResponseStatusException(HttpStatus.CONFLICT, e.message)
+            // Puedes usar CONFLICT semánticamente es correcto
+            throw ResponseStatusException(HttpStatus.BAD_REQUEST, e.message)
         }
     }
 

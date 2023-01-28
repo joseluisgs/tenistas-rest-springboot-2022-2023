@@ -17,7 +17,7 @@ data class RaquetaCreateDto(
 )
 
 data class RaquetaDto(
-    val id: UUID? = null,
+    val id: UUID,
     val marca: String,
     val precio: Double,
     val represetante: RepresentanteDto,
@@ -32,7 +32,7 @@ data class RaquetaDto(
 }
 
 data class RaquetaTenistaDto(
-    val id: UUID? = null,
+    val id: UUID,
     val marca: String,
     val precio: Double,
     val represetanteId: UUID? = null,

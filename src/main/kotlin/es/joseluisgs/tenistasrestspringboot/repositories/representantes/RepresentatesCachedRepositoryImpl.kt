@@ -67,7 +67,6 @@ class RepresentatesCachedRepositoryImpl constructor(
                 updatedAt = LocalDateTime.now()
             )
 
-
         return@withContext representantesRepository.save(representante)
     }
 

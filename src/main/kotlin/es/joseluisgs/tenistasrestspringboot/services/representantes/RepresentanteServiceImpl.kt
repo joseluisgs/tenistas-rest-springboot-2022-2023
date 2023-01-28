@@ -7,7 +7,7 @@ import es.joseluisgs.tenistasrestspringboot.exceptions.RepresentanteNotFoundExce
 import es.joseluisgs.tenistasrestspringboot.mappers.toDto
 import es.joseluisgs.tenistasrestspringboot.models.Notificacion
 import es.joseluisgs.tenistasrestspringboot.models.Representante
-import es.joseluisgs.tenistasrestspringboot.models.RepresentantesNotification
+import es.joseluisgs.tenistasrestspringboot.models.RepresentanteNotification
 import es.joseluisgs.tenistasrestspringboot.repositories.representantes.RepresentantesCachedRepository
 import kotlinx.coroutines.flow.Flow
 import mu.KotlinLogging
@@ -82,7 +82,7 @@ class RepresentanteServiceImpl constructor(
         val existe = representantesRepository.findByUuid(representante.uuid)
 
         existe?.let {
-            return representantesRepository.delete(representante)
+            return representantesRepository.delete(existe)
                 ?.also { onChange(Notificacion.Tipo.DELETE, it.uuid, it) }!!
         }
             ?: throw RepresentanteNotFoundException("No se ha encontrado el representante con uuid: ${representante.uuid}")
@@ -93,7 +93,7 @@ class RepresentanteServiceImpl constructor(
         logger.debug { "Servicio de representantes deleteByUuid con uuid: $uuid" }
 
         val existe = representantesRepository.findByUuid(uuid)
-        
+
         existe?.let {
             return representantesRepository.deleteByUuid(uuid)
                 ?.also { onChange(Notificacion.Tipo.DELETE, it.uuid, it) }!!
@@ -124,7 +124,7 @@ class RepresentanteServiceImpl constructor(
 
         // data to json
         val mapper = jacksonObjectMapper()
-        val json = mapper.writeValueAsString(RepresentantesNotification("Representantes", tipo, id, data?.toDto()))
+        val json = mapper.writeValueAsString(RepresentanteNotification("REPRESENTANTE", tipo, id, data?.toDto()))
         // Enviamos la notificación a los clientes ws
 
         // Siguiendo el modelo STOMP
