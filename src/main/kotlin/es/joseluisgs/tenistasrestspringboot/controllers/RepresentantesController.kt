@@ -5,6 +5,7 @@ import es.joseluisgs.tenistasrestspringboot.dto.RepresentanteDto
 import es.joseluisgs.tenistasrestspringboot.dto.RepresentanteRequestDto
 import es.joseluisgs.tenistasrestspringboot.dto.RepresentantesPageDto
 import es.joseluisgs.tenistasrestspringboot.exceptions.RepresentanteBadRequestException
+import es.joseluisgs.tenistasrestspringboot.exceptions.RepresentanteConflictIntegrityException
 import es.joseluisgs.tenistasrestspringboot.exceptions.RepresentanteNotFoundException
 import es.joseluisgs.tenistasrestspringboot.mappers.toDto
 import es.joseluisgs.tenistasrestspringboot.mappers.toModel
@@ -95,10 +96,13 @@ class RepresentantesController constructor(
         logger.info { "DELETE Representante con id: $id" }
 
         try {
-            val res = representanteService.deleteByUuid(id).toDto()
+            representanteService.deleteByUuid(id)
             return ResponseEntity.noContent().build()
         } catch (e: RepresentanteNotFoundException) {
             throw ResponseStatusException(HttpStatus.NOT_FOUND, e.message)
+        } catch (e: RepresentanteConflictIntegrityException) {
+            // Puedes usar CONFLICT semánticamente es correcto
+            throw ResponseStatusException(HttpStatus.BAD_REQUEST, e.message)
         }
     }
 
@@ -130,7 +134,7 @@ class RepresentantesController constructor(
         val pageResult = representanteService.findAllPage(pageRequest).firstOrNull()
 
         pageResult?.let {
-            val dto: RepresentantesPageDto = RepresentantesPageDto(
+            val dto = RepresentantesPageDto(
                 content = pageResult.content.map { it.toDto() },
                 currentPage = pageResult.number,
                 pageSize = pageResult.size,

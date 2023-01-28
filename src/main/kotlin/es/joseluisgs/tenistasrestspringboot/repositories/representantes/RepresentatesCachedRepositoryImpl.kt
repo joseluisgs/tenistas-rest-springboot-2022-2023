@@ -1,5 +1,6 @@
 package es.joseluisgs.tenistasrestspringboot.repositories.representantes
 
+import es.joseluisgs.tenistasrestspringboot.exceptions.RepresentanteConflictIntegrityException
 import es.joseluisgs.tenistasrestspringboot.models.Representante
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.*
@@ -66,7 +67,6 @@ class RepresentatesCachedRepositoryImpl constructor(
                 updatedAt = LocalDateTime.now()
             )
 
-
         return@withContext representantesRepository.save(representante)
     }
 
@@ -94,7 +94,11 @@ class RepresentatesCachedRepositoryImpl constructor(
     override suspend fun deleteById(id: Long) = withContext(Dispatchers.IO) {
         logger.info { "Repositorio de representantes deleteById con id: $id" }
 
-        representantesRepository.deleteById(id)
+        try {
+            representantesRepository.deleteById(id)
+        } catch (e: Exception) {
+            throw RepresentanteConflictIntegrityException("No se puede borrar el representante con id: $id")
+        }
     }
 
     override suspend fun findAllPage(pageRequest: PageRequest): Flow<Page<Representante>> {
@@ -118,10 +122,13 @@ class RepresentatesCachedRepositoryImpl constructor(
         logger.info { "Repositorio de representantes deleteByUuid con uuid: $uuid" }
 
         val representanteDB = representantesRepository.findByUuid(uuid).firstOrNull()
-
-        representanteDB?.let {
-            representantesRepository.deleteById(it.id!!)
-            return@withContext it
+        try {
+            representanteDB?.let {
+                representantesRepository.deleteById(it.id!!)
+                return@withContext it
+            }
+        } catch (e: Exception) {
+            throw RepresentanteConflictIntegrityException("No se puede borrar el representante: ${representanteDB?.nombre} ya que tiene raquetas asociadas")
         }
         return@withContext null
     }
@@ -131,10 +138,13 @@ class RepresentatesCachedRepositoryImpl constructor(
         logger.info { "Repositorio de representantes delete con representante: $representante" }
 
         val representanteDB = representantesRepository.findByUuid(representante.uuid).firstOrNull()
-
-        representanteDB?.let {
-            representantesRepository.deleteById(it.id!!)
-            return@withContext it
+        try {
+            representanteDB?.let {
+                representantesRepository.deleteById(it.id!!)
+                return@withContext it
+            }
+        } catch (e: Exception) {
+            throw RepresentanteConflictIntegrityException("No se puede borrar el representante: ${representante.nombre} ya que tiene raquetas asociadas")
         }
         return@withContext null
     }
