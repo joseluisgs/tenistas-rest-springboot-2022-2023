@@ -4,9 +4,12 @@ import java.time.LocalDateTime
 import java.util.*
 
 data class RaquetasPageDto(
-    val page: Int,
-    val perPage: Int,
-    val data: List<RaquetaDto>,
+    val content: List<RaquetaDto>,
+    val currentPage: Int,
+    val pageSize: Int,
+    val totalPages: Long,
+    val totalElements: Long,
+    val sort: String,
     val createdAt: String = LocalDateTime.now().toString()
 )
 

@@ -96,7 +96,7 @@ class RepresentantesController constructor(
         logger.info { "DELETE Representante con id: $id" }
 
         try {
-            val res = representanteService.deleteByUuid(id).toDto()
+            representanteService.deleteByUuid(id)
             return ResponseEntity.noContent().build()
         } catch (e: RepresentanteNotFoundException) {
             throw ResponseStatusException(HttpStatus.NOT_FOUND, e.message)
@@ -134,7 +134,7 @@ class RepresentantesController constructor(
         val pageResult = representanteService.findAllPage(pageRequest).firstOrNull()
 
         pageResult?.let {
-            val dto: RepresentantesPageDto = RepresentantesPageDto(
+            val dto = RepresentantesPageDto(
                 content = pageResult.content.map { it.toDto() },
                 currentPage = pageResult.number,
                 pageSize = pageResult.size,

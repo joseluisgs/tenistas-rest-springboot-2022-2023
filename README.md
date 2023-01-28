@@ -9,65 +9,65 @@ Api REST de Tenistas con Spring Boot para acceso a Datos de 2º de DAM. Curso 20
 ![imagen](./images/spring-boot.png)
 
 - [Tenistas REST Spring Boot](#tenistas-rest-spring-boot)
-  - [Descripción](#descripción)
-    - [Advertencia](#advertencia)
-    - [Tecnologías](#tecnologías)
-  - [Dominio](#dominio)
-    - [Representante](#representante)
-    - [Raqueta](#raqueta)
-    - [Tenista](#tenista)
-    - [Usuario](#usuario)
-  - [Proyectos y documentación anteriores](#proyectos-y-documentación-anteriores)
-  - [Arquitectura](#arquitectura)
-  - [Endpoints](#endpoints)
-    - [Representantes](#representantes)
-    - [Test](#test)
-  - [Spring Boot](#spring-boot)
-    - [Creando un proyecto](#creando-un-proyecto)
-    - [Punto de Entrada](#punto-de-entrada)
-    - [Parametrizando la aplicación](#parametrizando-la-aplicación)
-    - [Componentes de Spring Boot](#componentes-de-spring-boot)
-    - [IoC y DI en SpringBoot](#ioc-y-di-en-springboot)
-    - [Spring Data JPA](#spring-data-jpa)
-    - [Creando rutas](#creando-rutas)
-      - [Comprensión de contenido](#comprensión-de-contenido)
-      - [CORS](#cors)
-    - [Responses](#responses)
-      - [Paginación y ordenamiento](#paginación-y-ordenamiento)
-    - [Requests](#requests)
-      - [Parámetros de ruta](#parámetros-de-ruta)
-      - [Parámetros de consulta](#parámetros-de-consulta)
-      - [Peticiones datos serializados](#peticiones-datos-serializados)
-      - [Peticiones con formularios](#peticiones-con-formularios)
-      - [Peticiones multiparte](#peticiones-multiparte)
-      - [Request validation](#request-validation)
-    - [WebSockets](#websockets)
-    - [Autenticación y Autorización con JWT](#autenticación-y-autorización-con-jwt)
-    - [Testing](#testing)
-    - [Despliegue](#despliegue)
-      - [JAR](#jar)
-      - [Aplicación](#aplicación)
-      - [Docker](#docker)
-    - [Documentación](#documentación)
-  - [Reactividad](#reactividad)
-  - [Inmutabilidad](#inmutabilidad)
-  - [Caché](#caché)
-  - [Notificaciones en tiempo real](#notificaciones-en-tiempo-real)
-  - [Proveedor de Dependencias](#proveedor-de-dependencias)
-  - [Seguridad de las comunicaciones](#seguridad-de-las-comunicaciones)
-    - [SSL/TLS](#ssltls)
-    - [Autenticación y Autorización con JWT](#autenticación-y-autorización-con-jwt-1)
-    - [CORS](#cors-1)
-    - [BCrypt](#bcrypt)
-  - [Testing](#testing-1)
-    - [Postman](#postman)
-  - [Distribución y Despliegue](#distribución-y-despliegue)
-  - [Documentación](#documentación-1)
-  - [Recursos](#recursos)
-  - [Autor](#autor)
-    - [Contacto](#contacto)
-    - [¿Un café?](#un-café)
-  - [Licencia de uso](#licencia-de-uso)
+    - [Descripción](#descripción)
+        - [Advertencia](#advertencia)
+        - [Tecnologías](#tecnologías)
+    - [Dominio](#dominio)
+        - [Representante](#representante)
+        - [Raqueta](#raqueta)
+        - [Tenista](#tenista)
+        - [Usuario](#usuario)
+    - [Proyectos y documentación anteriores](#proyectos-y-documentación-anteriores)
+    - [Arquitectura](#arquitectura)
+    - [Endpoints](#endpoints)
+        - [Representantes](#representantes)
+        - [Test](#test)
+    - [Spring Boot](#spring-boot)
+        - [Creando un proyecto](#creando-un-proyecto)
+        - [Punto de Entrada](#punto-de-entrada)
+        - [Parametrizando la aplicación](#parametrizando-la-aplicación)
+        - [Componentes de Spring Boot](#componentes-de-spring-boot)
+        - [IoC y DI en SpringBoot](#ioc-y-di-en-springboot)
+        - [Spring Data JPA](#spring-data-jpa)
+        - [Creando rutas](#creando-rutas)
+            - [Comprensión de contenido](#comprensión-de-contenido)
+            - [CORS](#cors)
+        - [Responses](#responses)
+            - [Paginación y ordenamiento](#paginación-y-ordenamiento)
+        - [Requests](#requests)
+            - [Parámetros de ruta](#parámetros-de-ruta)
+            - [Parámetros de consulta](#parámetros-de-consulta)
+            - [Peticiones datos serializados](#peticiones-datos-serializados)
+            - [Peticiones con formularios](#peticiones-con-formularios)
+            - [Peticiones multiparte](#peticiones-multiparte)
+            - [Request validation](#request-validation)
+        - [WebSockets](#websockets)
+        - [Autenticación y Autorización con JWT](#autenticación-y-autorización-con-jwt)
+        - [Testing](#testing)
+        - [Despliegue](#despliegue)
+            - [JAR](#jar)
+            - [Aplicación](#aplicación)
+            - [Docker](#docker)
+        - [Documentación](#documentación)
+    - [Reactividad](#reactividad)
+    - [Inmutabilidad](#inmutabilidad)
+    - [Caché](#caché)
+    - [Notificaciones en tiempo real](#notificaciones-en-tiempo-real)
+    - [Proveedor de Dependencias](#proveedor-de-dependencias)
+    - [Seguridad de las comunicaciones](#seguridad-de-las-comunicaciones)
+        - [SSL/TLS](#ssltls)
+        - [Autenticación y Autorización con JWT](#autenticación-y-autorización-con-jwt-1)
+        - [CORS](#cors-1)
+        - [BCrypt](#bcrypt)
+    - [Testing](#testing-1)
+        - [Postman](#postman)
+    - [Distribución y Despliegue](#distribución-y-despliegue)
+    - [Documentación](#documentación-1)
+    - [Recursos](#recursos)
+    - [Autor](#autor)
+        - [Contacto](#contacto)
+        - [¿Un café?](#un-café)
+    - [Licencia de uso](#licencia-de-uso)
 
 ## Descripción
 
@@ -210,7 +210,21 @@ usaremos Postman:
 | PUT    | /representantes/{id}                   | No   | Actualiza un representante por su id                    | 200              | JSON       |
 | DELETE | /representantes/{id}                   | No   | Elimina un representante por su id                      | 204              | No Content |
 | GET    | /representantes/find?nombre=X          | No   | Devuelve los representantes con nombre X                | 200              | JSON       |
-| WS     | /updates                     | No   | Devuelve los cambios en representantes en tiempo real              | ---            | ---       |
+| WS     | /updates                               | No   | Devuelve los cambios en representantes en tiempo real   | ---              | ---        |
+
+### Raquetas
+
+| Método | Endpoint (/api)                  | Auth | Descripción                                                              | Status Code (OK) | Content    |
+|--------|----------------------------------|------|--------------------------------------------------------------------------|------------------|------------|
+| GET    | /raquetas                        | No   | Devuelve todas las raquetas                                              | 200              | JSON       |
+| GET    | /raquetas?page=X&size=Y&sortBy=Z | No   | Devuelve raquetas paginadas y ordenadas por campo                        | 200              | JSON       |
+| GET    | /raquetas/{id}                   | No   | Devuelve una raqueta por su id                                           | 200              | JSON       |
+| POST   | /raquetas                        | No   | Crea una nueva raqueta                                                   | 201              | JSON       |
+| PUT    | /raquetas/{id}                   | No   | Actualiza una raqueta por su id                                          | 200              | JSON       |
+| DELETE | /raquetas/{id}                   | No   | Elimina una raqueta por su id                                            | 204              | No Content |
+| GET    | /raquetas/find?marca=X           | No   | Devuelve las raquetas con marca X                                        | 200              | JSON       |
+| GET    | /raquetas/{id}/representante     | No   | Devuelve el representante de la raqueta dado su id                       | 200              | JSON       |
+| WS     | /updates                         | No   | Websocket para notificaciones los cambios en las raquetas en tiempo real | ---              | JSON       |
 
 ### Test
 
@@ -433,17 +447,17 @@ un bean de tipo CorsConfiguration
 ```kotlin
 @Configuration
 class CorsConfig {
-    //	@Bean
-    // Cors para permitir cualquier petición
-    public WebMvcConfigurer corsConfigurer()
-    {
-        return new WebMvcConfigurer () {
-            @Override
-            public void addCorsMappings(CorsRegistry registry) {
-                registry.addMapping("/ **")
-            }
-        }
-    }
+  //	@Bean
+  // Cors para permitir cualquier petición
+  public WebMvcConfigurer corsConfigurer()
+  {
+      return new WebMvcConfigurer () {
+          @Override
+          public void addCorsMappings(CorsRegistry registry) {
+              registry.addMapping("/ **")
+          }
+      }
+  }
 }
 ```
 
@@ -481,17 +495,22 @@ fun deleteProduct(@PathVariable id: Long): ResponseEntity<Void> {
 ```
 
 #### Paginación y ordenamiento
-En Spring Data podemos hacer la paginación de las respuestas de las consultas y su ordenamiento. Para ello debemos usar la clase [Pageable](https://www.baeldung.com/spring-data-jpa-pagination-sorting) siempre que estemos en un JPARepository.
 
-Pero en otros repositorios debemos adaptarnos a su filosofía de trabajo. Por ejemplo, en MongoDB podemos usar la clase [PageRequest](https://www.baeldung.com/queries-in-spring-data-mongodb) para hacer la paginación. De la misma debemos hacerlo con [Spring Data Reactive](https://www.vinsguru.com/r2dbc-pagination/), luego ajustando la respuesta.
+En Spring Data podemos hacer la paginación de las respuestas de las consultas y su ordenamiento. Para ello debemos usar
+la clase [Pageable](https://www.baeldung.com/spring-data-jpa-pagination-sorting) siempre que estemos en un
+JPARepository.
+
+Pero en otros repositorios debemos adaptarnos a su filosofía de trabajo. Por ejemplo, en MongoDB podemos usar la
+clase [PageRequest](https://www.baeldung.com/queries-in-spring-data-mongodb) para hacer la paginación. De la misma
+debemos hacerlo con [Spring Data Reactive](https://www.vinsguru.com/r2dbc-pagination/), luego ajustando la respuesta.
 
 ```kotlin
 suspend fun findAllPage(pageRequest: PageRequest): Flow<Page<Representante>> {
-return representantRepository.findAllBy(pageRequest)
+    return representantRepository.findAllBy(pageRequest)
     toList()
-    .windowed(pageRequest.pageSize, pageRequest.pageSize, true)
-    .map { PageImpl(it, pageRequest, representanteRepository.count()) }
-    .asFlow()
+        .windowed(pageRequest.pageSize, pageRequest.pageSize, true)
+        .map { PageImpl(it, pageRequest, representanteRepository.count()) }
+        .asFlow()
 }
 ```
 
@@ -581,29 +600,33 @@ fun createProduct(@Valid @RequestBody producto: Producto): ResponseEntity<Produc
 ``` 
 
 ### WebSockets
-En Spring podemos usar WebSockets para crear servicios de comunicación en tiempo real, gracias al starter: org.springframework.boot:spring-boot-starter-websocket.
 
-Tenemos dons formas de usarlo, con SockJS y [STOMP](https://www.baeldung.com/websockets-spring), o con [WebSockets puros](https://www.baeldung.com/postman-websocket-apis).
+En Spring podemos usar WebSockets para crear servicios de comunicación en tiempo real, gracias al starter:
+org.springframework.boot:spring-boot-starter-websocket.
 
-Se ha dejado la configuración de ambos y un cliente para STOMP, pero nos hemos decantado por usar WebSockets puros para poder seguir usando el cliente de Postman.
+Tenemos dons formas de usarlo, con SockJS y [STOMP](https://www.baeldung.com/websockets-spring), o
+con [WebSockets puros](https://www.baeldung.com/postman-websocket-apis).
+
+Se ha dejado la configuración de ambos y un cliente para STOMP, pero nos hemos decantado por usar WebSockets puros para
+poder seguir usando el cliente de Postman.
 
 ```kotlin
 
 ### SSL y Certificados
 
-Para trabajar con los certificados, los hemos creado y guardado en l carpeta cert de resources. Para ello hemos usado el
-comando keytool de Java. Además hemos creado nuestra configuración es properties para poder usarlos en el código.
+Para trabajar con los certificados, los hemos creado y guardado en l carpeta cert de resources.Para ello hemos usado el
+comando keytool de Java . Además hemos creado nuestra configuración es properties para poder usarlos en el código .
 
 ```properties
-server.port=${PORT:6963}
+server.port = ${ PORT: 6963 }
 # SSL
-server.ssl.key-store-type=PKCS12
-server.ssl.key-store=classpath:cert/server_keystore.p12
+server.ssl.key - store - type = PKCS12
+server.ssl.key - store = classpath:cert / server_keystore.p12
 # The password used to generate the certificate
-server.ssl.key-store-password=1234567
+server.ssl.key - store - password = 1234567
 # The alias mapped to the certificate
-server.ssl.key-alias=serverKeyPair
-server.ssl.enabled=true
+        server.ssl.key - alias = serverKeyPair
+server.ssl.enabled = true
 ```
 
 Además, hemos configurado nuestro servicio para que ademas responda a peticiones http, y que redirija a https en
