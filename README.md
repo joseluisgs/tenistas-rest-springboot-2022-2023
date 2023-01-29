@@ -111,8 +111,7 @@ Si quieres colaborar, puedes hacerlo contactando [conmigo](#contacto).
 - Asincronía: [Coroutines](https://kotlinlang.org/docs/coroutines-overview.html) - Librería de Kotlin para la
   programación asíncrona.
 - Logger: [Kotlin Logging](https://github.com/MicroUtils/kotlin-logging) - Framework para la gestión de logs.
-- Caché: [Cache4k](https://reactivecircus.github.io/cache4k/) - Versión 100% Kotlin asíncrona y multiplataforma
-  de [Caffeine](https://github.com/ben-manes/caffeine).
+- Caché: Sistema de [caché](https://www.baeldung.com/spring-cache-tutorial) de Spring Boot.
 - Base de datos: [H2](https://www.h2database.com/) - Base de datos relacional que te permite trabajar en memoria,
   fichero y servidor.
 - Testing: [JUnit 5](https://junit.org/junit5/) - Framework para la realización de tests
