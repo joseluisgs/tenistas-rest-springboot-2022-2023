@@ -21,8 +21,8 @@ import java.util.*
 private val logger = KotlinLogging.logger {}
 
 @Repository
-class RepresentatesCachedRepositoryImpl constructor(
-    @Autowired
+class RepresentatesCachedRepositoryImpl
+@Autowired constructor(
     private val representantesRepository: RepresentantesRepository
 ) : RepresentantesCachedRepository {
 

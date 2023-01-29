@@ -2,7 +2,7 @@ package es.joseluisgs.tenistasrestspringboot.services.raquetas
 
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import es.joseluisgs.tenistasrestspringboot.config.websocket.ServerWebSocketConfig
-import es.joseluisgs.tenistasrestspringboot.config.websocket.ServerWebSocketService
+import es.joseluisgs.tenistasrestspringboot.config.websocket.WebSocketHandler
 import es.joseluisgs.tenistasrestspringboot.exceptions.RaquetaNotFoundException
 import es.joseluisgs.tenistasrestspringboot.exceptions.RepresentanteNotFoundException
 import es.joseluisgs.tenistasrestspringboot.mappers.toDto
@@ -15,6 +15,7 @@ import es.joseluisgs.tenistasrestspringboot.repositories.representantes.Represen
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.firstOrNull
 import mu.KotlinLogging
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageRequest
 import org.springframework.stereotype.Service
@@ -23,13 +24,15 @@ import java.util.*
 private val logger = KotlinLogging.logger {}
 
 @Service
-class RaquetasServiceImpl constructor(
+class RaquetasServiceImpl
+@Autowired constructor(
     private val raquetasRepository: RaquetasCachedRepository, // Repositorio de datos
     private val representesRepository: RepresentantesRepository, // Repositorio de datos
     private val webSocketConfig: ServerWebSocketConfig // Para enviar mensajes a los clientes ws normales
 ) : RaquetasService {
-
-    val webSocketService = webSocketConfig.webSocketHandler() as ServerWebSocketService
+    // Inyectamos el servicio de websockets, pero lo hacemos de esta forma para que no se inyecte en el constructor
+    //y casteamos a nuestro handler para poder usarlo (que tiene el método send)
+    private val webSocketService = webSocketConfig.webSocketHandler() as WebSocketHandler
 
     init {
         logger.info { "Iniciando Servicio de Raquetas" }

@@ -2,7 +2,7 @@ package es.joseluisgs.tenistasrestspringboot.services.tenistas
 
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import es.joseluisgs.tenistasrestspringboot.config.websocket.ServerWebSocketConfig
-import es.joseluisgs.tenistasrestspringboot.config.websocket.ServerWebSocketService
+import es.joseluisgs.tenistasrestspringboot.config.websocket.WebSocketHandler
 import es.joseluisgs.tenistasrestspringboot.exceptions.RaquetaNotFoundException
 import es.joseluisgs.tenistasrestspringboot.exceptions.TenistaNotFoundException
 import es.joseluisgs.tenistasrestspringboot.mappers.toDto
@@ -15,6 +15,7 @@ import es.joseluisgs.tenistasrestspringboot.repositories.tenistas.TenistasCached
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.firstOrNull
 import mu.KotlinLogging
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageRequest
 import org.springframework.stereotype.Service
@@ -23,13 +24,14 @@ import java.util.*
 private val logger = KotlinLogging.logger {}
 
 @Service
-class TenistasServiceImpl constructor(
+class TenistasServiceImpl
+@Autowired constructor(
     private val tenistasRepository: TenistasCachedRepository, // Repositorio de datos
     private val raquetasRepository: RaquetasRepository, // Repositorio de datos
-    private val webSocketConfig: ServerWebSocketConfig // Para enviar mensajes a los clientes ws normales
+    private val webSocketConfig: ServerWebSocketConfig // Configuración del WebSocket
 ) : TenistasService {
 
-    val webSocketService = webSocketConfig.webSocketHandler() as ServerWebSocketService
+    private val webSocketService = webSocketConfig.webSocketHandler() as WebSocketHandler
 
     init {
         logger.info { "Iniciando Servicio de Tenistas" }

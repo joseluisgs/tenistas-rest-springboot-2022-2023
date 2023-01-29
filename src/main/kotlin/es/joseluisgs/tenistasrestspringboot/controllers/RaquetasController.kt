@@ -25,8 +25,8 @@ private val logger = KotlinLogging.logger {}
 
 @RestController
 @RequestMapping(APIConfig.API_PATH + "/raquetas")
-class RaquetasController constructor(
-    @Autowired
+class RaquetasController
+@Autowired constructor(
     private val raquetasService: RaquetasService,
 ) {
 

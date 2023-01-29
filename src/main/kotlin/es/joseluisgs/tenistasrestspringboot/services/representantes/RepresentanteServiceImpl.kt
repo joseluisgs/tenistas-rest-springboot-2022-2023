@@ -2,7 +2,7 @@ package es.joseluisgs.tenistasrestspringboot.services.representantes
 
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import es.joseluisgs.tenistasrestspringboot.config.websocket.ServerWebSocketConfig
-import es.joseluisgs.tenistasrestspringboot.config.websocket.ServerWebSocketService
+import es.joseluisgs.tenistasrestspringboot.config.websocket.WebSocketHandler
 import es.joseluisgs.tenistasrestspringboot.exceptions.RepresentanteNotFoundException
 import es.joseluisgs.tenistasrestspringboot.mappers.toDto
 import es.joseluisgs.tenistasrestspringboot.models.Notificacion
@@ -11,6 +11,7 @@ import es.joseluisgs.tenistasrestspringboot.models.RepresentanteNotification
 import es.joseluisgs.tenistasrestspringboot.repositories.representantes.RepresentantesCachedRepository
 import kotlinx.coroutines.flow.Flow
 import mu.KotlinLogging
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageRequest
 import org.springframework.stereotype.Service
@@ -19,13 +20,14 @@ import java.util.*
 private val logger = KotlinLogging.logger {}
 
 @Service
-class RepresentanteServiceImpl constructor(
+class RepresentanteServiceImpl
+@Autowired constructor(
     private val representantesRepository: RepresentantesCachedRepository, // Repositorio de datos
     private val webSocketConfig: ServerWebSocketConfig // Para enviar mensajes a los clientes ws normales
     // private val simpMessagingTemplate: SimpMessagingTemplate // Para enviar mensajes a los clientes ws STOP
 ) : RepresentantesService {
 
-    val webSocketService = webSocketConfig.webSocketHandler() as ServerWebSocketService
+    private val webSocketService = webSocketConfig.webSocketHandler() as WebSocketHandler
 
     init {
         logger.info { "Iniciando Servicio de Representantes" }

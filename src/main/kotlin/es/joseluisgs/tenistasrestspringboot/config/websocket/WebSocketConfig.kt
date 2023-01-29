@@ -36,6 +36,6 @@ class ServerWebSocketConfig : WebSocketConfigurer {
     // Definimos el Handler de nuestro WebSocket
     @Bean
     fun webSocketHandler(): WebSocketHandler {
-        return ServerWebSocketService()
+        return WebSocketHandler()
     }
 }

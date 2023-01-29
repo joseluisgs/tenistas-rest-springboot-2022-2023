@@ -29,8 +29,8 @@ private val logger = KotlinLogging.logger {}
 
 @RestController
 @RequestMapping(APIConfig.API_PATH + "/representantes")
-class RepresentantesController constructor(
-    @Autowired
+class RepresentantesController
+@Autowired constructor(
     private val representanteService: RepresentantesService,
 ) {
 
