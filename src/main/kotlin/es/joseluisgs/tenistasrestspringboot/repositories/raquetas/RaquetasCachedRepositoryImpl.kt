@@ -24,8 +24,8 @@ import java.util.*
 private val logger = KotlinLogging.logger {}
 
 @Repository
-class RaquetasCachedRepositoryImpl constructor(
-    @Autowired
+class RaquetasCachedRepositoryImpl
+@Autowired constructor(
     private val raquetasRepository: RaquetasRepository
 ) : RaquetasCachedRepository {
 
@@ -61,7 +61,7 @@ class RaquetasCachedRepositoryImpl constructor(
 
     @CachePut("raquetas")
     override suspend fun save(raqueta: Raqueta): Raqueta = withContext(Dispatchers.IO) {
-        logger.info { "Repositorio de raquetas save representante: $raqueta" }
+        logger.info { "Repositorio de raquetas save raqueta: $raqueta" }
 
         val saved =
             raqueta.copy(
@@ -139,7 +139,7 @@ class RaquetasCachedRepositoryImpl constructor(
 
     @CacheEvict("raquetas")
     override suspend fun delete(raqueta: Raqueta): Raqueta? = withContext(Dispatchers.IO) {
-        logger.info { "Repositorio de raquetas delete con raqueta: $raqueta" }
+        logger.info { "Repositorio de raquetas delete raqueta: $raqueta" }
 
         val raquetaBD = raquetasRepository.findByUuid(raqueta.uuid).firstOrNull()
         try {

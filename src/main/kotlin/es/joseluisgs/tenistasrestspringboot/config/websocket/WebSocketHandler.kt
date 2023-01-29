@@ -13,8 +13,9 @@ import java.util.concurrent.CopyOnWriteArraySet
 
 private val logger = KotlinLogging.logger {}
 
-class ServerWebSocketService : TextWebSocketHandler(), SubProtocolCapable {
+class WebSocketHandler : TextWebSocketHandler(), SubProtocolCapable, WebSocketSender {
     // Para poder enviar mensajes a todos los clientes almacenamos la sesión de cada uno
+    // Patron observer
     private val sessions: MutableSet<WebSocketSession> = CopyOnWriteArraySet()
 
     override fun afterConnectionEstablished(session: WebSocketSession) {
@@ -31,7 +32,8 @@ class ServerWebSocketService : TextWebSocketHandler(), SubProtocolCapable {
         sessions.remove(session)
     }
 
-    fun sendMessage(message: String) {
+    // Para poder enviar mensajes a todos los clientes almacenamos la sesión de cada uno
+    override fun sendMessage(message: String) {
         logger.info { "Enviar mensaje: $message" }
         for (session in sessions) {
             if (session.isOpen) {
@@ -43,7 +45,7 @@ class ServerWebSocketService : TextWebSocketHandler(), SubProtocolCapable {
 
     @Scheduled(fixedRate = 1000)
     @Throws(IOException::class)
-    fun sendPeriodicMessages() {
+    override fun sendPeriodicMessages() {
         for (session in sessions) {
             if (session.isOpen) {
                 val broadcast = "server periodic message " + LocalTime.now()

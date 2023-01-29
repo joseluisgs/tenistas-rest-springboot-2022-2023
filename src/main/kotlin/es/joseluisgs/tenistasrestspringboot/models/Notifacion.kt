@@ -2,6 +2,7 @@ package es.joseluisgs.tenistasrestspringboot.models
 
 import es.joseluisgs.tenistasrestspringboot.dto.RaquetaDto
 import es.joseluisgs.tenistasrestspringboot.dto.RepresentanteDto
+import es.joseluisgs.tenistasrestspringboot.dto.TenistaDto
 import java.time.LocalDateTime
 import java.util.*
 
@@ -21,4 +22,5 @@ data class Notificacion<T>(
 // visibles en el DTO igual que se ven en las llamadas REST
 typealias RepresentanteNotification = Notificacion<RepresentanteDto?> // RepresentanteDto?
 typealias RaquetaNotification = Notificacion<RaquetaDto?> // RaquetaDto?
+typealias TenistaNotification = Notificacion<TenistaDto?> // TenistaDto?
 

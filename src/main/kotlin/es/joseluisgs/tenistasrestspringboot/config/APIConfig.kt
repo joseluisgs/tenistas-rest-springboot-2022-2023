@@ -29,5 +29,8 @@ class APIConfig {
         @Value("\${project.name}")
         const val PROJECT_NAME = "Tenistas API REST Spring Boot"
 
+        @Value("\${spring.profiles.active}")
+        const val PROFILE = "dev"
+
     }
 }
