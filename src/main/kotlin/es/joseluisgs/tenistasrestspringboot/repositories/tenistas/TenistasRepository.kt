@@ -13,4 +13,5 @@ interface TenistasRepository : CoroutineCrudRepository<Tenista, Long> {
     fun findByNombreContainsIgnoreCase(nombre: String): Flow<Tenista>
     fun findByRanking(ranking: Int): Flow<Tenista>
     fun findAllBy(pageable: Pageable?): Flow<Tenista>
+    fun findByOrderByRankingAsc(): Flow<Tenista>
 }

@@ -34,7 +34,10 @@ class TenistasCachedRepositoryImpl
     override suspend fun findAll(): Flow<Tenista> = withContext(Dispatchers.IO) {
         logger.info { "Repositorio de tenistas findAll" }
 
-        return@withContext tenistasRepository.findAll()
+        // Ordenación normal
+        // return@withContext tenistasRepository.findAll()
+        // Ordenados por ranking
+        return@withContext tenistasRepository.findByOrderByRankingAsc()
     }
 
     @Cacheable("tenistas")
@@ -85,19 +88,20 @@ class TenistasCachedRepositoryImpl
             val tenistaDB = tenistasRepository.findByUuid(uuid).firstOrNull()
 
             tenistaDB?.let {
+                // asigno los campos pero mantengo los que no se pueden cambiar
                 val updated = it.copy(
                     uuid = it.uuid,
-                    nombre = it.nombre,
-                    ranking = it.ranking,
-                    fechaNacimiento = it.fechaNacimiento,
-                    añoProfesional = it.añoProfesional,
-                    altura = it.altura,
-                    peso = it.peso,
-                    manoDominante = it.manoDominante,
-                    tipoReves = it.tipoReves,
-                    puntos = it.puntos,
-                    pais = it.pais,
-                    raquetaId = it.raquetaId,
+                    nombre = tenista.nombre,
+                    ranking = tenista.ranking,
+                    fechaNacimiento = tenista.fechaNacimiento,
+                    añoProfesional = tenista.añoProfesional,
+                    altura = tenista.altura,
+                    peso = tenista.peso,
+                    manoDominante = tenista.manoDominante,
+                    tipoReves = tenista.tipoReves,
+                    puntos = tenista.puntos,
+                    pais = tenista.pais,
+                    raquetaId = tenista.raquetaId,
                     createdAt = it.createdAt,
                     updatedAt = LocalDateTime.now()
                 )

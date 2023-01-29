@@ -154,7 +154,7 @@ class TenistasServiceImpl
         val mapper = jacksonObjectMapper()
         val json = mapper.writeValueAsString(
             TenistaNotification(
-                "RAQUETA",
+                "TENISTA",
                 tipo,
                 id,
                 data?.toDto(findRaqueta(data.raquetaId))

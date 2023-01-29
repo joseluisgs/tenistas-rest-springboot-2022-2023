@@ -5,9 +5,12 @@ import java.time.LocalDateTime
 import java.util.*
 
 data class TenistasPageDto(
-    val page: Int,
-    val perPage: Int,
-    val data: List<TenistaDto>,
+    val content: List<TenistaDto>,
+    val currentPage: Int,
+    val pageSize: Int,
+    val totalPages: Long,
+    val totalElements: Long,
+    val sort: String,
     val createdAt: String = LocalDateTime.now().toString()
 )
 
