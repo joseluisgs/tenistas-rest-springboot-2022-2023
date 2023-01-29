@@ -14,6 +14,7 @@ import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 import org.springframework.web.multipart.MultipartFile
 import java.io.IOException
+import java.time.LocalDateTime
 
 private val logger = KotlinLogging.logger {}
 
@@ -62,11 +63,29 @@ class StorageController
             if (!file.isEmpty) {
                 val fileStored = storageService.store(file)
                 val urlStored = storageService.getUrl(fileStored)
-                val response = mapOf("url" to urlStored)
+                val response =
+                    mapOf("url" to urlStored, "name" to fileStored, "created_at" to LocalDateTime.now().toString())
                 ResponseEntity.status(HttpStatus.CREATED).body(response)
             } else {
                 throw StorageBadRequestException("No se puede subir un fichero vacío")
             }
+        } catch (e: StorageException) {
+            throw StorageBadRequestException(e.message.toString())
+        }
+    }
+
+    @DeleteMapping(value = ["{filename:.+}"])
+    @ResponseBody
+    fun deleteFile(
+        @PathVariable filename: String?,
+        request: HttpServletRequest
+    )
+            : ResponseEntity<Resource> {
+
+        logger.info { "DELETE File: $filename" }
+        try {
+            storageService.delete(filename.toString())
+            return ResponseEntity.ok().build()
         } catch (e: StorageException) {
             throw StorageBadRequestException(e.message.toString())
         }

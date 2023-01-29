@@ -33,7 +33,7 @@ class StorageServiceFileSystemImpl(
 
     // Inicializador
     init {
-        logger.info { "Inicializando el servicio de almacenamiento de ficheros" }
+        logger.info { "Inicializando Servicio de Almacenamiento de Ficheros" }
         rootLocation = Paths.get(path)
         // Inicializamos el servicio de ficheros
         // Tomamos el perfil de la aplicación
@@ -136,7 +136,13 @@ class StorageServiceFileSystemImpl(
         val justFilename: String = StringUtils.getFilename(filename).toString()
         try {
             val file = load(justFilename)
-            Files.deleteIfExists(file)
+            // Si el fichero existe lo borramos, pero no ofrecemos error si no existe
+            // Files.deleteIfExists(file)
+            // Si queremos mostrar un error si el fichero no existe
+            if (!Files.exists(file))
+                throw StorageFileNotFoundException("Fichero $filename no existe")
+            else
+                Files.delete(file)
         } catch (e: IOException) {
             throw StorageBadRequestException("Error al eliminar un fichero", e)
         }
