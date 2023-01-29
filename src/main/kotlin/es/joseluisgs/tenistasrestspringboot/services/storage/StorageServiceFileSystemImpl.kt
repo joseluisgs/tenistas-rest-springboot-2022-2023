@@ -137,12 +137,12 @@ class StorageServiceFileSystemImpl(
         try {
             val file = load(justFilename)
             // Si el fichero existe lo borramos, pero no ofrecemos error si no existe
-            // Files.deleteIfExists(file)
+            Files.deleteIfExists(file)
             // Si queremos mostrar un error si el fichero no existe
-            if (!Files.exists(file))
-                throw StorageFileNotFoundException("Fichero $filename no existe")
-            else
-                Files.delete(file)
+            /* if (!Files.exists(file))
+                 throw StorageFileNotFoundException("Fichero $filename no existe")
+             else
+                 Files.delete(file)*/
         } catch (e: IOException) {
             throw StorageBadRequestException("Error al eliminar un fichero", e)
         }

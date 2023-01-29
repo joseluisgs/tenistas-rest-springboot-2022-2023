@@ -5,6 +5,7 @@ import es.joseluisgs.tenistasrestspringboot.exceptions.StorageBadRequestExceptio
 import es.joseluisgs.tenistasrestspringboot.exceptions.StorageException
 import es.joseluisgs.tenistasrestspringboot.services.storage.StorageService
 import jakarta.servlet.http.HttpServletRequest
+import kotlinx.coroutines.*
 import mu.KotlinLogging
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.core.io.Resource
@@ -36,11 +37,13 @@ class StorageController
         @PathVariable filename: String?,
         request: HttpServletRequest
     )
-            : ResponseEntity<Resource> {
+            : ResponseEntity<Resource> = runBlocking {
 
         logger.info { "GET File: $filename" }
 
-        val file: Resource = storageService.loadAsResource(filename.toString())
+        val myScope = CoroutineScope(Dispatchers.IO)
+
+        val file: Resource = myScope.async { storageService.loadAsResource(filename.toString()) }.await()
         var contentType: String? = null
         contentType = try {
             request.servletContext.getMimeType(file.file.absolutePath)
@@ -50,7 +53,7 @@ class StorageController
         if (contentType == null) {
             contentType = "application/octet-stream"
         }
-        return ResponseEntity.ok()
+        return@runBlocking ResponseEntity.ok()
             .contentType(MediaType.parseMediaType(contentType))
             .body<Resource?>(file)
     }
@@ -61,13 +64,14 @@ class StorageController
     )
     fun uploadFile(
         @RequestPart("file") file: MultipartFile
-    ): ResponseEntity<Map<String, String>> {
+    ): ResponseEntity<Map<String, String>> = runBlocking {
 
         logger.info { "POST File: ${file.originalFilename}" }
 
-        return try {
+        return@runBlocking try {
             if (!file.isEmpty) {
-                val fileStored = storageService.store(file)
+                val myScope = CoroutineScope(Dispatchers.IO)
+                val fileStored = myScope.async { storageService.store(file) }.await()
                 val urlStored = storageService.getUrl(fileStored)
                 val response =
                     mapOf("url" to urlStored, "name" to fileStored, "created_at" to LocalDateTime.now().toString())
@@ -86,12 +90,13 @@ class StorageController
         @PathVariable filename: String?,
         request: HttpServletRequest
     )
-            : ResponseEntity<Resource> {
+            : ResponseEntity<Resource> = runBlocking {
 
         logger.info { "DELETE File: $filename" }
         try {
-            storageService.delete(filename.toString())
-            return ResponseEntity.ok().build()
+            val myScope = CoroutineScope(Dispatchers.IO)
+            myScope.launch { storageService.delete(filename.toString()) }.join()
+            return@runBlocking ResponseEntity.ok().build()
         } catch (e: StorageException) {
             throw StorageBadRequestException(e.message.toString())
         }
