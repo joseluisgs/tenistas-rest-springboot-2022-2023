@@ -111,11 +111,7 @@ Si quieres colaborar, puedes hacerlo contactando [conmigo](#contacto).
 - Asincronía: [Coroutines](https://kotlinlang.org/docs/coroutines-overview.html) - Librería de Kotlin para la
   programación asíncrona.
 - Logger: [Kotlin Logging](https://github.com/MicroUtils/kotlin-logging) - Framework para la gestión de logs.
-<<<<<<< HEAD
-- Caché: Sistema de [Cache](https://www.baeldung.com/spring-cache-tutorial) de Spring Boot.
-=======
 - Caché: Sistema de [caché](https://www.baeldung.com/spring-cache-tutorial) de Spring Boot.
->>>>>>> develop
 - Base de datos: [H2](https://www.h2database.com/) - Base de datos relacional que te permite trabajar en memoria,
   fichero y servidor.
 - Testing: [JUnit 5](https://junit.org/junit5/) - Framework para la realización de tests
