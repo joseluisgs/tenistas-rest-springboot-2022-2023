@@ -9,65 +9,68 @@ Api REST de Tenistas con Spring Boot para acceso a Datos de 2º de DAM. Curso 20
 ![imagen](./images/spring-boot.png)
 
 - [Tenistas REST Spring Boot](#tenistas-rest-spring-boot)
-    - [Descripción](#descripción)
-        - [Advertencia](#advertencia)
-        - [Tecnologías](#tecnologías)
-    - [Dominio](#dominio)
-        - [Representante](#representante)
-        - [Raqueta](#raqueta)
-        - [Tenista](#tenista)
-        - [Usuario](#usuario)
-    - [Proyectos y documentación anteriores](#proyectos-y-documentación-anteriores)
-    - [Arquitectura](#arquitectura)
-    - [Endpoints](#endpoints)
-        - [Representantes](#representantes)
-        - [Test](#test)
-    - [Spring Boot](#spring-boot)
-        - [Creando un proyecto](#creando-un-proyecto)
-        - [Punto de Entrada](#punto-de-entrada)
-        - [Parametrizando la aplicación](#parametrizando-la-aplicación)
-        - [Componentes de Spring Boot](#componentes-de-spring-boot)
-        - [IoC y DI en SpringBoot](#ioc-y-di-en-springboot)
-        - [Spring Data JPA](#spring-data-jpa)
-        - [Creando rutas](#creando-rutas)
-            - [Comprensión de contenido](#comprensión-de-contenido)
-            - [CORS](#cors)
-        - [Responses](#responses)
-            - [Paginación y ordenamiento](#paginación-y-ordenamiento)
-        - [Requests](#requests)
-            - [Parámetros de ruta](#parámetros-de-ruta)
-            - [Parámetros de consulta](#parámetros-de-consulta)
-            - [Peticiones datos serializados](#peticiones-datos-serializados)
-            - [Peticiones con formularios](#peticiones-con-formularios)
-            - [Peticiones multiparte](#peticiones-multiparte)
-            - [Request validation](#request-validation)
-        - [WebSockets](#websockets)
-        - [Autenticación y Autorización con JWT](#autenticación-y-autorización-con-jwt)
-        - [Testing](#testing)
-        - [Despliegue](#despliegue)
-            - [JAR](#jar)
-            - [Aplicación](#aplicación)
-            - [Docker](#docker)
-        - [Documentación](#documentación)
-    - [Reactividad](#reactividad)
-    - [Inmutabilidad](#inmutabilidad)
-    - [Caché](#caché)
-    - [Notificaciones en tiempo real](#notificaciones-en-tiempo-real)
-    - [Proveedor de Dependencias](#proveedor-de-dependencias)
-    - [Seguridad de las comunicaciones](#seguridad-de-las-comunicaciones)
-        - [SSL/TLS](#ssltls)
-        - [Autenticación y Autorización con JWT](#autenticación-y-autorización-con-jwt-1)
-        - [CORS](#cors-1)
-        - [BCrypt](#bcrypt)
-    - [Testing](#testing-1)
-        - [Postman](#postman)
-    - [Distribución y Despliegue](#distribución-y-despliegue)
-    - [Documentación](#documentación-1)
-    - [Recursos](#recursos)
-    - [Autor](#autor)
-        - [Contacto](#contacto)
-        - [¿Un café?](#un-café)
-    - [Licencia de uso](#licencia-de-uso)
+  - [Descripción](#descripción)
+    - [Advertencia](#advertencia)
+    - [Tecnologías](#tecnologías)
+  - [Dominio](#dominio)
+    - [Representante](#representante)
+    - [Raqueta](#raqueta)
+    - [Tenista](#tenista)
+    - [Usuario](#usuario)
+  - [Proyectos y documentación anteriores](#proyectos-y-documentación-anteriores)
+  - [Arquitectura](#arquitectura)
+  - [Endpoints](#endpoints)
+    - [Representantes](#representantes)
+    - [Raquetas](#raquetas)
+    - [Tenistas](#tenistas)
+    - [Test](#test)
+  - [Spring Boot](#spring-boot)
+    - [Creando un proyecto](#creando-un-proyecto)
+    - [Punto de Entrada](#punto-de-entrada)
+    - [Parametrizando la aplicación](#parametrizando-la-aplicación)
+    - [Componentes de Spring Boot](#componentes-de-spring-boot)
+    - [IoC y DI en SpringBoot](#ioc-y-di-en-springboot)
+    - [Spring Data JPA](#spring-data-jpa)
+    - [Creando rutas](#creando-rutas)
+      - [Comprensión de contenido](#comprensión-de-contenido)
+      - [CORS](#cors)
+    - [Responses](#responses)
+      - [Paginación y ordenamiento](#paginación-y-ordenamiento)
+    - [Requests](#requests)
+      - [Parámetros de ruta](#parámetros-de-ruta)
+      - [Parámetros de consulta](#parámetros-de-consulta)
+      - [Peticiones datos serializados](#peticiones-datos-serializados)
+      - [Peticiones con formularios](#peticiones-con-formularios)
+      - [Peticiones multiparte](#peticiones-multiparte)
+      - [Request validation](#request-validation)
+    - [WebSockets](#websockets)
+    - [SSL y Certificados](#ssl-y-certificados)
+    - [Autenticación y Autorización con JWT](#autenticación-y-autorización-con-jwt)
+    - [Testing](#testing)
+    - [Despliegue](#despliegue)
+      - [JAR](#jar)
+      - [Aplicación](#aplicación)
+      - [Docker](#docker)
+    - [Documentación](#documentación)
+  - [Reactividad](#reactividad)
+  - [Inmutabilidad](#inmutabilidad)
+  - [Caché](#caché)
+  - [Notificaciones en tiempo real](#notificaciones-en-tiempo-real)
+  - [Proveedor de Dependencias](#proveedor-de-dependencias)
+  - [Seguridad de las comunicaciones](#seguridad-de-las-comunicaciones)
+    - [SSL/TLS](#ssltls)
+    - [Autenticación y Autorización con JWT](#autenticación-y-autorización-con-jwt-1)
+    - [CORS](#cors-1)
+    - [BCrypt](#bcrypt)
+  - [Testing](#testing-1)
+    - [Postman](#postman)
+  - [Distribución y Despliegue](#distribución-y-despliegue)
+  - [Documentación](#documentación-1)
+  - [Recursos](#recursos)
+  - [Autor](#autor)
+    - [Contacto](#contacto)
+    - [¿Un café?](#un-café)
+  - [Licencia de uso](#licencia-de-uso)
 
 ## Descripción
 
@@ -84,6 +87,8 @@ Además que permita escuchar cambios en tiempo real usando websocket
 Se realizará inyección de dependencias y un sistema de logging.
 
 Tendrá una página web de presentación como devolución de recursos estáticos.
+
+Este proyecto tiene a su "gemelo" implementando en Ktor: [tenistas-rest-ktor-2022-2023](https://github.com/joseluisgs/tenistas-rest-ktor-2022-2023)
 
 ### Advertencia
 
@@ -225,6 +230,21 @@ usaremos Postman:
 | GET    | /raquetas/find?marca=X           | No   | Devuelve las raquetas con marca X                                        | 200              | JSON       |
 | GET    | /raquetas/{id}/representante     | No   | Devuelve el representante de la raqueta dado su id                       | 200              | JSON       |
 | WS     | /updates                         | No   | Websocket para notificaciones los cambios en las raquetas en tiempo real | ---              | JSON       |
+
+### Tenistas
+
+| Método | Endpoint (/api)             | Auth | Descripción                                                              | Status Code (OK) | Content    |
+|--------|-----------------------------|------|--------------------------------------------------------------------------|------------------|------------|
+| GET    | /tenistas                   | No   | Devuelve todos los tenistas                                              | 200              | JSON       |
+| GET    | /tenistas?page=X&size=Y&sortBy=Z  | No   | Devuelve tenistas paginados y ordenadas por campo                                              | 200              | JSON       |
+| GET    | /tenistas/{id}              | No   | Devuelve un tenista por su id                                            | 200              | JSON       |
+| POST   | /tenistas                   | No   | Crea un nuevo tenista                                                    | 201              | JSON       |
+| PUT    | /tenistas/{id}              | No   | Actualiza un tenista por su id                                           | 200              | JSON       |
+| DELETE | /tenistas/{id}              | No   | Elimina un tenista por su id                                             | 204              | No Content |
+| GET    | /tenistas/find?nombre=X     | No   | Devuelve los tenistas con nombre X                                       | 200              | JSON       |
+| GET    | /tenistas/{id}/raqueta      | No   | Devuelve la raqueta del tenista dado su id                               | 200              | JSON       |
+| GET    | /tenistas/ranking/{ranking} | No   | Devuelve el tenista con ranking X                                        | 200              | JSON       |
+| WS     | /updates           | No   | Websocket para notificaciones los cambios en los tenistas en tiempo real | ---              | JSON       |
 
 ### Test
 
@@ -610,7 +630,20 @@ con [WebSockets puros](https://www.baeldung.com/postman-websocket-apis).
 Se ha dejado la configuración de ambos y un cliente para STOMP, pero nos hemos decantado por usar WebSockets puros para
 poder seguir usando el cliente de Postman.
 
+De hecho en la clase Handler del WS se ha implementado un patron observador.
+
 ```kotlin
+override fun sendMessage(message: String) {
+    logger.info { "Enviar mensaje: $message" }
+    for (session in sessions) {
+        if (session.isOpen) {
+            logger.info { "Servidor envía: $message" }
+            session.sendMessage(TextMessage(message))
+        }
+    }
+}
+```
+
 
 ### SSL y Certificados
 

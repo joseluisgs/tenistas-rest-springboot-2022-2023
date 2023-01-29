@@ -15,6 +15,7 @@ private val logger = KotlinLogging.logger {}
 
 class WebSocketHandler : TextWebSocketHandler(), SubProtocolCapable, WebSocketSender {
     // Para poder enviar mensajes a todos los clientes almacenamos la sesión de cada uno
+    // Patron observer
     private val sessions: MutableSet<WebSocketSession> = CopyOnWriteArraySet()
 
     override fun afterConnectionEstablished(session: WebSocketSession) {
@@ -31,6 +32,7 @@ class WebSocketHandler : TextWebSocketHandler(), SubProtocolCapable, WebSocketSe
         sessions.remove(session)
     }
 
+    // Para poder enviar mensajes a todos los clientes almacenamos la sesión de cada uno
     override fun sendMessage(message: String) {
         logger.info { "Enviar mensaje: $message" }
         for (session in sessions) {
