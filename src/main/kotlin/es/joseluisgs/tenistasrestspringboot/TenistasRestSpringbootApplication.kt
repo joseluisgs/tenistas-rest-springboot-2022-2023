@@ -7,8 +7,8 @@ import org.springframework.cache.annotation.EnableCaching
 
 private val logger = KotlinLogging.logger {}
 
-@SpringBootApplication
-@EnableCaching
+@SpringBootApplication // Indicamos que es una aplicación Spring Boot
+@EnableCaching // Habilitamos el cacheo
 class TenistasRestSpringbootApplication
 /*
 Si quiero ejecutar algo antes de arrancar la aplicación, como por ejemplo cargar datos de prueba
