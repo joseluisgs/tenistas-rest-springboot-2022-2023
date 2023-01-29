@@ -796,6 +796,90 @@
 					"response": []
 				}
 			]
+		},
+		{
+			"name": "Storage",
+			"item": [
+				{
+					"name": "POST Upload",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "file",
+									"type": "file",
+									"src": "/home/joseluisgs/Proyectos/tenistas-rest-springboot/postman/nuevoavatar.jpg"
+								}
+							]
+						},
+						"url": {
+							"raw": "http://localhost:6969/api/storage",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "6969",
+							"path": [
+								"api",
+								"storage"
+							],
+							"query": [
+								{
+									"key": "file",
+									"value": null,
+									"disabled": true
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "GET File",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:6969/api/storage/f787d555-d76d-458d-ae06-f6931c305c34.jpg",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "6969",
+							"path": [
+								"api",
+								"storage",
+								"f787d555-d76d-458d-ae06-f6931c305c34.jpg"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "DELETE File",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:6969/api/storage/5e04ed66-c7cb-4230-ab5c-cbb7b6265eb4.jpg",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "6969",
+							"path": [
+								"api",
+								"storage",
+								"5e04ed66-c7cb-4230-ab5c-cbb7b6265eb4.jpg"
+							]
+						}
+					},
+					"response": []
+				}
+			]
 		}
 	]
 }
