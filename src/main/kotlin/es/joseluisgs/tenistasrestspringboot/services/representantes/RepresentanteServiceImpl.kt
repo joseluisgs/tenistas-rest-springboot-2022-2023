@@ -9,7 +9,10 @@ import es.joseluisgs.tenistasrestspringboot.models.Notificacion
 import es.joseluisgs.tenistasrestspringboot.models.Representante
 import es.joseluisgs.tenistasrestspringboot.models.RepresentanteNotification
 import es.joseluisgs.tenistasrestspringboot.repositories.representantes.RepresentantesCachedRepository
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.launch
 import mu.KotlinLogging
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.domain.Page
@@ -136,7 +139,10 @@ class RepresentanteServiceImpl
         // Siguiendo el modelo WebSockets, compatible con Postman
         logger.info { "Enviando mensaje a los clientes ws" }
 
-        webSocketService.sendMessage(json)
+        val myScope = CoroutineScope(Dispatchers.IO)
+        myScope.launch {
+            webSocketService.sendMessage(json)
+        }
     }
 
 }

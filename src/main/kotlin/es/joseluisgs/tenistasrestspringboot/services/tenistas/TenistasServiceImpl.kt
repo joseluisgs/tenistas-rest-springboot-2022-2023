@@ -12,8 +12,11 @@ import es.joseluisgs.tenistasrestspringboot.models.Tenista
 import es.joseluisgs.tenistasrestspringboot.models.TenistaNotification
 import es.joseluisgs.tenistasrestspringboot.repositories.raquetas.RaquetasRepository
 import es.joseluisgs.tenistasrestspringboot.repositories.tenistas.TenistasCachedRepository
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.firstOrNull
+import kotlinx.coroutines.launch
 import mu.KotlinLogging
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.domain.Page
@@ -164,7 +167,10 @@ class TenistasServiceImpl
 
         logger.info { "Enviando mensaje a los clientes ws" }
 
-        webSocketService.sendMessage(json)
+        val myScope = CoroutineScope(Dispatchers.IO)
+        myScope.launch {
+            webSocketService.sendMessage(json)
+        }
     }
 
 }
