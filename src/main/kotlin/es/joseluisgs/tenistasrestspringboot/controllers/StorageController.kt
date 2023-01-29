@@ -18,6 +18,12 @@ import java.time.LocalDateTime
 
 private val logger = KotlinLogging.logger {}
 
+// Podemos evitar los try catch ya que podemos usar el ResponseStatusException en las excepciones
+// El problema de hacerlo así es que pierdes el control de como mapear los errores
+// Elige el que más te guste y que mejor se adapte a tu proyecto
+// A mi me gusta mas este, porque sé lo que me va a devolver y puedo controlar el error
+// y devolver el que yo quiera, o incluso devolver un error personalizado, o saber qué testear y esperar
+
 @RestController
 @RequestMapping(APIConfig.API_PATH + "/storage")
 class StorageController
