@@ -11,11 +11,10 @@ import es.joseluisgs.tenistasrestspringboot.models.Raqueta
 import es.joseluisgs.tenistasrestspringboot.models.RaquetaNotification
 import es.joseluisgs.tenistasrestspringboot.models.Representante
 import es.joseluisgs.tenistasrestspringboot.repositories.raquetas.RaquetasCachedRepository
-import es.joseluisgs.tenistasrestspringboot.repositories.representantes.RepresentantesRepository
+import es.joseluisgs.tenistasrestspringboot.repositories.representantes.RepresentantesCachedRepository
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.launch
 import mu.KotlinLogging
 import org.springframework.beans.factory.annotation.Autowired
@@ -30,7 +29,7 @@ private val logger = KotlinLogging.logger {}
 class RaquetasServiceImpl
 @Autowired constructor(
     private val raquetasRepository: RaquetasCachedRepository, // Repositorio de datos
-    private val representesRepository: RepresentantesRepository, // Repositorio de datos
+    private val representesRepository: RepresentantesCachedRepository, // Repositorio de datos
     private val webSocketConfig: ServerWebSocketConfig // Para enviar mensajes a los clientes ws normales
 ) : RaquetasService {
     // Inyectamos el servicio de websockets, pero lo hacemos de esta forma para que no se inyecte en el constructor
@@ -136,7 +135,7 @@ class RaquetasServiceImpl
     override suspend fun findRepresentante(id: UUID): Representante {
         logger.debug { "findRepresentante: Buscando representante en servicio" }
 
-        return representesRepository.findByUuid(id).firstOrNull()
+        return representesRepository.findByUuid(id)
             ?: throw RepresentanteNotFoundException("No se ha encontrado el representante con id: $id")
     }
 

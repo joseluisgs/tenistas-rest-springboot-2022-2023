@@ -150,7 +150,7 @@ class RepresentatesCachedRepositoryImpl
     }
 
     @CacheEvict("representantes", allEntries = true)
-    suspend fun deleteAll() = withContext(Dispatchers.IO) {
+    override suspend fun deleteAll() = withContext(Dispatchers.IO) {
         logger.info { "Repositorio de representantes deleteAll" }
 
         representantesRepository.deleteAll()

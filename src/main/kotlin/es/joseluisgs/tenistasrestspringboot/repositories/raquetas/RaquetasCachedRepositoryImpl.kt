@@ -154,7 +154,7 @@ class RaquetasCachedRepositoryImpl
     }
 
     @CacheEvict("raquetas", allEntries = true)
-    suspend fun deleteAll() = withContext(Dispatchers.IO) {
+    override suspend fun deleteAll() = withContext(Dispatchers.IO) {
         logger.info { "Repositorio de raquetas deleteAll" }
 
         raquetasRepository.deleteAll()
