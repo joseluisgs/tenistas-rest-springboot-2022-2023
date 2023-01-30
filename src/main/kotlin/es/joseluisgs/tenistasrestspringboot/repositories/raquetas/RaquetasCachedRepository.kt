@@ -18,4 +18,5 @@ interface RaquetasCachedRepository {
     suspend fun deleteById(id: Long)
     suspend fun findAllPage(pageRequest: PageRequest): Flow<Page<Raqueta>>
     suspend fun countAll(): Long
+    suspend fun deleteAll()
 }

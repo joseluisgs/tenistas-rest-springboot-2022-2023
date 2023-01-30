@@ -17,6 +17,6 @@ interface RepresentantesCachedRepository {
     suspend fun deleteByUuid(uuid: UUID): Representante?
     suspend fun deleteById(id: Long)
     suspend fun findAllPage(pageRequest: PageRequest): Flow<Page<Representante>>
-
     suspend fun countAll(): Long
+    suspend fun deleteAll()
 }

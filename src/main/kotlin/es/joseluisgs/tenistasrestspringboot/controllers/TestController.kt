@@ -2,6 +2,7 @@ package es.joseluisgs.tenistasrestspringboot.controllers
 
 import es.joseluisgs.tenistasrestspringboot.config.APIConfig
 import es.joseluisgs.tenistasrestspringboot.dto.TestDto
+import jakarta.validation.Valid
 import mu.KotlinLogging
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
@@ -39,7 +40,7 @@ class TestController {
 
     // POST:/test
     @PostMapping("")
-    fun create(@RequestBody testDto: TestDto): ResponseEntity<TestDto> {
+    fun create(@Valid @RequestBody testDto: TestDto): ResponseEntity<TestDto> {
         logger.info { "POST Test" }
         val new = TestDto("Hola POST ${testDto.message}")
         return ResponseEntity.status(HttpStatus.CREATED).body(new)

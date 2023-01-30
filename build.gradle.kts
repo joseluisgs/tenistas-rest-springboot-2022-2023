@@ -53,9 +53,16 @@ dependencies {
     implementation("io.github.microutils:kotlin-logging-jvm:3.0.4")
 
     // Test
-    testImplementation("org.springframework.boot:spring-boot-starter-test")
+    testImplementation("org.springframework.boot:spring-boot-starter-test") {
+        // Desactivamos el mockito-core para usar mockk
+        exclude(module = "mockito-core")
+    }
     testImplementation("io.projectreactor:reactor-test")
     testImplementation("org.springframework.security:spring-security-test")
+    // corrutinas
+    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.6.4")
+    // Mockk
+    testImplementation("com.ninja-squad:springmockk:4.0.0")
 }
 
 // Fijamos la versión de Kotlin de destno

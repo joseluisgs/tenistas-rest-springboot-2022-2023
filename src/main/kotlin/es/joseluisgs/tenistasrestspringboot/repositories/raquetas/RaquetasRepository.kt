@@ -13,3 +13,4 @@ interface RaquetasRepository : CoroutineCrudRepository<Raqueta, Long> {
     fun findByMarcaContainsIgnoreCase(marca: String): Flow<Raqueta>
     fun findAllBy(pageable: Pageable?): Flow<Raqueta>
 }
+
