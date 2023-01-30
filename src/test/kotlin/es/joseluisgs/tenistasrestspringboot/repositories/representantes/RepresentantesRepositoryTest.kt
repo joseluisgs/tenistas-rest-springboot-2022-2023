@@ -33,7 +33,7 @@ internal class RepresentantesRepositoryTest {
     @Autowired
     lateinit var repository: RepresentantesRepository
 
-    val representante = Representante(
+    private val representante = Representante(
         uuid = UUID.fromString("91e0c247-c611-4ed2-8db8-a495f1f16fee"),
         nombre = "Test",
         email = "test@example.com",

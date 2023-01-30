@@ -25,7 +25,7 @@ import java.util.*
 @SpringBootTest
 class TenistasCachedRepositoryImplTest {
 
-    val tenista = Tenista(
+    private val tenista = Tenista(
         id = 99L,
         uuid = UUID.fromString("91e0c247-c611-4ed2-8db8-a495f1f16fee"),
         nombre = "Test",

@@ -34,7 +34,7 @@ internal class TenistasRepositoryTest {
     @Autowired
     lateinit var repository: TenistasRepository
 
-    val tenista = Tenista(
+    private val tenista = Tenista(
         uuid = UUID.fromString("91e0c247-c611-4ed2-8db8-a495f1f16fee"),
         nombre = "Test",
         ranking = 99,

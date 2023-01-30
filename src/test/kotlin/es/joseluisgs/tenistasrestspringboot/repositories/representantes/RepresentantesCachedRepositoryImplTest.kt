@@ -24,7 +24,7 @@ import java.util.*
 @SpringBootTest
 class RepresentantesCachedRepositoryImplTest {
 
-    val representante = Representante(
+    private val representante = Representante(
         id = 99L,
         uuid = UUID.fromString("91e0c247-c611-4ed2-8db8-a495f1f16fee"),
         nombre = "Test",

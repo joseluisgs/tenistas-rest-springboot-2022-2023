@@ -10,7 +10,7 @@ import es.joseluisgs.tenistasrestspringboot.models.Notificacion
 import es.joseluisgs.tenistasrestspringboot.models.Raqueta
 import es.joseluisgs.tenistasrestspringboot.models.Tenista
 import es.joseluisgs.tenistasrestspringboot.models.TenistaNotification
-import es.joseluisgs.tenistasrestspringboot.repositories.raquetas.RaquetasRepository
+import es.joseluisgs.tenistasrestspringboot.repositories.raquetas.RaquetasCachedRepository
 import es.joseluisgs.tenistasrestspringboot.repositories.tenistas.TenistasCachedRepository
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -30,7 +30,7 @@ private val logger = KotlinLogging.logger {}
 class TenistasServiceImpl
 @Autowired constructor(
     private val tenistasRepository: TenistasCachedRepository, // Repositorio de datos
-    private val raquetasRepository: RaquetasRepository, // Repositorio de datos
+    private val raquetasRepository: RaquetasCachedRepository, // Repositorio de datos
     private val webSocketConfig: ServerWebSocketConfig // Configuración del WebSocket
 ) : TenistasService {
 
@@ -77,7 +77,7 @@ class TenistasServiceImpl
         logger.debug { "Servicio de tenistas save tenista: $tenista" }
 
         // Existe la raqueta
-        val representante = findRaqueta(tenista.raquetaId)
+        val existe = findRaqueta(tenista.raquetaId)
 
         return tenistasRepository.save(tenista)
             .also { onChange(Notificacion.Tipo.CREATE, it.uuid, it) }
@@ -143,7 +143,7 @@ class TenistasServiceImpl
         logger.debug { "findRepresentante: Buscando raqueta en servicio" }
 
         id?.let {
-            return raquetasRepository.findByUuid(id).firstOrNull()
+            return raquetasRepository.findByUuid(id)
                 ?: throw RaquetaNotFoundException("No se ha encontrado la raqueta con id: $id")
         }
         return null
