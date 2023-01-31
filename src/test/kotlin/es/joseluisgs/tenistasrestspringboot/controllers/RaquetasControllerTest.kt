@@ -116,12 +116,15 @@ class RaquetasControllerTest {
     fun findByIdNotFound() = runTest {
         coEvery { service.findByUuid(any()) } throws RaquetaNotFoundException("No se ha encontrado la raqueta con id: ${raqueta.uuid}")
 
-        val res = assertThrows<RaquetaNotFoundException> {
+        val res = assertThrows<ResponseStatusException> {
             val result = controller.findById(raqueta.uuid)
         }
 
-        assertEquals("No se ha encontrado la raqueta con id: ${raqueta.uuid}", res.message)
-
+        assertEquals(
+            """404 NOT_FOUND "No se ha encontrado la raqueta con id: ${raqueta.uuid}"""",
+            res.message
+        )
+        
         coVerify { service.findByUuid(any()) }
 
     }

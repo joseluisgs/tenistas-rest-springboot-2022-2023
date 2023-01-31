@@ -58,6 +58,8 @@ class RaquetasController
             val raqueta = raquetasService.findByUuid(id)
             val res = raqueta.toDto(raquetasService.findRepresentante(raqueta.representanteId))
             return ResponseEntity.ok(res)
+        } catch (e: RaquetaNotFoundException) {
+            throw ResponseStatusException(HttpStatus.NOT_FOUND, e.message)
         } catch (e: RepresentanteNotFoundException) {
             throw ResponseStatusException(HttpStatus.NOT_FOUND, e.message)
         }
