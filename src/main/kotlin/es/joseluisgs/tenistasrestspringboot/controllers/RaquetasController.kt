@@ -145,8 +145,8 @@ class RaquetasController
 
     @GetMapping("paging")
     suspend fun getAll(
-        @RequestParam(defaultValue = APIConfig.PAGINATION_INIT) page: Int,
-        @RequestParam(defaultValue = APIConfig.PAGINATION_SIZE) size: Int,
+        @RequestParam(defaultValue = APIConfig.PAGINATION_INIT) page: Int = 0,
+        @RequestParam(defaultValue = APIConfig.PAGINATION_SIZE) size: Int = 10,
         @RequestParam(defaultValue = APIConfig.PAGINATION_SORT) sortBy: String = "marca",
         request: HttpServletRequest?
     ): ResponseEntity<RaquetasPageDto> {

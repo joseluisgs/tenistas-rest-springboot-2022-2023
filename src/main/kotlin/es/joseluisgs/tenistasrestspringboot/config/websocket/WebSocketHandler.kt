@@ -13,7 +13,8 @@ import java.util.concurrent.CopyOnWriteArraySet
 
 private val logger = KotlinLogging.logger {}
 
-class WebSocketHandler : TextWebSocketHandler(), SubProtocolCapable, WebSocketSender {
+// Le he hecho una pequeña modificación para poder enviar mensajes a todos los clientes
+class WebSocketHandler(private val entity: String) : TextWebSocketHandler(), SubProtocolCapable, WebSocketSender {
     // Para poder enviar mensajes a todos los clientes almacenamos la sesión de cada uno
     // Patron observer
     private val sessions: MutableSet<WebSocketSession> = CopyOnWriteArraySet()
@@ -22,7 +23,7 @@ class WebSocketHandler : TextWebSocketHandler(), SubProtocolCapable, WebSocketSe
         logger.info { "Conexión establecida con el servidor" }
         logger.info { "Sesión: $session" }
         sessions.add(session)
-        val message = TextMessage("Updates de Tenistas API REST Spring Boot")
+        val message = TextMessage("Updates Web socket: $entity - Tenistas API REST Spring Boot")
         logger.info { "Servidor envía: $message" }
         session.sendMessage(message)
     }
@@ -34,7 +35,7 @@ class WebSocketHandler : TextWebSocketHandler(), SubProtocolCapable, WebSocketSe
 
     // Para poder enviar mensajes a todos los clientes almacenamos la sesión de cada uno
     override fun sendMessage(message: String) {
-        logger.info { "Enviar mensaje: $message" }
+        logger.info { "Enviar mensaje de cambios en $entity: $message" }
         for (session in sessions) {
             if (session.isOpen) {
                 logger.info { "Servidor envía: $message" }

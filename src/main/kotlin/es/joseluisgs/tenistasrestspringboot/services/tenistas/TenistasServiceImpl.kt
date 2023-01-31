@@ -34,7 +34,7 @@ class TenistasServiceImpl
     private val webSocketConfig: ServerWebSocketConfig // Configuración del WebSocket
 ) : TenistasService {
 
-    private val webSocketService = webSocketConfig.webSocketHandler() as WebSocketHandler
+    private val webSocketService = webSocketConfig.webSocketTenistasHandler() as WebSocketHandler
 
     init {
         logger.info { "Iniciando Servicio de Tenistas" }

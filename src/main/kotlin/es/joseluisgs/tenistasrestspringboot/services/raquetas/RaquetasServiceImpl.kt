@@ -34,7 +34,7 @@ class RaquetasServiceImpl
 ) : RaquetasService {
     // Inyectamos el servicio de websockets, pero lo hacemos de esta forma para que no se inyecte en el constructor
     //y casteamos a nuestro handler para poder usarlo (que tiene el método send)
-    private val webSocketService = webSocketConfig.webSocketHandler() as WebSocketHandler
+    private val webSocketService = webSocketConfig.webSocketRaquetasHandler() as WebSocketHandler
 
     init {
         logger.info { "Iniciando Servicio de Raquetas" }
