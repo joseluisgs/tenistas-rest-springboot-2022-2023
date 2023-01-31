@@ -111,6 +111,7 @@ Si quieres colaborar, puedes hacerlo contactando [conmigo](#contacto).
 - Encriptado: [Bcrypt](https://en.wikipedia.org/wiki/Bcrypt) - Algoritmo de hash para encriptar contraseñas.
 - Asincronía: [Coroutines](https://kotlinlang.org/docs/coroutines-overview.html) - Librería de Kotlin para la
   programación asíncrona.
+- Reactividad: [Srping Reactive](https://spring.io/reactive) - Extensiones para reactividad en Spring Boot.
 - Logger: [Kotlin Logging](https://github.com/MicroUtils/kotlin-logging) - Framework para la gestión de logs.
 - Caché: Sistema de [caché](https://www.baeldung.com/spring-cache-tutorial) de Spring Boot.
 - Base de datos: [H2](https://www.h2database.com/) - Base de datos relacional que te permite trabajar en memoria,
