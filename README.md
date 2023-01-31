@@ -9,68 +9,68 @@ Api REST de Tenistas con Spring Boot para acceso a Datos de 2º de DAM. Curso 20
 ![imagen](./images/spring-boot.png)
 
 - [Tenistas REST Spring Boot](#tenistas-rest-spring-boot)
-    - [Descripción](#descripción)
-        - [Advertencia](#advertencia)
-        - [Tecnologías](#tecnologías)
-    - [Dominio](#dominio)
-        - [Representante](#representante)
-        - [Raqueta](#raqueta)
-        - [Tenista](#tenista)
-        - [Usuario](#usuario)
-    - [Proyectos y documentación anteriores](#proyectos-y-documentación-anteriores)
-    - [Arquitectura](#arquitectura)
-    - [Endpoints](#endpoints)
-        - [Representantes](#representantes)
-        - [Raquetas](#raquetas)
-        - [Tenistas](#tenistas)
-        - [Test](#test)
-    - [Spring Boot](#spring-boot)
-        - [Creando un proyecto](#creando-un-proyecto)
-        - [Punto de Entrada](#punto-de-entrada)
-        - [Parametrizando la aplicación](#parametrizando-la-aplicación)
-        - [Componentes de Spring Boot](#componentes-de-spring-boot)
-        - [IoC y DI en SpringBoot](#ioc-y-di-en-springboot)
-        - [Spring Data JPA](#spring-data-jpa)
-        - [Creando rutas](#creando-rutas)
-            - [Comprensión de contenido](#comprensión-de-contenido)
-            - [CORS](#cors)
-        - [Responses](#responses)
-            - [Paginación y ordenamiento](#paginación-y-ordenamiento)
-        - [Requests](#requests)
-            - [Parámetros de ruta](#parámetros-de-ruta)
-            - [Parámetros de consulta](#parámetros-de-consulta)
-            - [Peticiones datos serializados](#peticiones-datos-serializados)
-            - [Peticiones con formularios](#peticiones-con-formularios)
-            - [Peticiones multiparte](#peticiones-multiparte)
-            - [Request validation](#request-validation)
-        - [WebSockets](#websockets)
-        - [SSL y Certificados](#ssl-y-certificados)
-        - [Autenticación y Autorización con JWT](#autenticación-y-autorización-con-jwt)
-        - [Testing](#testing)
-        - [Despliegue](#despliegue)
-            - [JAR](#jar)
-            - [Aplicación](#aplicación)
-            - [Docker](#docker)
-        - [Documentación](#documentación)
-    - [Reactividad](#reactividad)
-    - [Inmutabilidad](#inmutabilidad)
-    - [Caché](#caché)
-    - [Notificaciones en tiempo real](#notificaciones-en-tiempo-real)
-    - [Proveedor de Dependencias](#proveedor-de-dependencias)
-    - [Seguridad de las comunicaciones](#seguridad-de-las-comunicaciones)
-        - [SSL/TLS](#ssltls)
-        - [Autenticación y Autorización con JWT](#autenticación-y-autorización-con-jwt-1)
-        - [CORS](#cors-1)
-        - [BCrypt](#bcrypt)
-    - [Testing](#testing-1)
-        - [Postman](#postman)
-    - [Distribución y Despliegue](#distribución-y-despliegue)
-    - [Documentación](#documentación-1)
-    - [Recursos](#recursos)
-    - [Autor](#autor)
-        - [Contacto](#contacto)
-        - [¿Un café?](#un-café)
-    - [Licencia de uso](#licencia-de-uso)
+  - [Descripción](#descripción)
+    - [Advertencia](#advertencia)
+    - [Tecnologías](#tecnologías)
+  - [Dominio](#dominio)
+    - [Representante](#representante)
+    - [Raqueta](#raqueta)
+    - [Tenista](#tenista)
+    - [Usuario](#usuario)
+  - [Proyectos y documentación anteriores](#proyectos-y-documentación-anteriores)
+  - [Arquitectura](#arquitectura)
+  - [Endpoints](#endpoints)
+    - [Representantes](#representantes)
+    - [Raquetas](#raquetas)
+    - [Tenistas](#tenistas)
+    - [Test](#test)
+  - [Spring Boot](#spring-boot)
+    - [Creando un proyecto](#creando-un-proyecto)
+    - [Punto de Entrada](#punto-de-entrada)
+    - [Parametrizando la aplicación](#parametrizando-la-aplicación)
+    - [Componentes de Spring Boot](#componentes-de-spring-boot)
+    - [IoC y DI en SpringBoot](#ioc-y-di-en-springboot)
+    - [Spring Data JPA](#spring-data-jpa)
+    - [Creando rutas](#creando-rutas)
+      - [Comprensión de contenido](#comprensión-de-contenido)
+      - [CORS](#cors)
+    - [Responses](#responses)
+      - [Paginación y ordenamiento](#paginación-y-ordenamiento)
+    - [Requests](#requests)
+      - [Parámetros de ruta](#parámetros-de-ruta)
+      - [Parámetros de consulta](#parámetros-de-consulta)
+      - [Peticiones datos serializados](#peticiones-datos-serializados)
+      - [Peticiones con formularios](#peticiones-con-formularios)
+      - [Peticiones multiparte](#peticiones-multiparte)
+      - [Request validation](#request-validation)
+    - [WebSockets](#websockets)
+    - [SSL y Certificados](#ssl-y-certificados)
+    - [Autenticación y Autorización con JWT](#autenticación-y-autorización-con-jwt)
+    - [Testing](#testing)
+    - [Despliegue](#despliegue)
+      - [JAR](#jar)
+      - [Aplicación](#aplicación)
+      - [Docker](#docker)
+    - [Documentación](#documentación)
+  - [Reactividad](#reactividad)
+  - [Inmutabilidad](#inmutabilidad)
+  - [Caché](#caché)
+  - [Notificaciones en tiempo real](#notificaciones-en-tiempo-real)
+  - [Proveedor de Dependencias](#proveedor-de-dependencias)
+  - [Seguridad de las comunicaciones](#seguridad-de-las-comunicaciones)
+    - [SSL/TLS](#ssltls)
+    - [Autenticación y Autorización con JWT](#autenticación-y-autorización-con-jwt-1)
+    - [CORS](#cors-1)
+    - [BCrypt](#bcrypt)
+  - [Testing](#testing-1)
+    - [Postman](#postman)
+  - [Distribución y Despliegue](#distribución-y-despliegue)
+  - [Documentación](#documentación-1)
+  - [Recursos](#recursos)
+  - [Autor](#autor)
+    - [Contacto](#contacto)
+    - [¿Un café?](#un-café)
+  - [Licencia de uso](#licencia-de-uso)
 
 ## Descripción
 
@@ -686,6 +686,48 @@ class SSLConfig {
 ### Autenticación y Autorización con JWT
 
 ### Testing
+A la hora de testear, hemos usado la libraría de JUnit 5, y hemos usado las anotaciones de Spring para testear. Hemos deshabilitado Mockito para usar MockK, que es una librería de Kotlin que nos permite hacer mocks de forma más sencilla y de paso manejarnos mejor con las corrutinas.
+
+Además hemos testeado el controlador apoyándonos en los código de respuesta HTTP, y en el contenido de la respuesta.
+
+```kotlin
+@Test
+fun create() = runTest {
+    coEvery { service.save(any()) } returns representante
+
+    val result = controller.create(representanteRequestDto)
+    val res = result.body!!
+
+    assertAll(
+        { assertNotNull(result) },
+        { assertNotNull(res) },
+        { assertEquals(result.statusCode, HttpStatus.CREATED) },
+        { assertEquals(representanteDto.id, res.id) },
+        { assertEquals(representanteDto.nombre, res.nombre) },
+        { assertEquals(representanteDto.email, res.email) },
+    )
+
+    coVerify(exactly = 1) { service.save(any()) }
+}
+
+@Test
+fun createCampoNombreBlanco() = runTest {
+    coEvery { service.save(any()) } throws RepresentanteBadRequestException("El nombre no puede estar vacío")
+
+    val res = assertThrows<ResponseStatusException> {
+        val result = controller.create(
+            representanteRequestDto.copy(nombre = " ")
+        )
+    }
+
+    assertEquals(
+        """400 BAD_REQUEST "El nombre no puede estar vacío"""",
+        res.message
+    )
+
+    coVerify(exactly = 0) { service.save(any()) }
+}
+```
 
 ### Despliegue
 
