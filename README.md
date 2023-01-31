@@ -88,7 +88,8 @@ Se realizará inyección de dependencias y un sistema de logging.
 
 Tendrá una página web de presentación como devolución de recursos estáticos.
 
-Este proyecto tiene a su "gemelo" implementando en Ktor: [tenistas-rest-ktor-2022-2023](https://github.com/joseluisgs/tenistas-rest-ktor-2022-2023)
+Este proyecto tiene a su "gemelo" implementando en
+Ktor: [tenistas-rest-ktor-2022-2023](https://github.com/joseluisgs/tenistas-rest-ktor-2022-2023)
 
 ### Advertencia
 
@@ -214,7 +215,7 @@ usaremos Postman:
 | PUT    | /representantes/{id}                   | No   | Actualiza un representante por su id                    | 200              | JSON       |
 | DELETE | /representantes/{id}                   | No   | Elimina un representante por su id                      | 204              | No Content |
 | GET    | /representantes/find?nombre=X          | No   | Devuelve los representantes con nombre X                | 200              | JSON       |
-| WS     | /updates                               | No   | Devuelve los cambios en representantes en tiempo real   | ---              | ---        |
+| WS     | /updates/representantes                | No   | Devuelve los cambios en representantes en tiempo real   | ---              | ---        |
 
 ### Raquetas
 
@@ -228,22 +229,22 @@ usaremos Postman:
 | DELETE | /raquetas/{id}                   | No   | Elimina una raqueta por su id                                            | 204              | No Content |
 | GET    | /raquetas/find?marca=X           | No   | Devuelve las raquetas con marca X                                        | 200              | JSON       |
 | GET    | /raquetas/{id}/representante     | No   | Devuelve el representante de la raqueta dado su id                       | 200              | JSON       |
-| WS     | /updates                         | No   | Websocket para notificaciones los cambios en las raquetas en tiempo real | ---              | JSON       |
+| WS     | /updates/raquetas                | No   | Websocket para notificaciones los cambios en las raquetas en tiempo real | ---              | JSON       |
 
 ### Tenistas
 
-| Método | Endpoint (/api)             | Auth | Descripción                                                              | Status Code (OK) | Content    |
-|--------|-----------------------------|------|--------------------------------------------------------------------------|------------------|------------|
-| GET    | /tenistas                   | No   | Devuelve todos los tenistas                                              | 200              | JSON       |
-| GET    | /tenistas?page=X&size=Y&sortBy=Z  | No   | Devuelve tenistas paginados y ordenadas por campo                                              | 200              | JSON       |
-| GET    | /tenistas/{id}              | No   | Devuelve un tenista por su id                                            | 200              | JSON       |
-| POST   | /tenistas                   | No   | Crea un nuevo tenista                                                    | 201              | JSON       |
-| PUT    | /tenistas/{id}              | No   | Actualiza un tenista por su id                                           | 200              | JSON       |
-| DELETE | /tenistas/{id}              | No   | Elimina un tenista por su id                                             | 204              | No Content |
-| GET    | /tenistas/find?nombre=X     | No   | Devuelve los tenistas con nombre X                                       | 200              | JSON       |
-| GET    | /tenistas/{id}/raqueta      | No   | Devuelve la raqueta del tenista dado su id                               | 200              | JSON       |
-| GET    | /tenistas/ranking/{ranking} | No   | Devuelve el tenista con ranking X                                        | 200              | JSON       |
-| WS     | /updates           | No   | Websocket para notificaciones los cambios en los tenistas en tiempo real | ---              | JSON       |
+| Método | Endpoint (/api)                  | Auth | Descripción                                                              | Status Code (OK) | Content    |
+|--------|----------------------------------|------|--------------------------------------------------------------------------|------------------|------------|
+| GET    | /tenistas                        | No   | Devuelve todos los tenistas                                              | 200              | JSON       |
+| GET    | /tenistas?page=X&size=Y&sortBy=Z | No   | Devuelve tenistas paginados y ordenadas por campo                        | 200              | JSON       |
+| GET    | /tenistas/{id}                   | No   | Devuelve un tenista por su id                                            | 200              | JSON       |
+| POST   | /tenistas                        | No   | Crea un nuevo tenista                                                    | 201              | JSON       |
+| PUT    | /tenistas/{id}                   | No   | Actualiza un tenista por su id                                           | 200              | JSON       |
+| DELETE | /tenistas/{id}                   | No   | Elimina un tenista por su id                                             | 204              | No Content |
+| GET    | /tenistas/find?nombre=X          | No   | Devuelve los tenistas con nombre X                                       | 200              | JSON       |
+| GET    | /tenistas/{id}/raqueta           | No   | Devuelve la raqueta del tenista dado su id                               | 200              | JSON       |
+| GET    | /tenistas/ranking/{ranking}      | No   | Devuelve el tenista con ranking X                                        | 200              | JSON       |
+| WS     | /updates/tenistas                | No   | Websocket para notificaciones los cambios en los tenistas en tiempo real | ---              | JSON       |
 
 ### Test
 
@@ -466,17 +467,17 @@ un bean de tipo CorsConfiguration
 ```kotlin
 @Configuration
 class CorsConfig {
-  //	@Bean
-  // Cors para permitir cualquier petición
-  public WebMvcConfigurer corsConfigurer()
-  {
-      return new WebMvcConfigurer () {
-          @Override
-          public void addCorsMappings(CorsRegistry registry) {
-              registry.addMapping("/ **")
-          }
-      }
-  }
+    //	@Bean
+    // Cors para permitir cualquier petición
+    public WebMvcConfigurer corsConfigurer()
+    {
+        return new WebMvcConfigurer () {
+            @Override
+            public void addCorsMappings(CorsRegistry registry) {
+                registry.addMapping("/ **")
+            }
+        }
+    }
 }
 ```
 
@@ -643,22 +644,21 @@ override fun sendMessage(message: String) {
 }
 ```
 
-
 ### SSL y Certificados
 
 Para trabajar con los certificados, los hemos creado y guardado en l carpeta cert de resources.Para ello hemos usado el
 comando keytool de Java . Además hemos creado nuestra configuración es properties para poder usarlos en el código .
 
 ```properties
-server.port = ${ PORT: 6963 }
+server.port=${ PORT: 6963 }
 # SSL
-server.ssl.key - store - type = PKCS12
-server.ssl.key - store = classpath:cert / server_keystore.p12
+server.ssl.key=- store - type = PKCS12
+server.ssl.key=- store = classpath:cert / server_keystore.p12
 # The password used to generate the certificate
-server.ssl.key - store - password = 1234567
+server.ssl.key=- store - password = 1234567
 # The alias mapped to the certificate
-        server.ssl.key - alias = serverKeyPair
-server.ssl.enabled = true
+server.ssl.key=- alias = serverKeyPair
+server.ssl.enabled=true
 ```
 
 Además, hemos configurado nuestro servicio para que ademas responda a peticiones http, y que redirija a https en
@@ -686,6 +686,48 @@ class SSLConfig {
 ### Autenticación y Autorización con JWT
 
 ### Testing
+A la hora de testear, hemos usado la libraría de JUnit 5, y hemos usado las anotaciones de Spring para testear. Hemos deshabilitado Mockito para usar MockK, que es una librería de Kotlin que nos permite hacer mocks de forma más sencilla y de paso manejarnos mejor con las corrutinas.
+
+Además hemos testeado el controlador apoyándonos en los código de respuesta HTTP, y en el contenido de la respuesta.
+
+```kotlin
+@Test
+fun create() = runTest {
+    coEvery { service.save(any()) } returns representante
+
+    val result = controller.create(representanteRequestDto)
+    val res = result.body!!
+
+    assertAll(
+        { assertNotNull(result) },
+        { assertNotNull(res) },
+        { assertEquals(result.statusCode, HttpStatus.CREATED) },
+        { assertEquals(representanteDto.id, res.id) },
+        { assertEquals(representanteDto.nombre, res.nombre) },
+        { assertEquals(representanteDto.email, res.email) },
+    )
+
+    coVerify(exactly = 1) { service.save(any()) }
+}
+
+@Test
+fun createCampoNombreBlanco() = runTest {
+    coEvery { service.save(any()) } throws RepresentanteBadRequestException("El nombre no puede estar vacío")
+
+    val res = assertThrows<ResponseStatusException> {
+        val result = controller.create(
+            representanteRequestDto.copy(nombre = " ")
+        )
+    }
+
+    assertEquals(
+        """400 BAD_REQUEST "El nombre no puede estar vacío"""",
+        res.message
+    )
+
+    coVerify(exactly = 0) { service.save(any()) }
+}
+```
 
 ### Despliegue
 

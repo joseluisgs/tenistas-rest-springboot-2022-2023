@@ -30,7 +30,8 @@ class RepresentanteServiceImpl
     // private val simpMessagingTemplate: SimpMessagingTemplate // Para enviar mensajes a los clientes ws STOP
 ) : RepresentantesService {
 
-    private val webSocketService = webSocketConfig.webSocketHandler() as WebSocketHandler
+    // Para enviar mensajes a los clientes ws normales, pero le hago un cast para que sea de tipo WebSocketHandler
+    private val webSocketService = webSocketConfig.webSocketRepresentantesHandler() as WebSocketHandler
 
     init {
         logger.info { "Iniciando Servicio de Representantes" }

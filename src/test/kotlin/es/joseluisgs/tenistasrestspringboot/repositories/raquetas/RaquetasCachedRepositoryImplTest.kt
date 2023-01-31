@@ -30,7 +30,7 @@ class RaquetasCachedRepositoryImplTest {
         uuid = UUID.fromString("431ad089-d422-4aa4-b9a5-35a620eae8d4"),
         marca = "Test",
         precio = 199.9,
-        represetanteId = UUID.fromString("b39a2fd2-f7d7-405d-b73c-b68a8dedbcdf"),
+        representanteId = UUID.fromString("b39a2fd2-f7d7-405d-b73c-b68a8dedbcdf"),
     )
 
     @MockK

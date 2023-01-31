@@ -85,7 +85,7 @@ class RaquetasCachedRepositoryImpl
                     uuid = it.uuid,
                     marca = raqueta.marca,
                     precio = raqueta.precio,
-                    represetanteId = raqueta.represetanteId,
+                    representanteId = raqueta.representanteId,
                     createdAt = it.createdAt,
                     updatedAt = LocalDateTime.now()
                 )

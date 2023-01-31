@@ -28,14 +28,27 @@ class WebSocketConfig : WebSocketMessageBrokerConfigurer {
 
 @EnableWebSocket
 class ServerWebSocketConfig : WebSocketConfigurer {
-    // Definimos el endpoint de nuestro WebSocket
+    // Definimos el endpoints de nuestro WebSocket
     override fun registerWebSocketHandlers(registry: WebSocketHandlerRegistry) {
-        registry.addHandler(webSocketHandler(), "/updates")
+        // cada endpoint con su handler
+        registry.addHandler(webSocketRaquetasHandler(), "api/updates/raquetas")
+        registry.addHandler(webSocketRepresentantesHandler(), "api/updates/representantes")
+        registry.addHandler(webSocketTenistasHandler(), "api/updates/tenistas")
     }
 
-    // Definimos el Handler de nuestro WebSocket
+    // Definimos el Handler de nuestro WebSocket o handler para atenderlos
     @Bean
-    fun webSocketHandler(): WebSocketHandler {
-        return WebSocketHandler()
+    fun webSocketRaquetasHandler(): WebSocketHandler {
+        return WebSocketHandler("Raquetas")
+    }
+
+    @Bean
+    fun webSocketRepresentantesHandler(): WebSocketHandler {
+        return WebSocketHandler("Representantes")
+    }
+
+    @Bean
+    fun webSocketTenistasHandler(): WebSocketHandler {
+        return WebSocketHandler("Tenistas")
     }
 }
