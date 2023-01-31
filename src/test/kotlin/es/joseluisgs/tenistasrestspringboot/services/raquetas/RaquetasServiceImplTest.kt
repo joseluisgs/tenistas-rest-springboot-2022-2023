@@ -39,7 +39,7 @@ class RaquetasServiceImplTest {
         uuid = UUID.fromString("431ad089-d422-4aa4-b9a5-35a620eae8d4"),
         marca = "Test",
         precio = 199.9,
-        represetanteId = UUID.fromString("b39a2fd2-f7d7-405d-b73c-b68a8dedbcdf"),
+        representanteId = UUID.fromString("b39a2fd2-f7d7-405d-b73c-b68a8dedbcdf"),
     )
 
     val representante = Representante(
@@ -169,14 +169,14 @@ class RaquetasServiceImplTest {
 
     @Test
     fun saveRepresentanteNotExists() = runTest {
-        coEvery { represetantesRepository.findByUuid(any()) } throws RepresentanteNotFoundException("No se ha encontrado el representante con id: ${raqueta.represetanteId}")
+        coEvery { represetantesRepository.findByUuid(any()) } throws RepresentanteNotFoundException("No se ha encontrado el representante con id: ${raqueta.representanteId}")
         coEvery { repository.save(any()) } returns raqueta
 
         val res = assertThrows<RepresentanteNotFoundException> {
             service.save(raqueta)
         }
 
-        assertEquals("No se ha encontrado el representante con id: ${raqueta.represetanteId}", res.message)
+        assertEquals("No se ha encontrado el representante con id: ${raqueta.representanteId}", res.message)
 
     }
 
@@ -321,7 +321,7 @@ class RaquetasServiceImplTest {
     fun findRepresentante() = runTest {
         coEvery { represetantesRepository.findByUuid(any()) } returns representante
 
-        val result = service.findRepresentante(raqueta.represetanteId)
+        val result = service.findRepresentante(raqueta.representanteId)
 
         assertEquals(representante, result)
 
@@ -331,13 +331,13 @@ class RaquetasServiceImplTest {
 
     @Test
     fun findRepresentanteNotFound() = runTest {
-        coEvery { represetantesRepository.findByUuid(any()) } throws RepresentanteNotFoundException("No se ha encontrado el representante con id: ${raqueta.represetanteId}")
+        coEvery { represetantesRepository.findByUuid(any()) } throws RepresentanteNotFoundException("No se ha encontrado el representante con id: ${raqueta.representanteId}")
 
         val res = assertThrows<RepresentanteNotFoundException> {
-            service.findRepresentante(raqueta.represetanteId)
+            service.findRepresentante(raqueta.representanteId)
         }
 
-        assertEquals("No se ha encontrado el representante con id: ${raqueta.represetanteId}", res.message)
+        assertEquals("No se ha encontrado el representante con id: ${raqueta.representanteId}", res.message)
 
     }
 }

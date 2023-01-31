@@ -3,7 +3,9 @@ package es.joseluisgs.tenistasrestspringboot.controllers
 import es.joseluisgs.tenistasrestspringboot.dto.RaquetaCreateDto
 import es.joseluisgs.tenistasrestspringboot.dto.RaquetaDto
 import es.joseluisgs.tenistasrestspringboot.dto.RepresentanteDto
+import es.joseluisgs.tenistasrestspringboot.exceptions.RaquetaBadRequestException
 import es.joseluisgs.tenistasrestspringboot.exceptions.RaquetaNotFoundException
+import es.joseluisgs.tenistasrestspringboot.exceptions.RepresentanteNotFoundException
 import es.joseluisgs.tenistasrestspringboot.models.Raqueta
 import es.joseluisgs.tenistasrestspringboot.models.Representante
 import es.joseluisgs.tenistasrestspringboot.services.raquetas.RaquetasService
@@ -22,6 +24,7 @@ import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.extension.ExtendWith
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.http.HttpStatus
+import org.springframework.web.server.ResponseStatusException
 
 @ExtendWith(MockKExtension::class)
 @SpringBootTest
@@ -37,7 +40,7 @@ class RaquetasControllerTest {
         uuid = "a765df90-e4aa-4306-b93e-20500accf8f7".toUUID(),
         marca = "Test",
         precio = 99.99,
-        represetanteId = "71dac885-bfa5-465e-9bff-47a5902adae6".toUUID()
+        representanteId = "71dac885-bfa5-465e-9bff-47a5902adae6".toUUID()
     )
 
     val representante = Representante(
@@ -50,7 +53,7 @@ class RaquetasControllerTest {
         id = "a765df90-e4aa-4306-b93e-20500accf8f7".toUUID(),
         marca = "Test",
         precio = 99.99,
-        represetante = RepresentanteDto(
+        representante = RepresentanteDto(
             id = "71dac885-bfa5-465e-9bff-47a5902adae6".toUUID(),
             nombre = "TestRep",
             email = "test@mail.com"
@@ -78,9 +81,9 @@ class RaquetasControllerTest {
             { assertEquals(raquetaDto.id, res[0].id) },
             { assertEquals(raquetaDto.marca, res[0].marca) },
             { assertEquals(raquetaDto.precio, res[0].precio) },
-            { assertEquals(raquetaDto.represetante.id, res[0].represetante.id) },
-            { assertEquals(raquetaDto.represetante.nombre, res[0].represetante.nombre) },
-            { assertEquals(raquetaDto.represetante.email, res[0].represetante.email) },
+            { assertEquals(raquetaDto.representante.id, res[0].representante.id) },
+            { assertEquals(raquetaDto.representante.nombre, res[0].representante.nombre) },
+            { assertEquals(raquetaDto.representante.email, res[0].representante.email) },
         )
 
         coVerify { service.findAll() }
@@ -101,9 +104,9 @@ class RaquetasControllerTest {
             { assertEquals(raquetaDto.id, res.id) },
             { assertEquals(raquetaDto.marca, res.marca) },
             { assertEquals(raquetaDto.precio, res.precio) },
-            { assertEquals(raquetaDto.represetante.id, res.represetante.id) },
-            { assertEquals(raquetaDto.represetante.nombre, res.represetante.nombre) },
-            { assertEquals(raquetaDto.represetante.email, res.represetante.email) },
+            { assertEquals(raquetaDto.representante.id, res.representante.id) },
+            { assertEquals(raquetaDto.representante.nombre, res.representante.nombre) },
+            { assertEquals(raquetaDto.representante.email, res.representante.email) },
         )
 
         coVerify { service.findByUuid(any()) }
@@ -114,7 +117,7 @@ class RaquetasControllerTest {
         coEvery { service.findByUuid(any()) } throws RaquetaNotFoundException("No se ha encontrado la raqueta con id: ${raqueta.uuid}")
 
         val res = assertThrows<RaquetaNotFoundException> {
-            controller.findById(raqueta.uuid)
+            val result = controller.findById(raqueta.uuid)
         }
 
         assertEquals("No se ha encontrado la raqueta con id: ${raqueta.uuid}", res.message)
@@ -144,13 +147,81 @@ class RaquetasControllerTest {
             { assertEquals(raquetaDto.id, res.id) },
             { assertEquals(raquetaDto.marca, res.marca) },
             { assertEquals(raquetaDto.precio, res.precio) },
-            { assertEquals(raquetaDto.represetante.id, res.represetante.id) },
-            { assertEquals(raquetaDto.represetante.nombre, res.represetante.nombre) },
-            { assertEquals(raquetaDto.represetante.email, res.represetante.email) },
+            { assertEquals(raquetaDto.representante.id, res.representante.id) },
+            { assertEquals(raquetaDto.representante.nombre, res.representante.nombre) },
+            { assertEquals(raquetaDto.representante.email, res.representante.email) },
         )
     }
 
-    // Deberíamos probar los bad request!!
+    @Test
+    fun createRepresentanteNotFound() = runTest {
+        coEvery { service.save(any()) } throws RepresentanteNotFoundException("")
+        coEvery { service.findRepresentante(any()) } throws RepresentanteNotFoundException("No se ha encontrado el representante con id: ${raqueta.representanteId}")
+
+        val res = assertThrows<ResponseStatusException> {
+            val result = controller.create(
+                RaquetaCreateDto(
+                    marca = "Test",
+                    precio = 99.99,
+                    representanteId = "71dac885-bfa5-465e-9bff-47a5902adae6".toUUID()
+                )
+            )
+        }
+
+        assertEquals(
+            """400 BAD_REQUEST """"",
+            res.message
+        )
+
+        coVerify(exactly = 1) { service.save(any()) }
+    }
+
+    @Test
+    fun createCampoNombreBlanco() = runTest {
+        coEvery { service.save(any()) } throws RaquetaBadRequestException("")
+        coEvery { service.findRepresentante(any()) } returns representante
+
+        val res = assertThrows<ResponseStatusException> {
+            val result = controller.create(
+                RaquetaCreateDto(
+                    marca = "",
+                    precio = 99.99,
+                    representanteId = "71dac885-bfa5-465e-9bff-47a5902adae6".toUUID()
+                )
+            )
+        }
+
+        assertEquals(
+            """400 BAD_REQUEST "La marca no puede estar vacía"""",
+            res.message
+        )
+
+        coVerify(exactly = 0) { service.save(any()) }
+    }
+
+    @Test
+    fun createCampoPrecioNegativo() = runTest {
+        coEvery { service.save(any()) } throws RaquetaBadRequestException("")
+        coEvery { service.findRepresentante(any()) } returns representante
+
+        val res = assertThrows<ResponseStatusException> {
+            val result = controller.create(
+                RaquetaCreateDto(
+                    marca = "Test",
+                    precio = -99.99,
+                    representanteId = "71dac885-bfa5-465e-9bff-47a5902adae6".toUUID()
+                )
+            )
+        }
+
+        assertEquals(
+            """400 BAD_REQUEST "El precio no puede ser negativo"""",
+            res.message
+        )
+
+        coVerify(exactly = 0) { service.save(any()) }
+    }
+
 
     @Test
     fun update() = runTest {
@@ -175,11 +246,42 @@ class RaquetasControllerTest {
             { assertEquals(raquetaDto.id, res.id) },
             { assertEquals(raquetaDto.marca, res.marca) },
             { assertEquals(raquetaDto.precio, res.precio) },
-            { assertEquals(raquetaDto.represetante.id, res.represetante.id) },
-            { assertEquals(raquetaDto.represetante.nombre, res.represetante.nombre) },
-            { assertEquals(raquetaDto.represetante.email, res.represetante.email) },
+            { assertEquals(raquetaDto.representante.id, res.representante.id) },
+            { assertEquals(raquetaDto.representante.nombre, res.representante.nombre) },
+            { assertEquals(raquetaDto.representante.email, res.representante.email) },
         )
     }
+
+    @Test
+    fun updateNotFound() = runTest {
+        coEvery { service.findByUuid(any()) } throws RaquetaNotFoundException("")
+        coEvery {
+            service.update(
+                any(),
+                any()
+            )
+        } throws RaquetaNotFoundException("No se ha encontrado la raqueta con id: ${raqueta.uuid}")
+
+        val res = assertThrows<ResponseStatusException> {
+            val result = controller.update(
+                raqueta.uuid,
+                RaquetaCreateDto(
+                    marca = "Test",
+                    precio = 99.99,
+                    representanteId = "71dac885-bfa5-465e-9bff-47a5902adae6".toUUID()
+                )
+            )
+        }
+
+        assertEquals(
+            """404 NOT_FOUND "No se ha encontrado la raqueta con id: ${raqueta.uuid}"""",
+            res.message
+        )
+
+        coVerify(exactly = 1) { service.update(any(), any()) }
+    }
+
+    // Los campos y las validaciones son iguales en el update, por lo que están testeados en el create
 
     @Test
     fun delete() = runTest {
@@ -192,6 +294,23 @@ class RaquetasControllerTest {
             { assertNotNull(result) },
             { assertEquals(result.statusCode, HttpStatus.NO_CONTENT) },
         )
+    }
+
+    @Test
+    fun deleteNotFound() = runTest {
+        coEvery { service.findByUuid(any()) } throws RaquetaNotFoundException("")
+        coEvery { service.deleteByUuid(any()) } throws RaquetaNotFoundException("No se ha encontrado la raqueta con id: ${raqueta.uuid}")
+
+        val res = assertThrows<ResponseStatusException> {
+            val result = controller.delete(raqueta.uuid)
+        }
+
+        assertEquals(
+            """404 NOT_FOUND "No se ha encontrado la raqueta con id: ${raqueta.uuid}"""",
+            res.message
+        )
+
+        coVerify(exactly = 1) { service.deleteByUuid(any()) }
     }
 
     @Test
@@ -209,9 +328,26 @@ class RaquetasControllerTest {
             { assertEquals(raquetaDto.id, res[0].id) },
             { assertEquals(raquetaDto.marca, res[0].marca) },
             { assertEquals(raquetaDto.precio, res[0].precio) },
-            { assertEquals(raquetaDto.represetante.id, res[0].represetante.id) },
-            { assertEquals(raquetaDto.represetante.nombre, res[0].represetante.nombre) },
-            { assertEquals(raquetaDto.represetante.email, res[0].represetante.email) },
+            { assertEquals(raquetaDto.representante.id, res[0].representante.id) },
+            { assertEquals(raquetaDto.representante.nombre, res[0].representante.nombre) },
+            { assertEquals(raquetaDto.representante.email, res[0].representante.email) },
+        )
+
+        coVerify { service.findByMarca(any()) }
+    }
+
+    @Test
+    fun findByNameNotFound() = runTest {
+        coEvery { service.findByMarca(any()) } returns flowOf()
+
+        val result = controller.findByName(raqueta.marca)
+        val res = result.body!!
+
+        assertAll(
+            { assertNotNull(result) },
+            { assertNotNull(res) },
+            { assertEquals(result.statusCode, HttpStatus.OK) },
+            { assertEquals(0, res.size) },
         )
 
         coVerify { service.findByMarca(any()) }
@@ -222,16 +358,16 @@ class RaquetasControllerTest {
         coEvery { service.findByUuid(any()) } returns raqueta
         coEvery { service.findRepresentante(any()) } returns representante
 
-        val result = controller.findRepresentante(raqueta.uuid)
+        val result = controller.findRepresentante(raqueta.representanteId)
         val res = result.body!!
 
         assertAll(
             { assertNotNull(result) },
             { assertNotNull(res) },
             { assertEquals(result.statusCode, HttpStatus.OK) },
-            { assertEquals(raquetaDto.represetante.id, res.id) },
-            { assertEquals(raquetaDto.represetante.nombre, res.nombre) },
-            { assertEquals(raquetaDto.represetante.email, res.email) },
+            { assertEquals(raquetaDto.representante.id, res.id) },
+            { assertEquals(raquetaDto.representante.nombre, res.nombre) },
+            { assertEquals(raquetaDto.representante.email, res.email) },
         )
 
         coVerify { service.findRepresentante(any()) }

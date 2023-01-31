@@ -43,7 +43,7 @@ class RaquetasController
 
         val res = raquetasService.findAll()
             .toList()
-            .map { it.toDto(raquetasService.findRepresentante(it.represetanteId)) }
+            .map { it.toDto(raquetasService.findRepresentante(it.representanteId)) }
 
         return ResponseEntity.ok(res)
 
@@ -56,7 +56,7 @@ class RaquetasController
         try {
             // Nosotros usamos el UUID, pero para el DTO es id
             val raqueta = raquetasService.findByUuid(id)
-            val res = raqueta.toDto(raquetasService.findRepresentante(raqueta.represetanteId))
+            val res = raqueta.toDto(raquetasService.findRepresentante(raqueta.representanteId))
             return ResponseEntity.ok(res)
         } catch (e: RepresentanteNotFoundException) {
             throw ResponseStatusException(HttpStatus.NOT_FOUND, e.message)
@@ -70,7 +70,7 @@ class RaquetasController
 
         try {
             val rep = raquetaDto.validate().toModel()
-            val res = raquetasService.save(rep).toDto(raquetasService.findRepresentante(rep.represetanteId))
+            val res = raquetasService.save(rep).toDto(raquetasService.findRepresentante(rep.representanteId))
             return ResponseEntity.status(HttpStatus.CREATED).body(res)
         } catch (e: RaquetaBadRequestException) {
             throw ResponseStatusException(HttpStatus.BAD_REQUEST, e.message)
@@ -89,7 +89,7 @@ class RaquetasController
 
         try {
             val rep = raquetaDto.validate().toModel()
-            val res = raquetasService.update(id, rep).toDto(raquetasService.findRepresentante(rep.represetanteId))
+            val res = raquetasService.update(id, rep).toDto(raquetasService.findRepresentante(rep.representanteId))
             return ResponseEntity.status(HttpStatus.OK).body(res)
         } catch (e: RaquetaNotFoundException) {
             throw ResponseStatusException(HttpStatus.NOT_FOUND, e.message)
@@ -122,7 +122,7 @@ class RaquetasController
         marca.let {
             val res = raquetasService.findByMarca(marca.trim())
                 .toList()
-                .map { it.toDto(raquetasService.findRepresentante(it.represetanteId)) }
+                .map { it.toDto(raquetasService.findRepresentante(it.representanteId)) }
 
             return ResponseEntity.ok(res)
         }
@@ -134,7 +134,7 @@ class RaquetasController
 
         try {
             val raqueta = raquetasService.findByUuid(id)
-            val res = raquetasService.findRepresentante(raqueta.represetanteId).toDto()
+            val res = raquetasService.findRepresentante(raqueta.representanteId).toDto()
             return ResponseEntity.ok(res)
         } catch (e: RaquetaNotFoundException) {
             throw ResponseStatusException(HttpStatus.NOT_FOUND, e.message)
@@ -160,7 +160,7 @@ class RaquetasController
 
         pageResult?.let {
             val dto = RaquetasPageDto(
-                content = pageResult.content.map { it.toDto(raquetasService.findRepresentante(it.represetanteId)) },
+                content = pageResult.content.map { it.toDto(raquetasService.findRepresentante(it.representanteId)) },
                 currentPage = pageResult.number,
                 pageSize = pageResult.size,
                 totalPages = if (pageResult.totalElements % pageResult.size == 0L) pageResult.totalElements / pageResult.size else (pageResult.totalElements / pageResult.size) + 1,

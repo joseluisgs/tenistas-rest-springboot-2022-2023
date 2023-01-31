@@ -70,7 +70,7 @@ class RaquetasServiceImpl
         logger.debug { "Servicio de raquetas save raqueta: $raqueta" }
 
         // Existe el representante!
-        val representante = findRepresentante(raqueta.represetanteId)
+        val representante = findRepresentante(raqueta.representanteId)
 
         return raquetasRepository.save(raqueta)
             .also { onChange(Notificacion.Tipo.CREATE, it.uuid, it) }
@@ -83,7 +83,7 @@ class RaquetasServiceImpl
 
         existe?.let {
             // Existe el representante!
-            val representante = findRepresentante(raqueta.represetanteId)
+            val representante = findRepresentante(raqueta.representanteId)
 
             return raquetasRepository.update(uuid, raqueta)
                 ?.also { onChange(Notificacion.Tipo.UPDATE, it.uuid, it) }!!
@@ -150,7 +150,7 @@ class RaquetasServiceImpl
                 "RAQUETA",
                 tipo,
                 id,
-                data?.toDto(findRepresentante(data.represetanteId))
+                data?.toDto(findRepresentante(data.representanteId))
             )
         )
         // Enviamos la notificación a los clientes ws

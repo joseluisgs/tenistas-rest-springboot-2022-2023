@@ -23,7 +23,7 @@ data class RaquetaDto(
     val id: UUID,
     val marca: String,
     val precio: Double,
-    val represetante: RepresentanteDto,
+    val representante: RepresentanteDto,
     val metadata: MetaData? = null,
 ) {
 
@@ -38,7 +38,7 @@ data class RaquetaTenistaDto(
     val id: UUID,
     val marca: String,
     val precio: Double,
-    val represetanteId: UUID? = null,
+    val representanteId: UUID? = null,
     val metadata: MetaData? = null,
 ) {
     data class MetaData(

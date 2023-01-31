@@ -27,7 +27,7 @@ data class Raqueta(
     // Relaciones
     @NotNull(message = "El representante no puede ser nulo")
     @Column("representante_id")
-    val represetanteId: UUID, // UUID del representante
+    val representanteId: UUID, // UUID del representante
 
     // Historicos y metadata
     @Column("created_at")
