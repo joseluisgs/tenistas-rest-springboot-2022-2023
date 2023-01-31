@@ -126,7 +126,7 @@ class TenistasController
     }
 
     @GetMapping("{id}/raqueta")
-    suspend fun findRepresentante(@PathVariable id: UUID): ResponseEntity<RaquetaTenistaDto> {
+    suspend fun findRaqueta(@PathVariable id: UUID): ResponseEntity<RaquetaTenistaDto> {
         logger.info { "GET By ID Raqueta del tenista con id: $id" }
 
         try {

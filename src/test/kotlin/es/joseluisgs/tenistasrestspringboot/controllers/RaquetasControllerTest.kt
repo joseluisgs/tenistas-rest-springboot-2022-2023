@@ -124,7 +124,7 @@ class RaquetasControllerTest {
             """404 NOT_FOUND "No se ha encontrado la raqueta con id: ${raqueta.uuid}"""",
             res.message
         )
-        
+
         coVerify { service.findByUuid(any()) }
 
     }
@@ -157,7 +157,7 @@ class RaquetasControllerTest {
     }
 
     @Test
-    fun createRepresentanteNotFound() = runTest {
+    fun createRaquetaRepresentanteNotFound() = runTest {
         coEvery { service.save(any()) } throws RepresentanteNotFoundException("")
         coEvery { service.findRepresentante(any()) } throws RepresentanteNotFoundException("No se ha encontrado el representante con id: ${raqueta.representanteId}")
 
@@ -317,7 +317,7 @@ class RaquetasControllerTest {
     }
 
     @Test
-    fun findByName() = runTest {
+    fun findByMarca() = runTest {
         coEvery { service.findByMarca(any()) } returns flowOf(raqueta)
         coEvery { service.findRepresentante(any()) } returns representante
 
@@ -340,7 +340,7 @@ class RaquetasControllerTest {
     }
 
     @Test
-    fun findByNameNotFound() = runTest {
+    fun findByMarcaNotFound() = runTest {
         coEvery { service.findByMarca(any()) } returns flowOf()
 
         val result = controller.findByName(raqueta.marca)
