@@ -23,7 +23,7 @@ dependencies {
     // Dependencias de Spring Boot y Spring Data Reactive
     implementation("org.springframework.boot:spring-boot-starter-data-r2dbc")
     // Dependencias de Seguridad Lo usaremos más adelante
-    // implementation("org.springframework.boot:spring-boot-starter-security")
+    implementation("org.springframework.boot:spring-boot-starter-security")
     // Validaciones de Spring Boot
     implementation("org.springframework.boot:spring-boot-starter-validation")
     // Webflux y Reactividad
@@ -41,6 +41,9 @@ dependencies {
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-reactor") // Corutinas
     implementation("io.projectreactor.kotlin:reactor-kotlin-extensions")
+
+    // JWT
+    implementation("com.auth0:java-jwt:4.2.1")
 
     // Mejoras de desarrollo
     // developmentOnly("org.springframework.boot:spring-boot-devtools")

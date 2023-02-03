@@ -1,7 +1,11 @@
 package es.joseluisgs.tenistasrestspringboot
 
-import es.joseluisgs.tenistasrestspringboot.models.Usuario
+import es.joseluisgs.tenistasrestspringboot.dto.UsuarioCreateDto
+import es.joseluisgs.tenistasrestspringboot.services.usuarios.UsuariosService
+import kotlinx.coroutines.flow.toList
+import kotlinx.coroutines.runBlocking
 import mu.KotlinLogging
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.CommandLineRunner
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.runApplication
@@ -18,11 +22,32 @@ borrar datos de prueba o lo que sea
 en la base de datos, puedo hacerlo con esta clase, que implementa CommandLineRunner
 */
     : CommandLineRunner {
-    override fun run(vararg args: String?) {
+    @Autowired
+    lateinit var service: UsuariosService
+    override fun run(vararg args: String?) = runBlocking {
+
         logger.info { "Ejecutando código antes de arrancar la aplicación" }
-        val roles: Set<Usuario.Rol> = setOf(Usuario.Rol.USER, Usuario.Rol.ADMIN)
-        println(roles.toString())
+
+        // vamos a probar los metodos de busqueda
+        val usuario = service.loadUserById(1)
+        println(usuario.toString())
+
+        val usuario2 = service.loadUserByUsername("pepe")
+        println(usuario2.authorities)
+
+        service.findAll().toList().forEach { println(it) }
+
+        val userCreateDto = UsuarioCreateDto(
+            nombre = "test",
+            email = "test@test.com",
+            username = "test",
+            password = "test",
+            password2 = "test"
+        )
+        val usuario3 = service.save(userCreateDto)
+        println(usuario3.toString())
     }
+
 
 }
 
