@@ -4,6 +4,7 @@
 DROP TABLE IF EXISTS TENISTAS;
 DROP TABLE IF EXISTS RAQUETAS;
 DROP TABLE IF EXISTS REPRESENTANTES;
+DROP TABLE IF EXISTS USUARIOS;
 
 -- REPRESENTANTES
 CREATE TABLE IF NOT EXISTS REPRESENTANTES
@@ -51,6 +52,22 @@ CREATE TABLE IF NOT EXISTS TENISTAS
     deleted          BOOLEAN   NOT NULL DEFAULT FALSE
 );
 
+-- USERS
+CREATE TABLE IF NOT EXISTS USUARIOS
+(
+    id         BIGINT AUTO_INCREMENT PRIMARY KEY,
+    uuid       UUID      NOT NULL UNIQUE,
+    nombre     TEXT      NOT NULL,
+    username   TEXT      NOT NULL UNIQUE,
+    email      TEXT      NOT NULL UNIQUE,
+    password   TEXT      NOT NULL,
+    avatar     TEXT,
+    roles      TEXT      NOT NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    deleted    BOOLEAN   NOT NULL DEFAULT FALSE
+);
+
 -- DATOS DE PRUEBA
 
 -- REPRESENTANTES
@@ -90,3 +107,10 @@ INSERT INTO TENISTAS (uuid, nombre, ranking, fecha_nacimiento, año_profesional,
                       tipo_reves, puntos, pais, raqueta_id)
 VALUES ('a711040a-fb0d-4fe4-b726-75883ca8d907', 'Carlos Alcaraz', 1, '2003-05-05', 2019, 185, 80, 'DERECHA',
         'DOS_MANOS', 6880, 'España', '86084458-4733-4d71-a3db-34b50cd8d68f');
+
+-- USUARIOS
+-- Contraseña: Admin1
+INSERT INTO USUARIOS (uuid, nombre, username, email, password, avatar, roles)
+VALUES ('b3e373d8-9338-44ba-83ea-471fc6caf524', 'Admin Admin', 'admin', 'admin@admin.com',
+        '$2a$10$vPaqZvZkz6jhb7U7k/V/v.5vprfNdOnh4sxi/qpPRkYTzPmFlI9p2',
+        'https://upload.wikimedia.org/wikipedia/commons/f/f4/User_Avatar_2.png', '[USER, ADMIN]');

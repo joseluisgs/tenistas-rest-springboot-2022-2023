@@ -1,0 +1,3 @@
+package es.joseluisgs.tenistasrestspringboot.config.security
+
+class SecurityConfig

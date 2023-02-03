@@ -36,7 +36,7 @@ class WebSocketHandler(private val entity: String) : TextWebSocketHandler(), Sub
     // Para poder enviar mensajes a todos los clientes almacenamos la sesión de cada uno
     override fun sendMessage(message: String) {
         logger.info { "Enviar mensaje de cambios en $entity: $message" }
-        for (session in sessions) {
+        sessions.forEach { session ->
             if (session.isOpen) {
                 logger.info { "Servidor envía: $message" }
                 session.sendMessage(TextMessage(message))
