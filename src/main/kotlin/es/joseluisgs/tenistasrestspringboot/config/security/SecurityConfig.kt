@@ -5,6 +5,7 @@ import es.joseluisgs.tenistasrestspringboot.config.security.jwt.JwtAuthenticatio
 import es.joseluisgs.tenistasrestspringboot.config.security.jwt.JwtAuthorizationFilter
 import es.joseluisgs.tenistasrestspringboot.config.security.jwt.JwtTokenUtils
 import es.joseluisgs.tenistasrestspringboot.services.usuarios.UsuariosService
+import mu.KotlinLogging
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
@@ -20,6 +21,8 @@ import org.springframework.security.web.SecurityFilterChain
 //https://blog.devgenius.io/implementing-authentication-and-authorization-using-spring-security-kotlin-and-jwt-an-easy-and-cc82a1f20567
 // https://stackoverflow.com/questions/74609057/how-to-fix-spring-authorizerequests-is-deprecated
 
+private val logger = KotlinLogging.logger {}
+
 @Configuration
 @EnableWebSecurity // Habilitamos la seguridad web
 // Activamos la seguridad a nivel de método, por si queremos trabajar a nivel de controlador
@@ -29,7 +32,8 @@ class SecurityConfig @Autowired constructor(
     private val jwtTokenUtils: JwtTokenUtils
 ) {
 
-    private fun authManager(http: HttpSecurity): AuthenticationManager {
+    @Bean
+    fun authManager(http: HttpSecurity): AuthenticationManager {
         val authenticationManagerBuilder = http.getSharedObject(
             AuthenticationManagerBuilder::class.java
         )
@@ -45,6 +49,7 @@ class SecurityConfig @Autowired constructor(
             .requestMatchers("/api/**")
             .permitAll()
             // Ahora vamos a permitir el acceso a los endpoints de login y registro
+            .requestMatchers("usuarios/login", "/register").permitAll()
             // O permitir por roles
             .requestMatchers("/user").hasRole("USER")
             // O por permisos y metodos

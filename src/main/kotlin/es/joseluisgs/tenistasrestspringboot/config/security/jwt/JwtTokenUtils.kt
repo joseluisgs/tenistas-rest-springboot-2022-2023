@@ -23,6 +23,7 @@ class JwtTokenUtils {
 
     // Genera el Token
     fun generateToken(user: Usuario): String {
+        logger.info { "Generando token para el usuario: ${user.username}" }
 
         // Obtenemos el usuario
         // val user: Usuario = authentication.principal
@@ -33,25 +34,29 @@ class JwtTokenUtils {
 
         // Construimos el token con sus datos y payload
         return JWT.create()
-            .withSubject(user.id.toString()) // Como Subject el ID del usuario
+            .withSubject(user.uuid.toString()) // Como Subject el ID del usuario
             .withHeader(mapOf("typ" to TOKEN_TYPE)) // Tipo de token
             .withIssuedAt(Date()) // Fecha actual
             .withExpiresAt(tokenExpirationDate) // Fecha de expiración
             .withClaim("username", user.username)
             .withClaim("nombre", user.nombre)
-            .withClaim("uuid", user.uuid.toString())
-            .withClaim("roles", user.roles.joinToString(","))
+            //.withClaim("roles", user.roles.joinToString(","))
             // Le añadimos los roles o lo que queramos como payload: claims
             .sign(Algorithm.HMAC512(jwtSecreto)) // Lo firmamos con nuestro secreto HS512
     }
 
     // A partir de un token obetner el ID de usuario
-    fun getUserIdFromJwt(token: String?): Long {
-        return validateToken(token!!)!!.subject.toLong()
+    fun getUserIdFromJwt(token: String?): String {
+        logger.info {
+            "Obteniendo el ID del usuario: ${token}"
+        }
+        return validateToken(token!!)!!.subject
     }
 
     // Nos idica como validar el Token
     fun validateToken(authToken: String): DecodedJWT? {
+        logger.info { "Validando el token: ${authToken}" }
+
         return JWT.require(Algorithm.HMAC512(jwtSecreto)).build().verify(authToken)
             ?: throw Exception("Token no válido o expirado")
     }
@@ -60,11 +65,15 @@ class JwtTokenUtils {
         validateToken(token)?.claims
 
     fun getUsernameFromJwt(token: String): String {
+        logger.info { "Obteniendo el nombre de usuario del token: ${token}" }
+
         val claims = getClaimsFromJwt(token)
         return claims!!["username"]!!.asString()
     }
 
     fun isTokenValid(token: String): Boolean {
+        logger.info { "Comprobando si el token es válido: ${token}" }
+
         val claims = getClaimsFromJwt(token)!!
         val expirationDate = claims["exp"]!!.asDate()
         val now = Date(System.currentTimeMillis())

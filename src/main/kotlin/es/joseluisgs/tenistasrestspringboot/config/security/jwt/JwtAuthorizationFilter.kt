@@ -6,6 +6,7 @@ import jakarta.servlet.FilterChain
 import jakarta.servlet.ServletException
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
+import joseluisgs.es.utils.toUUID
 import kotlinx.coroutines.runBlocking
 import org.springframework.security.authentication.AuthenticationManager
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
@@ -42,7 +43,7 @@ class JwtAuthorizationFilter(
         if (!jwtTokenUtil.isTokenValid(token)) return@runBlocking null
         val username = jwtTokenUtil.getUsernameFromJwt(token)
         val userId = jwtTokenUtil.getUserIdFromJwt(token)
-        val user = service.loadUserById(userId) // o por username
+        val user = service.loadUserByUuid(userId.toUUID())
         return@runBlocking UsernamePasswordAuthenticationToken(user, null, user?.authorities)
     }
 }
