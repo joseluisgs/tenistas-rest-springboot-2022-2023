@@ -10,4 +10,5 @@ import java.util.*
 interface UsuariosRepository : CoroutineCrudRepository<Usuario, Long> {
     fun findByUuid(uuid: UUID): Flow<Usuario>
     fun findByUsername(username: String): Flow<Usuario>
+    fun findByEmail(email: String): Flow<Usuario>
 }

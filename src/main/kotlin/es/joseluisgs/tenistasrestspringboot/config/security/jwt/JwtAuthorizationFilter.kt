@@ -28,6 +28,7 @@ class JwtAuthorizationFilter(
         res: HttpServletResponse,
         chain: FilterChain
     ) {
+        logger.info { "Filtrando" }
         val header = req.getHeader(AUTHORIZATION.toString())
         if (header == null || !header.startsWith(JwtTokenUtils.TOKEN_PREFIX)) {
             chain.doFilter(req, res)
@@ -40,10 +41,15 @@ class JwtAuthorizationFilter(
     }
 
     private fun getAuthentication(token: String): UsernamePasswordAuthenticationToken? = runBlocking {
+        logger.info { "Obteniendo autenticación" }
+
         if (!jwtTokenUtil.isTokenValid(token)) return@runBlocking null
-        val username = jwtTokenUtil.getUsernameFromJwt(token)
+        // val username = jwtTokenUtil.getUsernameFromJwt(token)
         val userId = jwtTokenUtil.getUserIdFromJwt(token)
         val user = service.loadUserByUuid(userId.toUUID())
-        return@runBlocking UsernamePasswordAuthenticationToken(user, null, user?.authorities)
+        return@runBlocking UsernamePasswordAuthenticationToken(
+            user,
+            user?.rol,
+        )
     }
 }

@@ -45,6 +45,10 @@ dependencies {
     // JWT
     implementation("com.auth0:java-jwt:4.2.1")
 
+    // Para las excepciones con spring security nuevo
+    // https://wimdeblauwe.github.io/error-handling-spring-boot-starter/current/#goal
+    // implementation("io.github.wimdeblauwe:error-handling-spring-boot-starter:4.1.0")
+
     // Mejoras de desarrollo
     // developmentOnly("org.springframework.boot:spring-boot-devtools")
 

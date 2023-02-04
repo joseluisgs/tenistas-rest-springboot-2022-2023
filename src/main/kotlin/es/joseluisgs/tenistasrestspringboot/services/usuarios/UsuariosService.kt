@@ -1,6 +1,5 @@
 package es.joseluisgs.tenistasrestspringboot.services.usuarios
 
-import es.joseluisgs.tenistasrestspringboot.dto.UsuarioCreateDto
 import es.joseluisgs.tenistasrestspringboot.exceptions.UsuariosBadRequestException
 import es.joseluisgs.tenistasrestspringboot.exceptions.UsuariosNotFoundException
 import es.joseluisgs.tenistasrestspringboot.models.Usuario
@@ -12,11 +11,11 @@ import kotlinx.coroutines.withContext
 import mu.KotlinLogging
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.cache.annotation.Cacheable
-import org.springframework.dao.DataIntegrityViolationException
 import org.springframework.security.core.userdetails.UserDetails
 import org.springframework.security.core.userdetails.UserDetailsService
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.stereotype.Service
+import java.time.LocalDateTime
 import java.util.*
 
 private val logger = KotlinLogging.logger {}
@@ -51,22 +50,31 @@ class UsuariosService
         return@withContext repository.findByUuid(uuid).firstOrNull()
     }
 
-    // save... Update... Delete...
-    suspend fun save(usuarioDto: UsuarioCreateDto): Usuario = withContext(Dispatchers.IO) {
-        // Comprobamos que las contraseñas coinciden o llevarnos esto a otro lado!!!
+    suspend fun save(user: Usuario): Usuario = withContext(Dispatchers.IO) {
+        logger.info { "Guardando usuario: $user" }
+        // existe el username o el email
+        if (repository.findByUsername(user.username)
+                .firstOrNull() != null
+        ) {
+            logger.info { "El usuario ya existe" }
+            throw UsuariosBadRequestException("El username ya existe")
+        }
+        if (repository.findByEmail(user.email)
+                .firstOrNull() != null
+        ) {
+            logger.info { "El email ya existe" }
+            throw UsuariosBadRequestException("El email ya existe")
+        }
+        logger.info { "El usuario no existe, lo guardamos" }
         // Encriptamos la contraseña
-        if (usuarioDto.password != usuarioDto.password2) throw UsuariosBadRequestException("Las contraseñas no coinciden")
-        val usuario = Usuario(
-            nombre = usuarioDto.nombre,
-            email = usuarioDto.email,
-            username = usuarioDto.username,
-            avatar = usuarioDto.avatar,
-            roles = setOf(usuarioDto.role),
-            password = passwordEncoder.encode(usuarioDto.password)
+        val newUser = user.copy(
+            uuid = UUID.randomUUID(), password = passwordEncoder.encode(user.password),
+            createdAt = LocalDateTime.now(),
+            updatedAt = LocalDateTime.now()
         )
         try {
-            return@withContext repository.save(usuario)
-        } catch (e: DataIntegrityViolationException) {
+            return@withContext repository.save(newUser)
+        } catch (e: Exception) {
             throw UsuariosBadRequestException("Error al crear el usuario: Nombre de usuario o email ya existen")
         }
     }

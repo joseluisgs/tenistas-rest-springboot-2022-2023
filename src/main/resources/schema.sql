@@ -62,7 +62,7 @@ CREATE TABLE IF NOT EXISTS USUARIOS
     email                   TEXT      NOT NULL UNIQUE,
     password                TEXT      NOT NULL,
     avatar                  TEXT,
-    roles                   TEXT      NOT NULL,
+    rol                     TEXT      NOT NULL,
     created_at              TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at              TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     deleted                 BOOLEAN   NOT NULL DEFAULT FALSE,
@@ -111,12 +111,12 @@ VALUES ('a711040a-fb0d-4fe4-b726-75883ca8d907', 'Carlos Alcaraz', 1, '2003-05-05
 
 -- USUARIOS
 -- Contraseña: pepe1234
-INSERT INTO USUARIOS (uuid, nombre, username, email, password, avatar, roles)
+INSERT INTO USUARIOS (uuid, nombre, username, email, password, avatar, rol)
 VALUES ('b39a2fd2-f7d7-405d-b73c-b68a8dedbcdf', 'Pepe Perez', 'pepe', 'pepe@perez.com',
         '$2a$12$249dkPGBT6dH46f4Dbu7ouEuO8eZ7joonzWGefPJbHH8eDpJy0oCq',
-        'https://upload.wikimedia.org/wikipedia/commons/f/f4/User_Avatar_2.png', 'USER,ADMIN');
+        'https://upload.wikimedia.org/wikipedia/commons/f/f4/User_Avatar_2.png', 'ADMIN');
 -- Contraseña: ana1234
-INSERT INTO USUARIOS (uuid, nombre, username, email, password, avatar, roles)
+INSERT INTO USUARIOS (uuid, nombre, username, email, password, avatar, rol)
 VALUES ('c53062e4-31ea-4f5e-a99d-36c228ed01a3', 'Ana Lopez', 'ana', 'ana@lopez.com',
         '$2a$12$ZymlZf4Ja48WpBliFEU0qOUwb6HEJnhzlKYUoywhCxutkf1BzMbW2',
         'https://upload.wikimedia.org/wikipedia/commons/f/f4/User_Avatar_2.png', 'USER');

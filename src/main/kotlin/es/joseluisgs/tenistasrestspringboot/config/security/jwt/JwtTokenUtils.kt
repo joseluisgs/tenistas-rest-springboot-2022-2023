@@ -3,6 +3,7 @@ package es.joseluisgs.tenistasrestspringboot.config.security.jwt
 import com.auth0.jwt.JWT
 import com.auth0.jwt.algorithms.Algorithm
 import com.auth0.jwt.interfaces.DecodedJWT
+import es.joseluisgs.tenistasrestspringboot.exceptions.TokenInvalidException
 import es.joseluisgs.tenistasrestspringboot.models.Usuario
 import mu.KotlinLogging
 import org.springframework.beans.factory.annotation.Value
@@ -40,7 +41,8 @@ class JwtTokenUtils {
             .withExpiresAt(tokenExpirationDate) // Fecha de expiración
             .withClaim("username", user.username)
             .withClaim("nombre", user.nombre)
-            //.withClaim("roles", user.roles.joinToString(","))
+            .withClaim("rol", user.rol.name)
+            //.withClaim("authorities", user.authorities.map { it.authority }.toList())
             // Le añadimos los roles o lo que queramos como payload: claims
             .sign(Algorithm.HMAC512(jwtSecreto)) // Lo firmamos con nuestro secreto HS512
     }
@@ -57,8 +59,11 @@ class JwtTokenUtils {
     fun validateToken(authToken: String): DecodedJWT? {
         logger.info { "Validando el token: ${authToken}" }
 
-        return JWT.require(Algorithm.HMAC512(jwtSecreto)).build().verify(authToken)
-            ?: throw Exception("Token no válido o expirado")
+        try {
+            return JWT.require(Algorithm.HMAC512(jwtSecreto)).build().verify(authToken)
+        } catch (e: Exception) {
+            throw TokenInvalidException("Token no válido o expirado")
+        }
     }
 
     private fun getClaimsFromJwt(token: String) =

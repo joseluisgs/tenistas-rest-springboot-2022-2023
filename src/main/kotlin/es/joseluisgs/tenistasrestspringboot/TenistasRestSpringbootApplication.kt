@@ -41,11 +41,10 @@ en la base de datos, puedo hacerlo con esta clase, que implementa CommandLineRun
             nombre = "test",
             email = "test@test.com",
             username = "test",
-            password = "test",
-            password2 = "test"
+            password = "test"
         )
-        val usuario3 = service.save(userCreateDto)
-        println(usuario3.toString())
+        /*val usuario3 = service.save(userCreateDto)
+        println(usuario3.toString())*/
     }
 
 
