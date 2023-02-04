@@ -1,6 +1,7 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
+    // Cuidado  con la versión de Spring Boot que usamos que arrastra a todas las dependencias
     id("org.springframework.boot") version "3.0.3-SNAPSHOT"
     id("io.spring.dependency-management") version "1.1.0"
     id("org.graalvm.buildtools.native") version "0.9.18"
