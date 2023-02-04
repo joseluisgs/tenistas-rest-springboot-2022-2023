@@ -30,4 +30,5 @@ interface StorageService {
 
     // Obtiene la URL del fichero
     fun getUrl(filename: String): String
+    fun store(file: MultipartFile, filenameFromUser: String): String
 }

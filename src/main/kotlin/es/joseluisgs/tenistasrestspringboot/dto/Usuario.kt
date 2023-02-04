@@ -10,7 +10,7 @@ data class UsuarioCreateDto(
     val email: String,
     val username: String,
     val avatar: String? = null,
-    val rol: Set<Usuario.Rol> = setOf(Usuario.Rol.USER),
+    val rol: Set<String> = setOf(Usuario.Rol.USER.name),
     val password: String
 )
 
@@ -25,7 +25,7 @@ data class UsuarioDto(
     val username: String,
     val email: String,
     val avatar: String,
-    val rol: String,
+    val rol: Set<String> = setOf(Usuario.Rol.USER.name),
     val metadata: MetaData? = null,
 ) {
     data class MetaData(

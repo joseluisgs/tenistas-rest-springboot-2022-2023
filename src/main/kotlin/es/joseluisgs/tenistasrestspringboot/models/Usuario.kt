@@ -32,7 +32,7 @@ data class Usuario(
 
     // Conjunto de permisos que tiene
     @Column("rol")
-    val rol: Set<Rol> = setOf(Rol.USER),
+    val rol: String = Rol.USER.name,
 
     // Historicos y metadata
     @Column("created_at")
@@ -53,7 +53,7 @@ data class Usuario(
     override fun getAuthorities(): MutableCollection<out GrantedAuthority> {
         //val ga = SimpleGrantedAuthority("ROLE_" + rol.name)
         // return mutableListOf<GrantedAuthority>(ga)
-        return rol.map { SimpleGrantedAuthority("ROLE_$it") }.toMutableList()
+        return rol.split(",").map { SimpleGrantedAuthority("ROLE_${it.trim()}") }.toMutableList()
     }
 
     override fun getPassword(): String {

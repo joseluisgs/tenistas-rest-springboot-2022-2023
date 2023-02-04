@@ -41,7 +41,7 @@ class JwtTokenUtils {
             .withExpiresAt(tokenExpirationDate) // Fecha de expiración
             .withClaim("username", user.username)
             .withClaim("nombre", user.nombre)
-            .withClaim("roles", user.rol.toString())
+            .withClaim("roles", user.rol.split(",").toSet().toString())
             //.withClaim("authorities", user.authorities.map { it.authority }.toList())
             // Le añadimos los roles o lo que queramos como payload: claims
             .sign(Algorithm.HMAC512(jwtSecreto)) // Lo firmamos con nuestro secreto HS512
@@ -49,9 +49,7 @@ class JwtTokenUtils {
 
     // A partir de un token obetner el ID de usuario
     fun getUserIdFromJwt(token: String?): String {
-        logger.info {
-            "Obteniendo el ID del usuario: ${token}"
-        }
+        logger.info { "Obteniendo el ID del usuario: $token" }
         return validateToken(token!!)!!.subject
     }
 

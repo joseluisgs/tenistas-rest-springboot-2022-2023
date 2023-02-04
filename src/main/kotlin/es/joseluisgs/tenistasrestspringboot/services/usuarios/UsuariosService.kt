@@ -50,27 +50,10 @@ class UsuariosService
         return@withContext repository.findByUuid(uuid).firstOrNull()
     }
 
-    suspend fun save(user: Usuario): Usuario = withContext(Dispatchers.IO) {
+    suspend fun save(user: Usuario, isAdmin: Boolean = false): Usuario = withContext(Dispatchers.IO) {
         logger.info { "Guardando usuario: $user" }
 
         // existe el username o el email
-        checkRestricciones(user)
-
-        logger.info { "El usuario no existe, lo guardamos" }
-        // Encriptamos la contraseña
-        val newUser = user.copy(
-            uuid = UUID.randomUUID(), password = passwordEncoder.encode(user.password),
-            createdAt = LocalDateTime.now(),
-            updatedAt = LocalDateTime.now()
-        )
-        try {
-            return@withContext repository.save(newUser)
-        } catch (e: Exception) {
-            throw UsuariosBadRequestException("Error al crear el usuario: Nombre de usuario o email ya existen")
-        }
-    }
-
-    private suspend fun checkRestricciones(user: Usuario) {
         if (repository.findByUsername(user.username)
                 .firstOrNull() != null
         ) {
@@ -83,13 +66,45 @@ class UsuariosService
             logger.info { "El email ya existe" }
             throw UsuariosBadRequestException("El email ya existe")
         }
+
+        logger.info { "El usuario no existe, lo guardamos" }
+        // Encriptamos la contraseña
+        var newUser = user.copy(
+            uuid = UUID.randomUUID(),
+            password = passwordEncoder.encode(user.password),
+            rol = Usuario.Rol.USER.name,
+            createdAt = LocalDateTime.now(),
+            updatedAt = LocalDateTime.now()
+        )
+        if (isAdmin)
+            newUser = newUser.copy(
+                rol = Usuario.Rol.ADMIN.name
+            )
+        println(newUser)
+        try {
+            return@withContext repository.save(newUser)
+        } catch (e: Exception) {
+            throw UsuariosBadRequestException("Error al crear el usuario: Nombre de usuario o email ya existen")
+        }
     }
 
     suspend fun update(user: Usuario) = withContext(Dispatchers.IO) {
         logger.info { "Actualizando usuario: $user" }
 
         // existe el username o el email
-        checkRestricciones(user)
+        var userDB = repository.findByUsername(user.username)
+            .firstOrNull()
+        // No soy yo??
+        if (userDB != null && userDB.id != user.id) {
+            throw UsuariosBadRequestException("El username ya existe")
+        }
+
+        userDB = repository.findByEmail(user.email)
+            .firstOrNull()
+        // No soy yo??
+        if (userDB != null && userDB.id != user.id) {
+            throw UsuariosBadRequestException("El email ya existe")
+        }
 
         logger.info { "El usuario no existe, lo actualizamos" }
 
@@ -102,7 +117,7 @@ class UsuariosService
         } catch (e: Exception) {
             throw UsuariosBadRequestException("Error al actualizar el usuario: Nombre de usuario o email ya existen")
         }
-        
+
 
     }
 
