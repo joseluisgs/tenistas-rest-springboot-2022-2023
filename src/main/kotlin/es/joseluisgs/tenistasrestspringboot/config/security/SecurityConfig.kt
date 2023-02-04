@@ -51,6 +51,7 @@ class SecurityConfig @Autowired constructor(
     fun webSecurityCustomizer(): WebSecurityCustomizer {
         return WebSecurityCustomizer { web: WebSecurity ->
             web.ignoring().requestMatchers("/error/**")
+            web.ignoring().requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html")
         }
     }
 
@@ -79,6 +80,7 @@ class SecurityConfig @Autowired constructor(
 
             // Ahora vamos a permitir el acceso a los endpoints de login y registro
             .requestMatchers("users/login", "users/register").permitAll()
+            .requestMatchers("/v3/api-docs/", "/swagger-ui/**").permitAll()
 
             // O permitir por roles en un endpoint
             .requestMatchers("/user/me").hasAnyRole("USER", "ADMIN")
