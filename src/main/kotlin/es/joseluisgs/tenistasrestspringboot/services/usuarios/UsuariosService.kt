@@ -52,19 +52,10 @@ class UsuariosService
 
     suspend fun save(user: Usuario): Usuario = withContext(Dispatchers.IO) {
         logger.info { "Guardando usuario: $user" }
+
         // existe el username o el email
-        if (repository.findByUsername(user.username)
-                .firstOrNull() != null
-        ) {
-            logger.info { "El usuario ya existe" }
-            throw UsuariosBadRequestException("El username ya existe")
-        }
-        if (repository.findByEmail(user.email)
-                .firstOrNull() != null
-        ) {
-            logger.info { "El email ya existe" }
-            throw UsuariosBadRequestException("El email ya existe")
-        }
+        checkRestricciones(user)
+
         logger.info { "El usuario no existe, lo guardamos" }
         // Encriptamos la contraseña
         val newUser = user.copy(
@@ -77,6 +68,42 @@ class UsuariosService
         } catch (e: Exception) {
             throw UsuariosBadRequestException("Error al crear el usuario: Nombre de usuario o email ya existen")
         }
+    }
+
+    private suspend fun checkRestricciones(user: Usuario) {
+        if (repository.findByUsername(user.username)
+                .firstOrNull() != null
+        ) {
+            logger.info { "El usuario ya existe" }
+            throw UsuariosBadRequestException("El username ya existe")
+        }
+        if (repository.findByEmail(user.email)
+                .firstOrNull() != null
+        ) {
+            logger.info { "El email ya existe" }
+            throw UsuariosBadRequestException("El email ya existe")
+        }
+    }
+
+    suspend fun update(user: Usuario) = withContext(Dispatchers.IO) {
+        logger.info { "Actualizando usuario: $user" }
+
+        // existe el username o el email
+        checkRestricciones(user)
+
+        logger.info { "El usuario no existe, lo actualizamos" }
+
+        val updtatedUser = user.copy(
+            updatedAt = LocalDateTime.now()
+        )
+
+        try {
+            return@withContext repository.save(updtatedUser)
+        } catch (e: Exception) {
+            throw UsuariosBadRequestException("Error al actualizar el usuario: Nombre de usuario o email ya existen")
+        }
+        
+
     }
 
 }

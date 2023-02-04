@@ -80,10 +80,10 @@ class SecurityConfig @Autowired constructor(
             // Ahora vamos a permitir el acceso a los endpoints de login y registro
             .requestMatchers("users/login", "users/register").permitAll()
 
-            // O permitir por roles
-            .requestMatchers("/user/me").hasAnyRole("ADMIN")
+            // O permitir por roles en un endpoint
+            .requestMatchers("/user/me").hasAnyRole("USER", "ADMIN")
 
-            // O por permisos y metodos
+            // O por permisos y metodos en un endpoint
             .requestMatchers(HttpMethod.GET, "/user/list").hasRole("ADMIN")
 
             // Las otras peticiones no requerirán autenticación,

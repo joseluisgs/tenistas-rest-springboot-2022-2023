@@ -2,10 +2,7 @@ package es.joseluisgs.tenistasrestspringboot.controllers
 
 import es.joseluisgs.tenistasrestspringboot.config.APIConfig
 import es.joseluisgs.tenistasrestspringboot.config.security.jwt.JwtTokenUtils
-import es.joseluisgs.tenistasrestspringboot.dto.UserWithTokenDto
-import es.joseluisgs.tenistasrestspringboot.dto.UsuarioCreateDto
-import es.joseluisgs.tenistasrestspringboot.dto.UsuarioDto
-import es.joseluisgs.tenistasrestspringboot.dto.UsuarioLoginDto
+import es.joseluisgs.tenistasrestspringboot.dto.*
 import es.joseluisgs.tenistasrestspringboot.exceptions.UsuariosBadRequestException
 import es.joseluisgs.tenistasrestspringboot.mappers.toDto
 import es.joseluisgs.tenistasrestspringboot.mappers.toModel
@@ -89,7 +86,9 @@ class UsuarioController @Autowired constructor(
         }
     }
 
-    @PreAuthorize("hasRole('USER')") // Solo los usuarios pueden acceder a esta información
+    // Solo los usuarios pueden acceder a esta información
+    // en el fondo no es necesario porque ya lo hace el AuthenticationManager y es el rol minimo
+    @PreAuthorize("hasRole('USER')") // hasAnyRole('USER', 'ADMIN')
     @GetMapping("/me")
     fun meInfo(@AuthenticationPrincipal user: Usuario?): ResponseEntity<UsuarioDto> {
         // No hay que buscar porque el usuario ya está autenticado y lo tenemos en el contexto
@@ -113,5 +112,32 @@ class UsuarioController @Autowired constructor(
 
         val res = usuariosService.findAll().toList().map { it.toDto() }
         return ResponseEntity.ok(res)
+    }
+
+    // No voy a poner el @PreAuthorize porque ya se da por hecho que es usuario
+    // que es el rol minimo, si no poner para los roles que son
+    @PutMapping("/me")
+    suspend fun updateMe(
+        @AuthenticationPrincipal user: Usuario?,
+        @Valid @RequestBody usuarioDto: UsuarioUpdateDto
+    ): ResponseEntity<UsuarioDto> {
+        // No hay que buscar porque el usuario ya está autenticado y lo tenemos en el contexto
+        logger.info { "Actualizando usuario: ${user?.username}" }
+
+        usuarioDto.validate()
+
+        val userUpdated = user?.copy(
+            nombre = usuarioDto.nombre,
+            username = usuarioDto.username,
+            email = usuarioDto.email,
+        )!!
+
+        // Actualizamos el usuario
+        try {
+            val userUpdated = usuariosService.update(userUpdated)
+            return ResponseEntity.ok(userUpdated.toDto())
+        } catch (e: UsuariosBadRequestException) {
+            throw ResponseStatusException(HttpStatus.BAD_REQUEST, e.message)
+        }
     }
 }

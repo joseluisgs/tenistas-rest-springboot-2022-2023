@@ -35,6 +35,12 @@ data class UsuarioDto(
     )
 }
 
+data class UsuarioUpdateDto(
+    val nombre: String,
+    val email: String,
+    val username: String,
+)
+
 data class UserWithTokenDto(
     val user: UsuarioDto,
     val token: String
