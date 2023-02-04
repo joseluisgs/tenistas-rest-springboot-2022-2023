@@ -34,6 +34,10 @@ private val logger = KotlinLogging.logger {}
 // y devolver el que yo quiera, o incluso devolver un error personalizado, o saber qué testear y esperar
 
 
+/**
+ * Controlador de Rest de Representantes
+ * @param representanteService: Servicio de Representantes
+ */
 @RestController
 @RequestMapping(APIConfig.API_PATH + "/representantes")
 class RepresentantesController
@@ -41,6 +45,10 @@ class RepresentantesController
     private val representanteService: RepresentantesService,
 ) {
 
+    /**
+     * GET all: Lista de representantes
+     * @return ResponseEntity<List<RepresentanteDto>> con el listado de Representantes
+     */
     @GetMapping("")
     suspend fun finAll(): ResponseEntity<List<RepresentanteDto>> {
         logger.info { "GET ALL Representantes" }
@@ -52,6 +60,12 @@ class RepresentantesController
 
     }
 
+    /**
+     * GET by id: Obtiene un representante por su id
+     * @param id: UUID del representante
+     * @return ResponseEntity<RepresentanteDto> con el representante
+     * @throws ResponseStatusException con el error 404 si no lo encuentra
+     */
     @GetMapping("/{id}")
     suspend fun findById(@PathVariable id: UUID): ResponseEntity<RepresentanteDto> {
         logger.info { "GET By ID Representante con id: $id" }
@@ -65,6 +79,12 @@ class RepresentantesController
         }
     }
 
+    /**
+     * POST: Crea un nuevo representante
+     * @param representanteDto: RepresentanteRequestDto con los datos del representante
+     * @return ResponseEntity<RepresentanteDto> con el representante creado
+     * @throws ResponseStatusException con el error 400 si no es válido
+     */
     @PostMapping("")
     suspend fun create(@Valid @RequestBody representanteDto: RepresentanteRequestDto): ResponseEntity<RepresentanteDto> {
         // Con valid hacemos la validación de los campos
@@ -79,6 +99,14 @@ class RepresentantesController
         }
     }
 
+    /**
+     * PUT: Modifica un nuevo representante
+     * @param id: UUID del representante
+     * @param representanteDto: RepresentanteRequestDto con los datos del representante
+     * @return ResponseEntity<RepresentanteDto> con el representante modificado
+     * @throws ResponseStatusException con el error 400 si no es válido
+     * @throws ResponseStatusException con el error 404 si no lo encuentra
+     */
     @PutMapping("/{id}")
     suspend fun update(
         @PathVariable id: UUID,
@@ -98,6 +126,13 @@ class RepresentantesController
         }
     }
 
+    /**
+     * DELETE: Elimina un representante
+     * @param id: UUID del representante
+     * @return ResponseEntity<RepresentanteDto> con el representante eliminado
+     * @throws ResponseStatusException con el error 404 si no lo encuentra
+     * @throws ResponseStatusException con el error 400 si no se puede eliminar
+     */
     @DeleteMapping("/{id}")
     suspend fun delete(@PathVariable id: UUID): ResponseEntity<RepresentanteDto> {
         logger.info { "DELETE Representante con id: $id" }
@@ -113,6 +148,11 @@ class RepresentantesController
         }
     }
 
+    /**
+     * GET by name: Obtiene un representante por su nombre
+     * @param nombre: Nombre del representante como parámetro de búsqueda
+     * @return ResponseEntity<List<RepresentanteDto>> con el listado de representantes
+     */
     @GetMapping("find")
     suspend fun findByName(@RequestParam nombre: String): ResponseEntity<List<RepresentanteDto>> {
         logger.info { "GET By Name Representante con nombre: $nombre" }
@@ -125,10 +165,16 @@ class RepresentantesController
         }
     }
 
+    /**
+     * GET All: Obtiene todos los representantes paginados
+     * @param page: Página a consultar (0 por defecto)
+     * @param size: Tamaño de la página (10 por defecto)
+     * @param sortBy: Campo por el que ordenar (nombre por defecto)
+     */
     @GetMapping("paging")
     suspend fun getAll(
-        @RequestParam(defaultValue = APIConfig.PAGINATION_INIT) page: Int,
-        @RequestParam(defaultValue = APIConfig.PAGINATION_SIZE) size: Int,
+        @RequestParam(defaultValue = APIConfig.PAGINATION_INIT) page: Int = 0,
+        @RequestParam(defaultValue = APIConfig.PAGINATION_SIZE) size: Int = 10,
         @RequestParam(defaultValue = APIConfig.PAGINATION_SORT) sortBy: String = "nombre",
         request: HttpServletRequest?
     ): ResponseEntity<RepresentantesPageDto> {
@@ -156,6 +202,5 @@ class RepresentantesController
             return ResponseEntity.notFound().build()
         }
     }
-
 
 }

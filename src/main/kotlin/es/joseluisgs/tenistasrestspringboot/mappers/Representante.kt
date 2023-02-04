@@ -6,6 +6,8 @@ import es.joseluisgs.tenistasrestspringboot.models.Representante
 
 /**
  * Transformamos un Representante en un RepresentanteDto
+ * @receiver Representante
+ * @return RepresentanteDto
  */
 fun Representante.toDto() = RepresentanteDto(
     id = this.uuid, // cambio el id por el uuid, pero para el dto es id
@@ -20,6 +22,8 @@ fun Representante.toDto() = RepresentanteDto(
 
 /**
  * Transformamos un RepresentanteDto en un Representante
+ * @receiver RepresentanteDto
+ * @return Representante
  */
 fun RepresentanteRequestDto.toModel() = Representante(
     nombre = this.nombre,

@@ -3,7 +3,10 @@ package es.joseluisgs.tenistasrestspringboot.validators
 import es.joseluisgs.tenistasrestspringboot.dto.RepresentanteRequestDto
 import es.joseluisgs.tenistasrestspringboot.exceptions.RepresentanteBadRequestException
 
-
+/**
+ * Validador de Representantes
+ * @see RepresentanteRequestDto
+ */
 fun RepresentanteRequestDto.validate(): RepresentanteRequestDto {
     if (this.nombre.isBlank())
         throw RepresentanteBadRequestException("El nombre no puede estar vacío")

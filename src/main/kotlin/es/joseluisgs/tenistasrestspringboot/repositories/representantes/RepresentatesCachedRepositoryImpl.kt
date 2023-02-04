@@ -20,6 +20,12 @@ import java.util.*
 
 private val logger = KotlinLogging.logger {}
 
+/**
+ * Repositorio de Representantes con Cache
+ * @param representantesRepository: RepresentantesRepository
+ * @see RepresentantesRepository
+ * @see Representante
+ */
 @Repository
 class RepresentatesCachedRepositoryImpl
 @Autowired constructor(
@@ -30,12 +36,21 @@ class RepresentatesCachedRepositoryImpl
         logger.info { "Iniciando Repositorio Cache de Representantes" }
     }
 
+    /**
+     * Función que nos devuelve todos los representantes
+     * @return Flow<Representante>
+     */
     override suspend fun findAll(): Flow<Representante> = withContext(Dispatchers.IO) {
         logger.info { "Repositorio de representantes findAll" }
 
         return@withContext representantesRepository.findAll()
     }
 
+    /**
+     * Función que nos devuelve un representante por su id
+     * @param id: Long Identificador del representante
+     * @return Representante? Representante o null si no lo encuentra
+     */
     @Cacheable("representantes")
     override suspend fun findById(id: Long): Representante? = withContext(Dispatchers.IO) {
         logger.info { "Repositorio de representantes findById con id: $id" }
@@ -43,6 +58,12 @@ class RepresentatesCachedRepositoryImpl
         return@withContext representantesRepository.findById(id)
     }
 
+    /**
+     * Función que nos devuelve un representante por su uuid
+     * @param uuid: UUID UUID del representante
+     * @return Representante? Representante o null si no lo encuentra
+     * @see Representante
+     */
     @Cacheable("representantes")
     override suspend fun findByUuid(uuid: UUID): Representante? = withContext(Dispatchers.IO) {
         logger.info { "Repositorio de representantes findByUuid con uuid: $uuid" }
@@ -50,12 +71,24 @@ class RepresentatesCachedRepositoryImpl
         return@withContext representantesRepository.findByUuid(uuid).firstOrNull()
     }
 
+    /**
+     * Función que nos devuelve un representante por su nombre
+     * @param nombre: String Nombre del representante
+     * @return Flow<Representante>
+     * @see Representante
+     */
     override suspend fun findByNombre(nombre: String): Flow<Representante> = withContext(Dispatchers.IO) {
         logger.info { "Repositorio de representantes findByName con nombre: $nombre" }
 
         return@withContext representantesRepository.findByNombreContainsIgnoreCase(nombre)
     }
 
+    /**
+     * Creamos un nuevo representante
+     * @param representante: Representante Representante a crear
+     * @return Representante Representante creado
+     * @see Representante
+     */
     @CachePut("representantes")
     override suspend fun save(representante: Representante): Representante = withContext(Dispatchers.IO) {
         logger.info { "Repositorio de representantes save representante: $representante" }
@@ -70,6 +103,11 @@ class RepresentatesCachedRepositoryImpl
         return@withContext representantesRepository.save(representante)
     }
 
+    /**
+     * Actualizamos un representante
+     * @param uuid: UUID UUID del representante
+     * @param representante: Representante Representante a actualizar
+     */
     @CachePut("representantes")
     override suspend fun update(uuid: UUID, representante: Representante): Representante? =
         withContext(Dispatchers.IO) {
@@ -90,6 +128,11 @@ class RepresentatesCachedRepositoryImpl
             return@withContext null
         }
 
+    /**
+     * Borramos un representante por su id
+     * @param id: Long Identificador del representante
+     * @throws RepresentanteConflictIntegrityException Si el representante tiene raquetas asociadas
+     */
     @CacheEvict("representantes")
     override suspend fun deleteById(id: Long) = withContext(Dispatchers.IO) {
         logger.info { "Repositorio de representantes deleteById con id: $id" }
@@ -101,6 +144,11 @@ class RepresentatesCachedRepositoryImpl
         }
     }
 
+    /**
+     * Obtiene los representantes paginados
+     * @param pageRequest: PageRequest Petición de paginación
+     * @return Flow<Page<Representante>>
+     */
     override suspend fun findAllPage(pageRequest: PageRequest): Flow<Page<Representante>> {
         logger.info { "Repositorio de representantes findAllPage" }
 
@@ -111,12 +159,21 @@ class RepresentatesCachedRepositoryImpl
             .asFlow()
     }
 
+    /**
+     * Obtiene el número de representantes
+     * @return Long Número de representantes
+     */
     override suspend fun countAll(): Long {
         logger.info { "Repositorio de representantes countAll" }
 
         return representantesRepository.count()
     }
 
+    /**
+     * Borramos un representante por su uuid
+     * @param uuid: UUID UUID del representante
+     * @throws RepresentanteConflictIntegrityException Si el representante tiene raquetas asociadas
+     */
     @CacheEvict("representantes")
     override suspend fun deleteByUuid(uuid: UUID): Representante? = withContext(Dispatchers.IO) {
         logger.info { "Repositorio de representantes deleteByUuid con uuid: $uuid" }
@@ -133,6 +190,11 @@ class RepresentatesCachedRepositoryImpl
         return@withContext null
     }
 
+    /**
+     * Borramos un representante
+     * @param nombre: String Nombre del representante
+     * @throws RepresentanteConflictIntegrityException Si el representante tiene raquetas asociadas
+     */
     @CacheEvict("representantes")
     override suspend fun delete(representante: Representante): Representante? = withContext(Dispatchers.IO) {
         logger.info { "Repositorio de representantes delete con representante: $representante" }
@@ -149,6 +211,9 @@ class RepresentatesCachedRepositoryImpl
         return@withContext null
     }
 
+    /**
+     * Borramos todos los representantes
+     */
     @CacheEvict("representantes", allEntries = true)
     override suspend fun deleteAll() = withContext(Dispatchers.IO) {
         logger.info { "Repositorio de representantes deleteAll" }
