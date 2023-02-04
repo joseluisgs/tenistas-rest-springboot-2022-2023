@@ -41,7 +41,7 @@ class JwtTokenUtils {
             .withExpiresAt(tokenExpirationDate) // Fecha de expiración
             .withClaim("username", user.username)
             .withClaim("nombre", user.nombre)
-            .withClaim("rol", user.rol.name)
+            .withClaim("roles", user.rol.toString())
             //.withClaim("authorities", user.authorities.map { it.authority }.toList())
             // Le añadimos los roles o lo que queramos como payload: claims
             .sign(Algorithm.HMAC512(jwtSecreto)) // Lo firmamos con nuestro secreto HS512
@@ -74,6 +74,13 @@ class JwtTokenUtils {
 
         val claims = getClaimsFromJwt(token)
         return claims!!["username"]!!.asString()
+    }
+
+    fun getRolesFromJwt(token: String): String {
+        logger.info { "Obteniendo los roles del token: ${token}" }
+
+        val claims = getClaimsFromJwt(token)
+        return claims!!["roles"]!!.asString()
     }
 
     fun isTokenValid(token: String): Boolean {

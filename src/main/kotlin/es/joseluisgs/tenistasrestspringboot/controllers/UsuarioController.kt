@@ -18,6 +18,7 @@ import mu.KotlinLogging
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
+import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.security.authentication.AuthenticationManager
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
 import org.springframework.security.core.Authentication
@@ -88,6 +89,7 @@ class UsuarioController @Autowired constructor(
         }
     }
 
+    @PreAuthorize("hasRole('USER')") // Solo los usuarios pueden acceder a esta información
     @GetMapping("/me")
     fun meInfo(@AuthenticationPrincipal user: Usuario?): ResponseEntity<UsuarioDto> {
         // No hay que buscar porque el usuario ya está autenticado y lo tenemos en el contexto
@@ -96,13 +98,18 @@ class UsuarioController @Autowired constructor(
         return ResponseEntity.ok(user?.toDto())
     }
 
+    @PreAuthorize("hasRole('ADMIN')") // Solo los administradores pueden acceder a esta información
     @GetMapping("/list")
     suspend fun list(@AuthenticationPrincipal user: Usuario?): ResponseEntity<List<UsuarioDto>> {
         // Estamos aqui es que somos administradores!!! por el contexto!!
         logger.info { "Obteniendo lista de usuarios" }
 
-        if (user?.rol != Usuario.Rol.ADMIN)
+        // No hay que buscar porque el usuario ya está autenticado y lo tenemos en el contexto
+        // Si lo hacemos pues estamos yendo de mas  a la base de datos pero es para mostrar como se hace
+        /*
+        if (!user?.rol?.contains(Usuario.Rol.ADMIN)!!)
             throw ResponseStatusException(HttpStatus.UNAUTHORIZED, "No tienes permisos para acceder a esta información")
+        */
 
         val res = usuariosService.findAll().toList().map { it.toDto() }
         return ResponseEntity.ok(res)

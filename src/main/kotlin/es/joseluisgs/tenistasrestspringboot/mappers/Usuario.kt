@@ -11,7 +11,7 @@ fun Usuario.toDto(): UsuarioDto {
         email = this.email,
         username = this.username,
         avatar = this.avatar,
-        rol = this.rol.name,
+        rol = this.rol.toString(),
         metadata = UsuarioDto.MetaData(
             createdAt = this.createdAt,
             updatedAt = this.updatedAt,
@@ -27,6 +27,6 @@ fun UsuarioCreateDto.toModel(): Usuario {
         username = this.username,
         password = this.password,
         avatar = this.avatar ?: "https://upload.wikimedia.org/wikipedia/commons/f/f4/User_Avatar_2.png",
-        rol = Usuario.Rol.valueOf(this.rol ?: "USER")
+        rol = this.rol
     )
 }

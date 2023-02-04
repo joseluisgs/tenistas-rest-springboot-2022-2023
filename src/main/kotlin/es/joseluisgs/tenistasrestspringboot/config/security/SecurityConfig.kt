@@ -81,7 +81,7 @@ class SecurityConfig @Autowired constructor(
             .requestMatchers("users/login", "users/register").permitAll()
 
             // O permitir por roles
-            .requestMatchers("/user/me").hasAnyRole("USER", "ADMIN")
+            .requestMatchers("/user/me").hasAnyRole("ADMIN")
 
             // O por permisos y metodos
             .requestMatchers(HttpMethod.GET, "/user/list").hasRole("ADMIN")

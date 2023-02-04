@@ -1,5 +1,6 @@
 package es.joseluisgs.tenistasrestspringboot.dto
 
+import es.joseluisgs.tenistasrestspringboot.models.Usuario
 import java.time.LocalDateTime
 import java.util.*
 
@@ -9,7 +10,7 @@ data class UsuarioCreateDto(
     val email: String,
     val username: String,
     val avatar: String? = null,
-    val rol: String? = "USER",
+    val rol: Set<Usuario.Rol> = setOf(Usuario.Rol.USER),
     val password: String
 )
 
