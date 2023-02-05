@@ -10,6 +10,13 @@ import java.util.*
 
 /**
  * Representante Model
+ * @param id: Long? Identificador
+ * @param uuid: UUID UUID del representante
+ * @param nombre: String Nombre del representante
+ * @param email: String Email del representante
+ * @param createdAt: LocalDateTime Fecha de creación
+ * @param updatedAt: LocalDateTime Fecha de actualización
+ * @param deleted: Boolean Borrado lógico
  */
 @Table(name = "REPRESENTANTES")
 data class Representante(

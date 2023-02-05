@@ -3,6 +3,8 @@ package joseluisgs.es.db
 import es.joseluisgs.tenistasrestspringboot.models.Raqueta
 import es.joseluisgs.tenistasrestspringboot.models.Representante
 import es.joseluisgs.tenistasrestspringboot.models.Tenista
+import es.joseluisgs.tenistasrestspringboot.models.Usuario
+import org.springframework.security.crypto.bcrypt.BCrypt
 import java.time.LocalDate
 import java.util.*
 
@@ -122,6 +124,29 @@ fun getTenistasInit() = listOf(
         raquetaId = UUID.fromString("86084458-4733-4d71-a3db-34b50cd8d68f")
     ),
 )
+
+// Usuarios
+fun getUsuariosInit() = listOf(
+    Usuario(
+        uuid = UUID.fromString("b39a2fd2-f7d7-405d-b73c-b68a8dedbcdf"),
+        nombre = "Pepe Perez",
+        username = "pepe",
+        email = "pepe@perez.com",
+        password = BCrypt.hashpw("pepe1234", BCrypt.gensalt(12)),
+        avatar = "https://upload.wikimedia.org/wikipedia/commons/f/f4/User_Avatar_2.png",
+        rol = Usuario.Rol.ADMIN.name
+    ),
+    Usuario(
+        uuid = UUID.fromString("c53062e4-31ea-4f5e-a99d-36c228ed01a3"),
+        nombre = "Ana Lopez",
+        username = "ana",
+        email = "ana@lopez.com",
+        password = BCrypt.hashpw("ana1234", BCrypt.gensalt(12)),
+        avatar = "https://upload.wikimedia.org/wikipedia/commons/f/f4/User_Avatar_2.png",
+        rol = Usuario.Rol.USER.name
+    )
+)
+
 
 
 

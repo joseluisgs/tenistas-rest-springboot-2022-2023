@@ -880,6 +880,280 @@
 					"response": []
 				}
 			]
+		},
+		{
+			"name": "Usuarios",
+			"item": [
+				{
+					"name": "POST Register",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"nombre\": \"create\",\n    \"email\": \"create@create.com\",\n    \"username\": \"create\",\n    \"password\": \"create1234\"\n\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:6969/api/users/register",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "6969",
+							"path": [
+								"api",
+								"users",
+								"register"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "POST Login User",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"username\": \"ana\",\n    \"password\": \"ana1234\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:6969/api/users/login",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "6969",
+							"path": [
+								"api",
+								"users",
+								"login"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "POST Login Admin",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"username\": \"pepe\",\n    \"password\": \"pepe1234\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:6969/api/users/login",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "6969",
+							"path": [
+								"api",
+								"users",
+								"login"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "GET Me (auth)",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJjNTMwNjJlNC0zMWVhLTRmNWUtYTk5ZC0zNmMyMjhlZDAxYTMiLCJyb2xlcyI6IltVU0VSXSIsImV4cCI6MTY3NTUwODg4NSwiaWF0IjoxNjc1NTA1Mjg1LCJub21icmUiOiJBbmEgTG9wZXoiLCJ1c2VybmFtZSI6ImFuYSJ9.sQzAqeqQ-V7ERMeAYTZfEtb-O9t40IoQXIuAHmSs-iQvW4boEekNO9AbQ-sYPsYMF8XZwNmvzsnn3euzEBkvIg",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:6969/api/users/me",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "6969",
+							"path": [
+								"api",
+								"users",
+								"me"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "PUT Me Update Info",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJjNTMwNjJlNC0zMWVhLTRmNWUtYTk5ZC0zNmMyMjhlZDAxYTMiLCJyb2xlcyI6IltVU0VSXSIsImV4cCI6MTY3NTUwMjkzOSwiaWF0IjoxNjc1NDk5MzM5LCJub21icmUiOiJBbmEgTG9wZXoiLCJ1c2VybmFtZSI6ImFuYSJ9.JP4qo13Sc32tKjbDBOTCFa_tx8Eepr0l9rXNNlK1h5lms5tTIlv4GAM7oMbM6IkvSZowkE8yDEUWu_nPKn9N0w",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"nombre\": \"Ana Lopez Updated\",\n    \"email\": \"updated@lopez.com\",\n    \"username\": \"anaupdated\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:6969/api/users/me",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "6969",
+							"path": [
+								"api",
+								"users",
+								"me"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "PATCH Me Avatar",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJjNTMwNjJlNC0zMWVhLTRmNWUtYTk5ZC0zNmMyMjhlZDAxYTMiLCJyb2xlcyI6IltVU0VSXSIsImV4cCI6MTY3NTUwODg4NSwiaWF0IjoxNjc1NTA1Mjg1LCJub21icmUiOiJBbmEgTG9wZXoiLCJ1c2VybmFtZSI6ImFuYSJ9.sQzAqeqQ-V7ERMeAYTZfEtb-O9t40IoQXIuAHmSs-iQvW4boEekNO9AbQ-sYPsYMF8XZwNmvzsnn3euzEBkvIg",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "file",
+									"type": "file",
+									"src": "/home/joseluisgs/Proyectos/tenistas-rest-springboot/postman/nuevoavatar.jpg"
+								},
+								{
+									"key": "username",
+									"value": "pepe",
+									"type": "text",
+									"disabled": true
+								},
+								{
+									"key": "",
+									"type": "file",
+									"src": [],
+									"disabled": true
+								}
+							]
+						},
+						"url": {
+							"raw": "http://localhost:6969/api/users/me",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "6969",
+							"path": [
+								"api",
+								"users",
+								"me"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "GET ALL Users (admin)",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJjNTMwNjJlNC0zMWVhLTRmNWUtYTk5ZC0zNmMyMjhlZDAxYTMiLCJyb2xlcyI6IltVU0VSXSIsImV4cCI6MTY3NTUwMjkzOSwiaWF0IjoxNjc1NDk5MzM5LCJub21icmUiOiJBbmEgTG9wZXoiLCJ1c2VybmFtZSI6ImFuYSJ9.JP4qo13Sc32tKjbDBOTCFa_tx8Eepr0l9rXNNlK1h5lms5tTIlv4GAM7oMbM6IkvSZowkE8yDEUWu_nPKn9N0w",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:6969/api/users/list",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "6969",
+							"path": [
+								"api",
+								"users",
+								"list"
+							]
+						}
+					},
+					"response": []
+				}
+			]
 		}
 	]
 }

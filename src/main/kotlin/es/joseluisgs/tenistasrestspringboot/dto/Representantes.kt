@@ -32,6 +32,9 @@ data class RepresentanteDto(
     )
 }
 
+/**
+ * Representante DTO para crear
+ */
 data class RepresentanteRequestDto(
     val nombre: String,
     val email: String,

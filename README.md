@@ -23,6 +23,7 @@ Api REST de Tenistas con Spring Boot para acceso a Datos de 2º de DAM. Curso 20
     - [Representantes](#representantes)
     - [Raquetas](#raquetas)
     - [Tenistas](#tenistas)
+    - [Usuarios](#usuarios)
     - [Test](#test)
   - [Spring Boot](#spring-boot)
     - [Creando un proyecto](#creando-un-proyecto)
@@ -111,12 +112,19 @@ Si quieres colaborar, puedes hacerlo contactando [conmigo](#contacto).
 - Encriptado: [Bcrypt](https://en.wikipedia.org/wiki/Bcrypt) - Algoritmo de hash para encriptar contraseñas.
 - Asincronía: [Coroutines](https://kotlinlang.org/docs/coroutines-overview.html) - Librería de Kotlin para la
   programación asíncrona.
+- Reactividad: [Srping Reactive](https://spring.io/reactive) - Extensiones para reactividad en Spring Boot.
 - Logger: [Kotlin Logging](https://github.com/MicroUtils/kotlin-logging) - Framework para la gestión de logs.
 - Caché: Sistema de [caché](https://www.baeldung.com/spring-cache-tutorial) de Spring Boot.
 - Base de datos: [H2](https://www.h2database.com/) - Base de datos relacional que te permite trabajar en memoria,
   fichero y servidor.
 - Testing: [JUnit 5](https://junit.org/junit5/) - Framework para la realización de tests
   unitarios, [Mockk](https://mockk.io/) librería de Mocks para Kotlin, así como las propias herramientas de Spring Boot.
+- Documentación: [Dokka](https://kotlinlang.org/docs/dokka-introduction.html) y [Swagger](https://swagger.io/) -
+  Herramienta para la generación de documentación y pruebas de API REST respectivamente
+  mediante [OpenAPI](https://www.openapis.org/).
+- Cliente: [Postman](https://www.postman.com/) - Cliente para realizar peticiones HTTP.
+- Contenedor: [Docker](https://www.docker.com/) - Plataforma para la creación y gestión de contenedores.
+
 
 ## Dominio
 
@@ -245,6 +253,19 @@ usaremos Postman:
 | GET    | /tenistas/{id}/raqueta           | No   | Devuelve la raqueta del tenista dado su id                               | 200              | JSON       |
 | GET    | /tenistas/ranking/{ranking}      | No   | Devuelve el tenista con ranking X                                        | 200              | JSON       |
 | WS     | /updates/tenistas                | No   | Websocket para notificaciones los cambios en los tenistas en tiempo real | ---              | JSON       |
+
+
+### Usuarios
+
+| Método | Endpoint (/api) | Auth | Descripción                                                   | Status Code (OK) | Content |
+|--------|-----------------|------|---------------------------------------------------------------|------------------|---------|
+| POST   | /users/login    | No   | Login de un usuario, Token                                    | 200              | JSON    |
+| POST   | /users/register | No   | Registro de un usuario                                        | 201              | JSON    |
+| GET    | /users/me       | JWT  | Datos del usuario del token                                   | 200              | JSON    |
+| PUT    | /users/me       | JWT  | Actualiza datos del usuario: nombre, e-mail y username        | 200              | JSON    |
+| PATCH  | /users/me       | JWT  | Actualiza avatar del usuario como multipart                   | 200              | JSON    |
+| GET    | /users/list     | JWT  | Devuelve todos los usuarios, si el token pertenece a un admin | 200              | JSON    |
+
 
 ### Test
 
@@ -420,6 +441,52 @@ con JPQL o @NativeQuery y usar el lenguaje del motor de Base de Datos.
 
 Por otro lado, también podemos definir las consultas en base del nombre del método. Si lo definimos con una signatura
 determinada con ellos se generará la consulta automáticamente.
+
+
+```kotlin
+// Ejemplo de respositorio añadiendo nuevos métodos a parte de los que ya nos proporciona JpaRepository y CrudRepository
+@Repository
+interface RaquetasRepository : CoroutineCrudRepository<Raqueta, Long> {
+    fun findByUuid(uuid: UUID): Flow<Raqueta>
+    fun findByMarcaContainsIgnoreCase(marca: String): Flow<Raqueta>
+    fun findAllBy(pageable: Pageable?): Flow<Raqueta>
+}
+
+// Ejemplo de definición de una entidad y sus relaciones uno a mucho
+// Un modelo de raqueta es usada por muchos tenistas y un tenista usa solo un tipo de raqueta
+@Entity
+@Table(name = "raquetas")
+data class Raqueta(
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    val id: Long = 0,
+    val marca: String,
+    val modelo: String,
+    val precio: Int,
+    val imagen: String,
+    @OneToMany(mappedBy = "raqueta", cascade = [CascadeType.ALL], fetch = FetchType.LAZY)
+    val tenistas: List<TenistaRaqueta> = emptyList()
+)
+
+// Tenista usa solo una raqueta
+@Entity
+@Table(name = "tenistas")
+data class Tenista(
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    val id: Long = 0,
+    val nombre: String,
+    val edad: Int,
+    val pais: String,
+    val imagen: String,
+    @OneToOne(cascade = [CascadeType.ALL])
+    @JoinColumn(name = "raqueta_id")
+    val raqueta: Raqueta
+)
+```
+
+***IMPORTANTE***: Si usas Spring Data Reactive, no puedes usar las anotaciones de JPA, ya que no son compatibles. En su lugar,
+debes usar las anotaciones de Spring Data Reactive y deberas crear las tablas mediante un script SQL.
 
 ### Creando rutas
 
@@ -684,6 +751,81 @@ class SSLConfig {
 ```
 
 ### Autenticación y Autorización con JWT
+Para la autenticación y autorización, hemos usado JWT. Para ello hemos usado la librería de Spring Security. Es importante que tengamos en cuenta en qué versión de Spring estamos trabajando, ya que la forma de configurar la seguridad ha cambiado en las [versiones 5 y 6](https://www.youtube.com/watch?v=1_D_fAJ8OpI).
+
+Nuestra configuración de seguridad se encuentra en la clase SecurityConfig, donde hemos configurado la autenticación y la autorización. Para ello hemos usado la Interfaz [UserDetailsService](https://docs.spring.io/spring-security/site/docs/current/api/org/springframework/security/core/userdetails/UserDetailsService.html) para obtener los usuarios de la base de datos, y la clase [PasswordEncoder](https://docs.spring.io/spring-security/site/docs/current/api/org/springframework/security/crypto/password/PasswordEncoder.html) para encriptar las contraseñas.
+
+Debemos tener en cuenta que el sistema de seguridad de Spring Security es un sistema de filtros, por lo que debemos tener en cuenta el orden en el que se ejecutan los filtros para procesar entre petición (Request) y respuesta (Response). En nuestro caso, hemos configurado el filtro de autenticación antes que el de autorización, ya que si no, el filtro de autorización no tendría acceso a la información del usuario. Será el AutenticantionManager el que se encargue de comprobar si el usuario está autenticado o no.
+
+![ss](./images/spring-security.png)
+
+A partir de aquí construimos la cadena de filtros analizando los endpoints, las peticiones sobre los mismos y los permisos para cada uno de ellos.
+
+![ss](./images/spring-security-3.png)
+
+Nuestros filtros de Autorización y Autenticación extiende de BasicAuthenticationFilter y UsernamePasswordAuthenticationFilter. Estos filtros se encargan de interceptar las peticiones y comprobar si el usuario está autenticado o no. En el caso de que no esté autenticado, se le devolverá un código de error 401 (Unauthorized). En el caso de que esté autenticado, se le devolverá el código 200 (OK) en base de analizar los datos del token, UsernamePasswordAuthenticationToken. El filtro de Autorización se encarga de comprobar si el usuario tiene permisos para acceder a los recursos.
+
+Para definir los permisos podemos crear un sistema de roles. Podemos proteger cada ruta con un rol diferente, y en el caso de que el usuario no tenga el rol necesario, se le devolverá un código de error 403 (Forbidden).
+
+
+```kotlin
+@Bean
+fun filterChain(http: HttpSecurity): SecurityFilterChain {
+    val authenticationManager = authManager(http)
+    // Vamos a crear el filtro de autenticación y el de autorización
+    http.csrf().disable().exceptionHandling()
+      .and()
+      // Indicamos que vamos a usar un autenticador basado en JWT
+      .authenticationManager(authenticationManager)
+      // Para el establecimiento de sesiones son estado, no usamos sesiones
+      .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+      .and()
+      .authorizeHttpRequests().requestMatchers("/api/**").permitAll()
+      // Ahora vamos a permitir el acceso a los endpoints de login y registro
+      .requestMatchers("users/login", "users/register").permitAll()
+      // O permitir por roles en un endpoint
+      .requestMatchers("/user/me").hasAnyRole("USER", "ADMIN")
+      // O por permisos y metodos en un endpoint
+      .requestMatchers(HttpMethod.GET, "/user/list").hasRole("ADMIN")
+      // Las otras peticiones no requerirán autenticación,
+      .anyRequest().authenticated() // .not().authenticated();
+      .and()
+      // Le añadimos el filtro de autenticación y el de autorización a la configuración
+      // Será el encargado de coger el token y si es válido lo dejaremos pasar...
+      //.addFilter(JwtAuthenticationFilter(jwtTokenUtils, authenticationManager))
+      //.addFilter(JwtAuthorizationFilter(jwtTokenUtils, userService, authenticationManager))
+      .addFilterBefore(
+          JwtAuthenticationFilter(jwtTokenUtils, authenticationManager),
+          JwtAuthorizationFilter::class.java
+      )
+      .addFilterBefore(
+          JwtAuthorizationFilter(jwtTokenUtils, userService, authenticationManager),
+          JwtAuthenticationFilter::class.java
+      )
+  return http.build()
+}
+```
+
+A su vez también podemos proteger las rutas analizando el contenido de los permisos en el token desde el controlador. Para ello, podemos usar la anotación @PreAuthorize, que nos permite comprobar si el usuario tiene permisos para acceder a la ruta. La anotación @AuthenticationPrincipal nos permite obtener el usuario autenticado.
+
+```kotlin
+@PreAuthorize("hasRole('ADMIN')")
+@GetMapping("/list")
+fun list(@AuthenticationPrincipal user: Usuario): ResponseEntity<List<UserDto>> {
+    val users = userService.findAll()
+    return ResponseEntity.ok(users)
+}
+
+@PreAuthorize("hasAnyRole('USER', 'ADMIN')")
+@GetMapping("/me")
+fun me(@AuthenticationPrincipal user: Usuario): ResponseEntity<UserDto> {
+    val user = userService.me(user)
+    return ResponseEntity.ok(user)
+}
+```
+
+***IMPORTANTE:*** Al meter el sistema de seguridad y filtros, nuestras excepciones o errores que se lanzan posteriormente con ResponseStatusException no se lanzan al cliente porque el filtro las desvía a la ruta /error. Es por ello que debemos deshabilitar esta ruta en la configuración de Spring Security y con ella volver a tenerlas. Otra opción es usar la librería [Error Handling for Spring Boot Starter](https://wimdeblauwe.github.io/error-handling-spring-boot-starter/current/).
+
 
 ### Testing
 A la hora de testear, hemos usado la libraría de JUnit 5, y hemos usado las anotaciones de Spring para testear. Hemos deshabilitado Mockito para usar MockK, que es una librería de Kotlin que nos permite hacer mocks de forma más sencilla y de paso manejarnos mejor con las corrutinas.
@@ -730,14 +872,63 @@ fun createCampoNombreBlanco() = runTest {
 ```
 
 ### Despliegue
+Podemos distribuir nuestra app de distintas maneras, en función de la necesidad que tengamos. E
 
 #### JAR
-
+Podemos crear un JAR con nuestra aplicación y ejecutarla con el comando java -jar. El plugin de Gradle para Kotlin Spring Boot nos permite crear un JAR con todas las dependencias incluidas, y ejecutarlo.
+- bootJar: construye un JAR ejecutable del proyecto con las dependencias empaquetadas en un directorio build/libs cuando se completa esta compilación.
 #### Aplicación
+Podemos crear una aplicación ejecutable con el plugin de Gradle para Kotlin Spring Boot. El plugin de Gradle para Kotlin Spring Boot nos permite crear un una aplicación nativa empaqueta con todas las dependencias incluidas, y ejecutarla.
+- nativeCompile: compila el código fuente de la aplicación en un binario nativo.
+- nativeRun: compila el código fuente de la aplicación en un binario nativo y lo ejecuta.
 
 #### Docker
+Podemos crear una imagen de [Docker](https://www.baeldung.com/spring-boot-docker-images) con nuestra aplicación y ejecutarla con el comando docker run.
+
+Para ello para ello usamos el jar para crear nuestra [imagen personalizada](./Dockerfile) y poder trabajar con ella o usando [Docker Compose](./docker-compose.yml).
+
+Además, gracias a gradle podemos crear la imagen con el compando:
+- bootBuildImage: construye una imagen de Docker para la aplicación.
 
 ### Documentación
+A la hora de documentar nuestro código hemos hecho uso de [Dokka](https://kotlinlang.org/docs/dokka-get-started.html) el
+cual haciendo uso de [KDoc](https://kotlinlang.org/docs/dokka-get-started.html) nos va a permitir comentar nuestro
+código y ver dicha documentación en html.
+
+Puedes ver un ejemplo completo en todo lo relacionado con Representantes (modelos, repositorios y/o servicios) y
+consultar la documentación en /build/dokka/html/index.html
+
+Para la documentación de la API hemos usado [Swagger](https://swagger.io/) y [Springdoc-OpenApi](https://springdoc.org/v2/) utilizando las anotaciones de Swagger 3. Somo ejemplo se ha comentado todo lo relacionado con la API de Test.
+
+Podemos verla en /swagger-ui.html.
+
+```kotlin
+// GET: /test?text=Hola
+@Operation(summary = "Get all Test", description = "Obtiene una lista de objetos Test", tags = ["Test"])
+@Parameter(name = "texto", description = "Texto a buscar", required = false, example = "Hola")
+@ApiResponse(responseCode = "200", description = "Lista de Test")
+@GetMapping("")
+fun getAll(@RequestParam texto: String?): ResponseEntity<List<TestDto>> {
+    logger.info { "GET ALL Test" }
+    return ResponseEntity.ok(listOf(TestDto("Hola : Query: $texto"), TestDto("Mundo : Query: $texto")))
+}
+
+// PUT:/test/{id}
+@Operation(summary = "Update Test", description = "Modifica un objeto Test", tags = ["Test"])
+@Parameter(name = "id", description = "ID del Test", required = true, example = "1")
+@ApiResponse(responseCode = "200", description = "Test modificado")
+@ApiResponse(responseCode = "404", description = "Test no encontrado si id = kaka")
+@PutMapping("/{id}")
+fun update(@PathVariable id: String, @RequestBody testDto: TestDto): ResponseEntity<TestDto> {
+    logger.info { "PUT Test" }
+    return if (id != "kaka") {
+        val new = TestDto("Hola PUT $id: ${testDto.message}")
+        ResponseEntity.status(HttpStatus.OK).body(new)
+    } else
+        ResponseEntity.status(HttpStatus.NOT_FOUND).body(TestDto("No encontrado"))
+}
+```
+***IMPORTANTE:***: Para que Seagger funcione debes darles permisos en la configuración de Spring Security.
 
 ## Reactividad
 
@@ -901,8 +1092,7 @@ Por otro lado, podemos usar JAR o Aplicaciones de sistema tal y como hemos descr
 de [Despliegue](#despliegue).
 
 **Recuerda**: Si haces una imagen Docker mete todos los certificados y recursos que necesites que use adicionalmente
-nuestra aplicación (directorios), si no no funcionará, pues así los usas en tu fichero de configuración. Recuerda lo que
-usa tu fichero de [configuración](./src/main/kotlin/../resources/application.conf) para incluirlo.
+nuestra aplicación (directorios), si no no funcionará, pues así los usas en tu fichero de configuración. 
 
 ## Documentación
 

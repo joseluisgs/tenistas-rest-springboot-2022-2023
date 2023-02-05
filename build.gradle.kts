@@ -1,11 +1,14 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
+    // Cuidado con la versión de Spring Boot que usamos que arrastra a todas las dependencias
     id("org.springframework.boot") version "3.0.3-SNAPSHOT"
     id("io.spring.dependency-management") version "1.1.0"
     id("org.graalvm.buildtools.native") version "0.9.18"
     kotlin("jvm") version "1.7.22"
     kotlin("plugin.spring") version "1.7.22"
+    // Documentar con Dokka
+    id("org.jetbrains.dokka") version "1.7.20"
 }
 
 group = "es.joseluisgs"
@@ -23,7 +26,7 @@ dependencies {
     // Dependencias de Spring Boot y Spring Data Reactive
     implementation("org.springframework.boot:spring-boot-starter-data-r2dbc")
     // Dependencias de Seguridad Lo usaremos más adelante
-    // implementation("org.springframework.boot:spring-boot-starter-security")
+    implementation("org.springframework.boot:spring-boot-starter-security")
     // Validaciones de Spring Boot
     implementation("org.springframework.boot:spring-boot-starter-validation")
     // Webflux y Reactividad
@@ -41,6 +44,13 @@ dependencies {
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-reactor") // Corutinas
     implementation("io.projectreactor.kotlin:reactor-kotlin-extensions")
+
+    // JWT
+    implementation("com.auth0:java-jwt:4.2.1")
+
+    // Para las excepciones con spring security nuevo
+    // https://wimdeblauwe.github.io/error-handling-spring-boot-starter/current/#goal
+    // implementation("io.github.wimdeblauwe:error-handling-spring-boot-starter:4.1.0")
 
     // Mejoras de desarrollo
     // developmentOnly("org.springframework.boot:spring-boot-devtools")
@@ -63,6 +73,9 @@ dependencies {
     testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.6.4")
     // Mockk
     testImplementation("com.ninja-squad:springmockk:4.0.0")
+
+    // Swagger
+    implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.0.2")
 }
 
 // Fijamos la versión de Kotlin de destno

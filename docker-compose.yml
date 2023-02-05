@@ -1,0 +1,10 @@
+version: "3.7"
+services:
+  springboot-api-rest:
+    build: .
+    container_name: springboot-api-rest
+    ports:
+      - "6969:6969"
+      - "6963:6963"
+
+    

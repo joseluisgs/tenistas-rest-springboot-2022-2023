@@ -75,6 +75,33 @@ class StorageServiceFileSystemImpl(
         }
     }
 
+    override fun store(file: MultipartFile, filenameFromUser: String): String {
+        logger.info { "Almacenando fichero: ${file.originalFilename}" }
+
+        val filename = StringUtils.cleanPath(file.originalFilename.toString())
+        val extension = StringUtils.getFilenameExtension(filename).toString()
+        val justFilename = filename.replace(".$extension", "")
+        val storedFilename = "$filenameFromUser.$extension"
+        try {
+            if (file.isEmpty) {
+                throw StorageBadRequestException("Fallo al almacenar un fichero vacío $filename")
+            }
+            if (filename.contains("..")) {
+                // This is a security check
+                throw StorageBadRequestException("No se puede almacenar un fichero fuera del path permitido $filename")
+            }
+            file.inputStream.use { inputStream ->
+                Files.copy(
+                    inputStream, rootLocation.resolve(storedFilename),
+                    StandardCopyOption.REPLACE_EXISTING
+                )
+                return storedFilename
+            }
+        } catch (e: IOException) {
+            throw StorageBadRequestException("Fallo al almacenar fichero $filename", e)
+        }
+    }
+
     override fun loadAll(): Stream<Path> {
         logger.info { "Cargando todos los ficheros" }
 
