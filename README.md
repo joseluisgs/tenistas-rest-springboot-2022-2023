@@ -872,12 +872,19 @@ fun createCampoNombreBlanco() = runTest {
 ```
 
 ### Despliegue
+Podemos distribuir nuestra app de distintas maneras, en función de la necesidad que tengamos. E
 
 #### JAR
-
+Podemos crear un JAR con nuestra aplicación y ejecutarla con el comando java -jar. El plugin de Gradle para Kotlin Spring Boot nos permite crear un JAR con todas las dependencias incluidas, y ejecutarlo.
+- bootJar: construye un JAR ejecutable del proyecto con las dependencias empaquetadas en un directorio build/libs cuando se completa esta compilación.
 #### Aplicación
+Podemos crear una aplicación ejecutable con el plugin de Gradle para Kotlin Spring Boot. El plugin de Gradle para Kotlin Spring Boot nos permite crear un una aplicación nativa empaqueta con todas las dependencias incluidas, y ejecutarla.
+- buildBootImage: ejecuta la aplicación Spring Boot. Esta tarea se ejecuta después de que se complete la compilación.
 
 #### Docker
+Podemos crear una imagen de [Docker](https://www.baeldung.com/spring-boot-docker-images) con nuestra aplicación y ejecutarla con el comando docker run.
+
+Para ello para ello usamos el jar para crear nuestra [imagen personalizada](./Dockerfile) y poder trabajar con ella o usando [Docker Compose](./docker-compose.yml).
 
 ### Documentación
 A la hora de documentar nuestro código hemos hecho uso de [Dokka](https://kotlinlang.org/docs/dokka-get-started.html) el
