@@ -879,12 +879,16 @@ Podemos crear un JAR con nuestra aplicación y ejecutarla con el comando java -j
 - bootJar: construye un JAR ejecutable del proyecto con las dependencias empaquetadas en un directorio build/libs cuando se completa esta compilación.
 #### Aplicación
 Podemos crear una aplicación ejecutable con el plugin de Gradle para Kotlin Spring Boot. El plugin de Gradle para Kotlin Spring Boot nos permite crear un una aplicación nativa empaqueta con todas las dependencias incluidas, y ejecutarla.
-- buildBootImage: ejecuta la aplicación Spring Boot. Esta tarea se ejecuta después de que se complete la compilación.
+- nativeCompile: compila el código fuente de la aplicación en un binario nativo.
+- nativeRun: compila el código fuente de la aplicación en un binario nativo y lo ejecuta.
 
 #### Docker
 Podemos crear una imagen de [Docker](https://www.baeldung.com/spring-boot-docker-images) con nuestra aplicación y ejecutarla con el comando docker run.
 
 Para ello para ello usamos el jar para crear nuestra [imagen personalizada](./Dockerfile) y poder trabajar con ella o usando [Docker Compose](./docker-compose.yml).
+
+Además, gracias a gradle podemos crear la imagen con el compando:
+- bootBuildImage: construye una imagen de Docker para la aplicación.
 
 ### Documentación
 A la hora de documentar nuestro código hemos hecho uso de [Dokka](https://kotlinlang.org/docs/dokka-get-started.html) el
@@ -1088,8 +1092,7 @@ Por otro lado, podemos usar JAR o Aplicaciones de sistema tal y como hemos descr
 de [Despliegue](#despliegue).
 
 **Recuerda**: Si haces una imagen Docker mete todos los certificados y recursos que necesites que use adicionalmente
-nuestra aplicación (directorios), si no no funcionará, pues así los usas en tu fichero de configuración. Recuerda lo que
-usa tu fichero de [configuración](./src/main/kotlin/../resources/application.conf) para incluirlo.
+nuestra aplicación (directorios), si no no funcionará, pues así los usas en tu fichero de configuración. 
 
 ## Documentación
 
