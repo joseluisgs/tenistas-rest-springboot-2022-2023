@@ -826,18 +826,6 @@ fun me(@AuthenticationPrincipal user: Usuario): ResponseEntity<UserDto> {
 
 ***IMPORTANTE:*** Al meter el sistema de seguridad y filtros, nuestras excepciones o errores que se lanzan posteriormente con ResponseStatusException no se lanzan al cliente porque el filtro las desvía a la ruta /error. Es por ello que debemos deshabilitar esta ruta en la configuración de Spring Security y con ella volver a tenerlas. Otra opción es usar la librería [Error Handling for Spring Boot Starter](https://wimdeblauwe.github.io/error-handling-spring-boot-starter/current/).
 
-```kotlin
-// Ignoramos los endpoints que no queremos que se autentiquen
-// importante para las excepciones personalizadas de ResponseStatusException
-// ya que el simpático de Spring Security se lo come las desvía a /error
-// Si no quieres hacer esto puedes añadir la librería que he dejado comentada en el build.gradle
-@Bean
-fun webSecurityCustomizer(): WebSecurityCustomizer {
-    return WebSecurityCustomizer { web: WebSecurity ->
-        web.ignoring().requestMatchers("/error/**")
-    }
-}
-```
 
 ### Testing
 A la hora de testear, hemos usado la libraría de JUnit 5, y hemos usado las anotaciones de Spring para testear. Hemos deshabilitado Mockito para usar MockK, que es una librería de Kotlin que nos permite hacer mocks de forma más sencilla y de paso manejarnos mejor con las corrutinas.
@@ -898,6 +886,38 @@ código y ver dicha documentación en html.
 
 Puedes ver un ejemplo completo en todo lo relacionado con Representantes (modelos, repositorios y/o servicios) y
 consultar la documentación en /build/dokka/html/index.html
+
+Para la documentación de la API hemos usado [Swagger](https://swagger.io/) y [Springdoc-OpenApi](https://springdoc.org/v2/) utilizando las anotaciones de Swagger 3. Somo ejemplo se ha comentado todo lo relacionado con la API de Test.
+
+Podemos verla en /swagger-ui.html.
+
+```kotlin
+// GET: /test?text=Hola
+@Operation(summary = "Get all Test", description = "Obtiene una lista de objetos Test", tags = ["Test"])
+@Parameter(name = "texto", description = "Texto a buscar", required = false, example = "Hola")
+@ApiResponse(responseCode = "200", description = "Lista de Test")
+@GetMapping("")
+fun getAll(@RequestParam texto: String?): ResponseEntity<List<TestDto>> {
+    logger.info { "GET ALL Test" }
+    return ResponseEntity.ok(listOf(TestDto("Hola : Query: $texto"), TestDto("Mundo : Query: $texto")))
+}
+
+// PUT:/test/{id}
+@Operation(summary = "Update Test", description = "Modifica un objeto Test", tags = ["Test"])
+@Parameter(name = "id", description = "ID del Test", required = true, example = "1")
+@ApiResponse(responseCode = "200", description = "Test modificado")
+@ApiResponse(responseCode = "404", description = "Test no encontrado si id = kaka")
+@PutMapping("/{id}")
+fun update(@PathVariable id: String, @RequestBody testDto: TestDto): ResponseEntity<TestDto> {
+    logger.info { "PUT Test" }
+    return if (id != "kaka") {
+        val new = TestDto("Hola PUT $id: ${testDto.message}")
+        ResponseEntity.status(HttpStatus.OK).body(new)
+    } else
+        ResponseEntity.status(HttpStatus.NOT_FOUND).body(TestDto("No encontrado"))
+}
+```
+***IMPORTANTE:***: Para que Seagger funcione debes darles permisos en la configuración de Spring Security.
 
 ## Reactividad
 
