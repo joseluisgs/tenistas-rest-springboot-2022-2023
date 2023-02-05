@@ -13,9 +13,7 @@ import org.springframework.security.authentication.AuthenticationManager
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
-import org.springframework.security.config.annotation.web.builders.WebSecurity
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity
-import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer
 import org.springframework.security.config.http.SessionCreationPolicy
 import org.springframework.security.web.SecurityFilterChain
 
@@ -47,13 +45,13 @@ class SecurityConfig @Autowired constructor(
     // importante para las excepciones personalizadas de ResponseStatusException
     // ya que el simpático de Spring Security se lo come las desvía a /error
     // Si no quieres hacer esto puedes añadir la librería que he dejado comentada en el build.gradle
-    @Bean
-    fun webSecurityCustomizer(): WebSecurityCustomizer {
-        return WebSecurityCustomizer { web: WebSecurity ->
-            web.ignoring().requestMatchers("/error/**")
-            web.ignoring().requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html")
-        }
-    }
+//    @Bean
+//    fun webSecurityCustomizer(): WebSecurityCustomizer {
+//        return WebSecurityCustomizer { web: WebSecurity ->
+//            web.ignoring().requestMatchers("/error/**")
+//            // web.ignoring().requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html")
+//        }
+//    }
 
     @Bean
     fun filterChain(http: HttpSecurity): SecurityFilterChain {
@@ -74,13 +72,18 @@ class SecurityConfig @Autowired constructor(
             .and()
 
             .authorizeHttpRequests()
+
+            // Permiso para errores y mostrarlos
+            .requestMatchers("/error/**").permitAll()
+
+            // Permitimos el acceso a los endpoints de swagger
+            .requestMatchers("/v3/api-docs/**", "/swagger-ui/**").permitAll()
+
             .requestMatchers("/api/**")
             .permitAll()
 
-
             // Ahora vamos a permitir el acceso a los endpoints de login y registro
             .requestMatchers("users/login", "users/register").permitAll()
-            .requestMatchers("/v3/api-docs/", "/swagger-ui/**").permitAll()
 
             // O permitir por roles en un endpoint
             .requestMatchers("/user/me").hasAnyRole("USER", "ADMIN")
@@ -95,16 +98,16 @@ class SecurityConfig @Autowired constructor(
 
             // Le añadimos el filtro de autenticación y el de autorización a la configuración
             // Será el encargado de coger el token y si es válido lo dejaremos pasar...
-            //.addFilter(JwtAuthenticationFilter(jwtTokenUtils, authenticationManager))
-            //.addFilter(JwtAuthorizationFilter(jwtTokenUtils, userService, authenticationManager))
-            .addFilterBefore(
-                JwtAuthenticationFilter(jwtTokenUtils, authenticationManager),
-                JwtAuthorizationFilter::class.java
-            )
-            .addFilterBefore(
-                JwtAuthorizationFilter(jwtTokenUtils, userService, authenticationManager),
-                JwtAuthenticationFilter::class.java
-            )
+            .addFilter(JwtAuthenticationFilter(jwtTokenUtils, authenticationManager))
+            .addFilter(JwtAuthorizationFilter(jwtTokenUtils, userService, authenticationManager))
+//            .addFilterBefore(
+//                JwtAuthenticationFilter(jwtTokenUtils, authenticationManager),
+//                JwtAuthorizationFilter::class.java
+//            )
+//            .addFilterBefore(
+//                JwtAuthorizationFilter(jwtTokenUtils, userService, authenticationManager),
+//                JwtAuthenticationFilter::class.java
+//            )
 
         return http.build()
     }

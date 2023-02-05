@@ -9,7 +9,6 @@ plugins {
     kotlin("plugin.spring") version "1.7.22"
     // Documentar con Dokka
     id("org.jetbrains.dokka") version "1.7.20"
-    id("org.springdoc.openapi-gradle-plugin") version "1.6.0"
 }
 
 group = "es.joseluisgs"
@@ -76,8 +75,7 @@ dependencies {
     testImplementation("com.ninja-squad:springmockk:4.0.0")
 
     // Swagger
-    implementation("org.springdoc:springdoc-openapi-ui:1.6.14")
-    runtimeOnly("org.springdoc:springdoc-openapi-kotlin:1.6.14")
+    implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.0.2")
 }
 
 // Fijamos la versión de Kotlin de destno
