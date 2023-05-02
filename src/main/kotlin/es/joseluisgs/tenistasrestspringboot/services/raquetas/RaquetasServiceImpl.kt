@@ -4,7 +4,7 @@ import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import es.joseluisgs.tenistasrestspringboot.config.websocket.ServerWebSocketConfig
 import es.joseluisgs.tenistasrestspringboot.config.websocket.WebSocketHandler
 import es.joseluisgs.tenistasrestspringboot.exceptions.RaquetaNotFoundException
-import es.joseluisgs.tenistasrestspringboot.exceptions.RepresentanteNotFoundException
+import es.joseluisgs.tenistasrestspringboot.exceptions.RaquetaRepresentanteNotFound
 import es.joseluisgs.tenistasrestspringboot.mappers.toDto
 import es.joseluisgs.tenistasrestspringboot.models.Notificacion
 import es.joseluisgs.tenistasrestspringboot.models.Raqueta
@@ -136,7 +136,7 @@ class RaquetasServiceImpl
         logger.debug { "findRepresentante: Buscando representante en servicio" }
 
         return representesRepository.findByUuid(id)
-            ?: throw RepresentanteNotFoundException("No se ha encontrado el representante con id: $id")
+            ?: throw RaquetaRepresentanteNotFound("No se ha encontrado el representante con id: $id")
     }
 
     // Enviamos la notificación a los clientes ws

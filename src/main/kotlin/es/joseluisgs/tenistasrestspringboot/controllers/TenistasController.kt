@@ -18,6 +18,8 @@ import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Sort
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
+import org.springframework.messaging.handler.annotation.support.MethodArgumentNotValidException
+import org.springframework.validation.FieldError
 import org.springframework.web.bind.annotation.*
 import org.springframework.web.server.ResponseStatusException
 import java.util.*
@@ -190,6 +192,21 @@ class TenistasController
         } ?: run {
             return ResponseEntity.notFound().build()
         }
+    }
+
+    // Para capturar los errores de validación
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    @ExceptionHandler(MethodArgumentNotValidException::class)
+    fun handleValidationExceptions(
+        ex: MethodArgumentNotValidException
+    ): Map<String, String>? {
+        val errors: MutableMap<String, String> = HashMap()
+        ex.bindingResult?.allErrors?.forEach { error ->
+            val fieldName = (error as FieldError).field
+            val errorMessage: String? = error.getDefaultMessage()
+            errors[fieldName] = errorMessage ?: ""
+        }
+        return errors
     }
 
 

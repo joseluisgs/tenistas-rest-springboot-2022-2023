@@ -14,3 +14,6 @@ class RaquetaBadRequestException(message: String) : RaquetaException(message)
 
 @ResponseStatus(HttpStatus.BAD_REQUEST)
 class RaquetaConflictIntegrityException(message: String) : RaquetaException(message)
+
+@ResponseStatus(HttpStatus.BAD_REQUEST)
+class RaquetaRepresentanteNotFound(message: String) : RaquetaException(message)
