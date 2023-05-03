@@ -76,6 +76,9 @@ dependencies {
 
     // Swagger
     implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.0.2")
+
+    // Result
+    implementation("com.michael-bull.kotlin-result:kotlin-result:1.1.17")
 }
 
 // Fijamos la versión de Kotlin de destno

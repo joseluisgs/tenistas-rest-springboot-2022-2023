@@ -1,17 +1,20 @@
 package es.joseluisgs.tenistasrestspringboot.validators
 
+import com.github.michaelbull.result.Err
+import com.github.michaelbull.result.Ok
+import com.github.michaelbull.result.Result
 import es.joseluisgs.tenistasrestspringboot.dto.RepresentanteRequestDto
-import es.joseluisgs.tenistasrestspringboot.exceptions.RepresentanteBadRequestException
+import es.joseluisgs.tenistasrestspringboot.errors.RepresentanteError
 
 /**
  * Validador de Representantes
  * @see RepresentanteRequestDto
  */
-fun RepresentanteRequestDto.validate(): RepresentanteRequestDto {
+fun RepresentanteRequestDto.validate(): Result<RepresentanteRequestDto, RepresentanteError> {
     if (this.nombre.isBlank())
-        throw RepresentanteBadRequestException("El nombre no puede estar vacío")
+        return Err(RepresentanteError.BadRequest("El nombre no puede estar vacío"))
     if (this.email.isBlank() || !this.email.matches(Regex("^[A-Za-z0-9+_.-]+@(.+)\$")))
-        throw RepresentanteBadRequestException("El email no puede estar vacío o no tiene el formato correcto")
+        return Err(RepresentanteError.BadRequest("El email no puede estar vacío y debe ser válido"))
 
-    return this
+    return Ok(this)
 }

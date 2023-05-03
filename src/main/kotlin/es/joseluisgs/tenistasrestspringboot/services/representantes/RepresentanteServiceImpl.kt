@@ -1,8 +1,13 @@
 package es.joseluisgs.tenistasrestspringboot.services.representantes
 
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import com.github.michaelbull.result.Err
+import com.github.michaelbull.result.Ok
+import com.github.michaelbull.result.Result
+import com.github.michaelbull.result.onSuccess
 import es.joseluisgs.tenistasrestspringboot.config.websocket.ServerWebSocketConfig
 import es.joseluisgs.tenistasrestspringboot.config.websocket.WebSocketHandler
+import es.joseluisgs.tenistasrestspringboot.errors.RepresentanteError
 import es.joseluisgs.tenistasrestspringboot.exceptions.RepresentanteNotFoundException
 import es.joseluisgs.tenistasrestspringboot.mappers.toDto
 import es.joseluisgs.tenistasrestspringboot.models.Notificacion
@@ -59,11 +64,11 @@ class RepresentanteServiceImpl
      * @return Representante con el representante
      * @throws RepresentanteNotFoundException si no se encuentra el representante
      */
-    override suspend fun findById(id: Long): Representante {
+    override suspend fun findById(id: Long): Result<Representante, RepresentanteError> {
         logger.debug { "Servicio de representantes findById con id: $id" }
-
-        return representantesRepository.findById(id)
-            ?: throw RepresentanteNotFoundException("No se ha encontrado el representante con id: $id")
+        return representantesRepository.findById(id)?.let {
+            Ok(it)
+        } ?: Err(RepresentanteError.NotFound("No se ha encontrado el representante con id: $id"))
     }
 
     /**
@@ -72,12 +77,12 @@ class RepresentanteServiceImpl
      * @return Representante con el representante
      * @throws RepresentanteNotFoundException si no se encuentra el representante
      */
-    override suspend fun findByUuid(uuid: UUID): Representante {
+    override suspend fun findByUuid(uuid: UUID): Result<Representante, RepresentanteError> {
         logger.debug { "Servicio de representantes findByUuid con uuid: $uuid" }
 
-        // return repository.findByUuid(uuid) ?: throw NoSuchElementException("No se ha encontrado el representante con uuid: $uuid")
-        return representantesRepository.findByUuid(uuid)
-            ?: throw RepresentanteNotFoundException("No se ha encontrado el representante con uuid: $uuid")
+        return representantesRepository.findByUuid(uuid)?.let {
+            Ok(it)
+        } ?: Err(RepresentanteError.NotFound("No se ha encontrado el representante con uuid: $uuid"))
     }
 
     /**
@@ -95,11 +100,12 @@ class RepresentanteServiceImpl
      * @param representante Representante a salvar
      * @return Representante con el representante salvado
      */
-    override suspend fun save(representante: Representante): Representante {
+    override suspend fun save(representante: Representante): Result<Representante, RepresentanteError> {
         logger.debug { "Servicio de representantes save representante: $representante" }
 
         return representantesRepository.save(representante)
             .also { onChange(Notificacion.Tipo.CREATE, it.uuid, it) }
+            .let { Ok(it) }
     }
 
     /**
@@ -109,15 +115,14 @@ class RepresentanteServiceImpl
      * @return Representante con el representante actualizado
      * @throws RepresentanteNotFoundException si no se encuentra el representante
      */
-    override suspend fun update(uuid: UUID, representante: Representante): Representante {
+    override suspend fun update(uuid: UUID, representante: Representante): Result<Representante, RepresentanteError> {
         logger.debug { "Servicio de representantes update representante con id: $uuid " }
 
-        val existe = representantesRepository.findByUuid(uuid)
-
-        existe?.let {
-            return representantesRepository.update(uuid, representante)
-                ?.also { onChange(Notificacion.Tipo.UPDATE, it.uuid, it) }!!
-        } ?: throw RepresentanteNotFoundException("No se ha encontrado el representante con uuid: $uuid")
+        return findByUuid(uuid).onSuccess {
+            representantesRepository.update(uuid, representante)
+                ?.also { onChange(Notificacion.Tipo.UPDATE, it.uuid, it) }
+                ?.let { Ok(it) }
+        }
     }
 
     /**
@@ -126,17 +131,14 @@ class RepresentanteServiceImpl
      * @return Representante con el representante borrado
      * @throws RepresentanteNotFoundException si no se encuentra el representante
      */
-    override suspend fun delete(representante: Representante): Representante {
+    override suspend fun delete(representante: Representante): Result<Representante, RepresentanteError> {
         logger.debug { "Servicio de representantes delete representante: $representante" }
 
-        val existe = representantesRepository.findByUuid(representante.uuid)
-
-        existe?.let {
-            return representantesRepository.delete(existe)
-                ?.also { onChange(Notificacion.Tipo.DELETE, it.uuid, it) }!!
+        return findByUuid(representante.uuid).onSuccess {
+            representantesRepository.delete(representante)
+                ?.also { onChange(Notificacion.Tipo.DELETE, it.uuid, it) }
+                ?.let { Ok(it) }
         }
-            ?: throw RepresentanteNotFoundException("No se ha encontrado el representante con uuid: ${representante.uuid}")
-
     }
 
     /**
@@ -145,15 +147,14 @@ class RepresentanteServiceImpl
      * @return Representante con el representante borrado
      * @throws RepresentanteNotFoundException si no se encuentra el representante
      */
-    override suspend fun deleteByUuid(uuid: UUID): Representante {
+    override suspend fun deleteByUuid(uuid: UUID): Result<Representante, RepresentanteError> {
         logger.debug { "Servicio de representantes deleteByUuid con uuid: $uuid" }
 
-        val existe = representantesRepository.findByUuid(uuid)
-
-        existe?.let {
-            return representantesRepository.deleteByUuid(uuid)
-                ?.also { onChange(Notificacion.Tipo.DELETE, it.uuid, it) }!!
-        } ?: throw RepresentanteNotFoundException("No se ha encontrado el representante con uuid: $uuid")
+        return findByUuid(uuid).onSuccess {
+            representantesRepository.deleteByUuid(uuid)
+                ?.also { onChange(Notificacion.Tipo.DELETE, it.uuid, it) }
+                ?.let { Ok(it) }
+        }
     }
 
     /**
@@ -161,10 +162,14 @@ class RepresentanteServiceImpl
      * @param id Long con el id del representante
      * @throws RepresentanteNotFoundException si no se encuentra el representante
      */
-    override suspend fun deleteById(id: Long) {
+    override suspend fun deleteById(id: Long): Result<Representante, RepresentanteError> {
         logger.debug { "Servicio de representantes deleteById con id: $id" }
 
-        representantesRepository.deleteById(id)
+        return findById(id).onSuccess { r ->
+            representantesRepository.deleteById(id)
+                .also { onChange(Notificacion.Tipo.DELETE, r.uuid, r) }
+                .let { Ok(r) }
+        }
     }
 
     /**

@@ -1,9 +1,11 @@
 package es.joseluisgs.tenistasrestspringboot.controllers
 
+import com.github.michaelbull.result.*
 import es.joseluisgs.tenistasrestspringboot.config.APIConfig
 import es.joseluisgs.tenistasrestspringboot.dto.RepresentanteDto
 import es.joseluisgs.tenistasrestspringboot.dto.RepresentanteRequestDto
 import es.joseluisgs.tenistasrestspringboot.dto.RepresentantesPageDto
+import es.joseluisgs.tenistasrestspringboot.errors.RepresentanteError
 import es.joseluisgs.tenistasrestspringboot.mappers.toDto
 import es.joseluisgs.tenistasrestspringboot.mappers.toModel
 import es.joseluisgs.tenistasrestspringboot.services.representantes.RepresentantesService
@@ -70,8 +72,10 @@ class RepresentantesController
         logger.info { "GET By ID Representante con id: $id" }
 
         // Nosotros usamos el UUID, pero para el DTO es id
-        val res = representanteService.findByUuid(id).toDto()
-        return ResponseEntity.ok(res)
+        representanteService.findByUuid(id).mapBoth(
+            success = { return ResponseEntity.ok(it.toDto()) },
+            failure = { return handleErrors(it) }
+        )
     }
 
     /**
@@ -85,10 +89,14 @@ class RepresentantesController
         // Con valid hacemos la validación de los campos
         logger.info { "POST Representante" }
 
-        val rep = representanteDto.validate().toModel()
-        val res = representanteService.save(rep).toDto()
-        return ResponseEntity.status(HttpStatus.CREATED).body(res)
+        representanteDto.validate().andThen {
+            representanteService.save(it.toModel())
+        }.mapBoth(
+            success = { return ResponseEntity.status(HttpStatus.CREATED).body(it.toDto()) },
+            failure = { return handleErrors(it) }
+        )
     }
+
 
     /**
      * PUT: Modifica un nuevo representante
@@ -106,9 +114,12 @@ class RepresentantesController
         // Con valid hacemos la validación de los campos
         logger.info { "PUT Representante con id: $id" }
 
-        val rep = representanteDto.validate().toModel()
-        val res = representanteService.update(id, rep).toDto()
-        return ResponseEntity.status(HttpStatus.OK).body(res)
+        representanteDto.validate().andThen {
+            representanteService.update(id, it.toModel())
+        }.mapBoth(
+            success = { return ResponseEntity.ok(it.toDto()) },
+            failure = { return handleErrors(it) }
+        )
     }
 
     /**
@@ -122,8 +133,10 @@ class RepresentantesController
     suspend fun delete(@PathVariable id: UUID): ResponseEntity<RepresentanteDto> {
         logger.info { "DELETE Representante con id: $id" }
 
-        representanteService.deleteByUuid(id)
-        return ResponseEntity.noContent().build()
+        representanteService.deleteByUuid(id).mapBoth(
+            success = { return ResponseEntity.noContent().build() },
+            failure = { return handleErrors(it) }
+        )
     }
 
     /**
@@ -178,6 +191,21 @@ class RepresentantesController
 
         } ?: run {
             return ResponseEntity.notFound().build()
+        }
+    }
+
+    private fun handleErrors(it: RepresentanteError): ResponseEntity<RepresentanteDto> {
+        when (it) {
+            is RepresentanteError.NotFound -> throw ResponseStatusException(HttpStatus.NOT_FOUND, it.message)
+            is RepresentanteError.BadRequest -> throw ResponseStatusException(
+                HttpStatus.BAD_REQUEST,
+                it.message
+            )
+
+            is RepresentanteError.ConflictIntegrity -> throw ResponseStatusException(
+                HttpStatus.BAD_REQUEST,
+                it.message
+            )
         }
     }
 
