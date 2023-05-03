@@ -194,21 +194,21 @@ class RepresentantesController
         }
     }
 
-    private fun handleErrors(it: RepresentanteError): ResponseEntity<RepresentanteDto> {
-        when (it) {
+    private fun handleErrors(representanteError: RepresentanteError): ResponseEntity<RepresentanteDto> {
+        when (representanteError) {
             is RepresentanteError.NotFound -> throw ResponseStatusException(
                 HttpStatus.NOT_FOUND,
-                it.message
+                representanteError.message
             )
 
             is RepresentanteError.BadRequest -> throw ResponseStatusException(
                 HttpStatus.BAD_REQUEST,
-                it.message
+                representanteError.message
             )
 
             is RepresentanteError.ConflictIntegrity -> throw ResponseStatusException(
                 HttpStatus.BAD_REQUEST,
-                it.message
+                representanteError.message
             )
         }
     }

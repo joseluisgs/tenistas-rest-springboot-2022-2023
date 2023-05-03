@@ -82,9 +82,9 @@ class RaquetasServiceImpl
         logger.debug { "Servicio de raquetas update raqueta con id: $uuid " }
 
         return findRepresentante(raqueta.representanteId).andThen {
-            findByUuid(uuid).onSuccess { r ->
+            findByUuid(uuid).onSuccess {
                 raquetasRepository.update(uuid, raqueta)
-                    .also { onChange(Notificacion.Tipo.UPDATE, r.uuid, it) }
+                    .also { onChange(Notificacion.Tipo.UPDATE, it!!.uuid, it) }
                     .let { Ok(it) }
             }
         }

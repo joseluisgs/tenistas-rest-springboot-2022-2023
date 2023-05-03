@@ -186,40 +186,40 @@ class RaquetasController
         }
     }
 
-    private fun handleErrors(it: RaquetaError): ResponseEntity<RaquetaDto> {
-        when (it) {
+    private fun handleErrors(raquetaError: RaquetaError): ResponseEntity<RaquetaDto> {
+        when (raquetaError) {
             is RaquetaError.NotFound -> throw ResponseStatusException(
                 HttpStatus.NOT_FOUND,
-                it.message
+                raquetaError.message
             )
 
             is RaquetaError.BadRequest -> throw ResponseStatusException(
                 HttpStatus.BAD_REQUEST,
-                it.message
+                raquetaError.message
             )
 
             is RaquetaError.ConflictIntegrity -> throw ResponseStatusException(
                 HttpStatus.BAD_REQUEST,
-                it.message
+                raquetaError.message
             )
 
             is RaquetaError.RepresentanteNotFound -> throw ResponseStatusException(
                 HttpStatus.BAD_REQUEST,
-                it.message
+                raquetaError.message
             )
         }
     }
 
-    private fun handleErrorsRepresentante(it: RaquetaError): ResponseEntity<RepresentanteDto> {
-        if (it is RaquetaError.RepresentanteNotFound) {
+    private fun handleErrorsRepresentante(raquetaError: RaquetaError): ResponseEntity<RepresentanteDto> {
+        if (raquetaError is RaquetaError.RepresentanteNotFound) {
             throw ResponseStatusException(
                 HttpStatus.NOT_FOUND,
-                it.message
+                raquetaError.message
             )
         } else {
             throw ResponseStatusException(
                 HttpStatus.BAD_REQUEST,
-                it.message
+                raquetaError.message
             )
         }
     }
