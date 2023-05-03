@@ -244,7 +244,7 @@ class RepresentanteServiceImplTest {
             { assertTrue(res is RepresentanteError.NotFound) },
             { assertTrue(res.message.contains("No se ha encontrado el representante con uuid")) }
         )
-        
+
         coVerify(exactly = 0) { repository.deleteByUuid(any()) } // No se llama al método deleteByUuid
 
     }
