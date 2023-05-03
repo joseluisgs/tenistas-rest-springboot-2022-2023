@@ -196,7 +196,11 @@ class RepresentantesController
 
     private fun handleErrors(it: RepresentanteError): ResponseEntity<RepresentanteDto> {
         when (it) {
-            is RepresentanteError.NotFound -> throw ResponseStatusException(HttpStatus.NOT_FOUND, it.message)
+            is RepresentanteError.NotFound -> throw ResponseStatusException(
+                HttpStatus.NOT_FOUND,
+                it.message
+            )
+
             is RepresentanteError.BadRequest -> throw ResponseStatusException(
                 HttpStatus.BAD_REQUEST,
                 it.message

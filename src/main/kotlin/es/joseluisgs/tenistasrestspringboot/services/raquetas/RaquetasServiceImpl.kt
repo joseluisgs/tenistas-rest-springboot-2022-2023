@@ -1,10 +1,10 @@
 package es.joseluisgs.tenistasrestspringboot.services.raquetas
 
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import com.github.michaelbull.result.*
 import es.joseluisgs.tenistasrestspringboot.config.websocket.ServerWebSocketConfig
 import es.joseluisgs.tenistasrestspringboot.config.websocket.WebSocketHandler
-import es.joseluisgs.tenistasrestspringboot.exceptions.RaquetaNotFoundException
-import es.joseluisgs.tenistasrestspringboot.exceptions.RaquetaRepresentanteNotFound
+import es.joseluisgs.tenistasrestspringboot.errors.RaquetaError
 import es.joseluisgs.tenistasrestspringboot.mappers.toDto
 import es.joseluisgs.tenistasrestspringboot.models.Notificacion
 import es.joseluisgs.tenistasrestspringboot.models.Raqueta
@@ -46,18 +46,20 @@ class RaquetasServiceImpl
         return raquetasRepository.findAll()
     }
 
-    override suspend fun findById(id: Long): Raqueta {
+    override suspend fun findById(id: Long): Result<Raqueta, RaquetaError> {
         logger.debug { "Servicio de raquetas findById con id: $id" }
 
         return raquetasRepository.findById(id)
-            ?: throw RaquetaNotFoundException("No se ha encontrado la raqueta con id: $id")
+            ?.let { Ok(it) }
+            ?: Err(RaquetaError.NotFound("No se ha encontrado la raqueta con id: $id"))
     }
 
-    override suspend fun findByUuid(uuid: UUID): Raqueta {
+    override suspend fun findByUuid(uuid: UUID): Result<Raqueta, RaquetaError> {
         logger.debug { "Servicio de raquetas findByUuid con uuid: $uuid" }
 
         return raquetasRepository.findByUuid(uuid)
-            ?: throw RaquetaNotFoundException("No se ha encontrado la raqueta con uuid: $uuid")
+            ?.let { Ok(it) }
+            ?: Err(RaquetaError.NotFound("No se ha encontrado la raqueta con uuid: $uuid"))
     }
 
     override suspend fun findByMarca(marca: String): Flow<Raqueta> {
@@ -66,58 +68,57 @@ class RaquetasServiceImpl
         return raquetasRepository.findByMarca(marca)
     }
 
-    override suspend fun save(raqueta: Raqueta): Raqueta {
+    override suspend fun save(raqueta: Raqueta): Result<Raqueta, RaquetaError> {
         logger.debug { "Servicio de raquetas save raqueta: $raqueta" }
 
-        // Existe el representante!
-        val representante = findRepresentante(raqueta.representanteId)
-
-        return raquetasRepository.save(raqueta)
-            .also { onChange(Notificacion.Tipo.CREATE, it.uuid, it) }
+        return findRepresentante(raqueta.representanteId).andThen {
+            raquetasRepository.save(raqueta)
+                .also { onChange(Notificacion.Tipo.CREATE, it.uuid, it) }
+                .let { Ok(it) }
+        }
     }
 
-    override suspend fun update(uuid: UUID, raqueta: Raqueta): Raqueta {
+    override suspend fun update(uuid: UUID, raqueta: Raqueta): Result<Raqueta, RaquetaError> {
         logger.debug { "Servicio de raquetas update raqueta con id: $uuid " }
 
-        val existe = raquetasRepository.findByUuid(uuid)
-
-        existe?.let {
-            // Existe el representante!
-            val representante = findRepresentante(raqueta.representanteId)
-
-            return raquetasRepository.update(uuid, raqueta)
-                ?.also { onChange(Notificacion.Tipo.UPDATE, it.uuid, it) }!!
-        } ?: throw RaquetaNotFoundException("No se ha encontrado la raqueta con uuid: $uuid")
+        return findRepresentante(raqueta.representanteId).andThen {
+            findByUuid(uuid).onSuccess { r ->
+                raquetasRepository.update(uuid, raqueta)
+                    .also { onChange(Notificacion.Tipo.UPDATE, r.uuid, it) }
+                    .let { Ok(it) }
+            }
+        }
     }
 
-    override suspend fun delete(raqueta: Raqueta): Raqueta {
+    override suspend fun delete(raqueta: Raqueta): Result<Raqueta, RaquetaError> {
         logger.debug { "Servicio de raquetas delete raqueta: $raqueta" }
 
-        val existe = raquetasRepository.findByUuid(raqueta.uuid)
-
-        existe?.let {
-            return raquetasRepository.delete(existe)
-                ?.also { onChange(Notificacion.Tipo.DELETE, it.uuid, it) }!!
+        return findByUuid(raqueta.uuid).onSuccess {
+            raquetasRepository.delete(raqueta)
+                ?.also { onChange(Notificacion.Tipo.DELETE, it.uuid, it) }
+                ?.let { Ok(it) }
         }
-            ?: throw RaquetaNotFoundException("No se ha encontrado la raqueta con uuid: ${raqueta.uuid}")
 
     }
 
-    override suspend fun deleteByUuid(uuid: UUID): Raqueta {
+    override suspend fun deleteByUuid(uuid: UUID): Result<Raqueta, RaquetaError> {
         logger.debug { "Servicio de raquetas deleteByUuid con uuid: $uuid" }
 
-        val existe = raquetasRepository.findByUuid(uuid)
-
-        existe?.let {
-            return raquetasRepository.deleteByUuid(uuid)
-                ?.also { onChange(Notificacion.Tipo.DELETE, it.uuid, it) }!!
-        } ?: throw RaquetaNotFoundException("No se ha encontrado la raqueta con uuid: $uuid")
+        return findByUuid(uuid).onSuccess {
+            raquetasRepository.deleteByUuid(uuid)
+                ?.also { onChange(Notificacion.Tipo.DELETE, it.uuid, it) }
+                ?.let { Ok(it) }
+        }
     }
 
-    override suspend fun deleteById(id: Long) {
+    override suspend fun deleteById(id: Long): Result<Raqueta, RaquetaError> {
         logger.debug { "Servicio de raquetas deleteById con id: $id" }
 
-        raquetasRepository.deleteById(id)
+        return findById(id).onSuccess { r ->
+            raquetasRepository.deleteById(id)
+                .also { onChange(Notificacion.Tipo.DELETE, r.uuid, r) }
+                .let { Ok(it) }
+        }
     }
 
     override suspend fun findAllPage(pageRequest: PageRequest): Flow<Page<Raqueta>> {
@@ -132,11 +133,12 @@ class RaquetasServiceImpl
         return raquetasRepository.countAll()
     }
 
-    override suspend fun findRepresentante(id: UUID): Representante {
+    override suspend fun findRepresentante(id: UUID): Result<Representante, RaquetaError> {
         logger.debug { "findRepresentante: Buscando representante en servicio" }
 
         return representesRepository.findByUuid(id)
-            ?: throw RaquetaRepresentanteNotFound("No se ha encontrado el representante con id: $id")
+            ?.let { Ok(it) }
+            ?: Err(RaquetaError.RepresentanteNotFound("No se ha encontrado el representante con id: $id"))
     }
 
     // Enviamos la notificación a los clientes ws
@@ -150,7 +152,7 @@ class RaquetasServiceImpl
                 "RAQUETA",
                 tipo,
                 id,
-                data?.toDto(findRepresentante(data.representanteId))
+                data?.toDto(findRepresentante(data.representanteId).get()!!)
             )
         )
         // Enviamos la notificación a los clientes ws

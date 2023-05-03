@@ -1,13 +1,16 @@
 package es.joseluisgs.tenistasrestspringboot.validators
 
+import com.github.michaelbull.result.Err
+import com.github.michaelbull.result.Ok
+import com.github.michaelbull.result.Result
 import es.joseluisgs.tenistasrestspringboot.dto.RaquetaCreateDto
-import es.joseluisgs.tenistasrestspringboot.exceptions.RaquetaBadRequestException
+import es.joseluisgs.tenistasrestspringboot.errors.RaquetaError
 
 
-fun RaquetaCreateDto.validate(): RaquetaCreateDto {
+fun RaquetaCreateDto.validate(): Result<RaquetaCreateDto, RaquetaError> {
     if (this.marca.isBlank())
-        throw RaquetaBadRequestException("La marca no puede estar vacía")
+        return Err(RaquetaError.BadRequest("La marca no puede estar vacía"))
     if (this.precio < 0.0)
-        throw RaquetaBadRequestException("El precio no puede ser negativo")
-    return this
+        return Err(RaquetaError.BadRequest("El precio no puede ser negativo"))
+    return Ok(this)
 }

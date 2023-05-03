@@ -1,7 +1,11 @@
 package es.joseluisgs.tenistasrestspringboot.controllers
 
+import com.github.michaelbull.result.andThen
+import com.github.michaelbull.result.get
+import com.github.michaelbull.result.mapBoth
 import es.joseluisgs.tenistasrestspringboot.config.APIConfig
 import es.joseluisgs.tenistasrestspringboot.dto.*
+import es.joseluisgs.tenistasrestspringboot.errors.RaquetaError
 import es.joseluisgs.tenistasrestspringboot.exceptions.*
 import es.joseluisgs.tenistasrestspringboot.mappers.toDto
 import es.joseluisgs.tenistasrestspringboot.mappers.toModel
@@ -20,6 +24,7 @@ import org.springframework.http.ResponseEntity
 import org.springframework.messaging.handler.annotation.support.MethodArgumentNotValidException
 import org.springframework.validation.FieldError
 import org.springframework.web.bind.annotation.*
+import org.springframework.web.server.ResponseStatusException
 import java.util.*
 
 
@@ -45,7 +50,7 @@ class RaquetasController
 
         val res = raquetasService.findAll()
             .toList()
-            .map { it.toDto(raquetasService.findRepresentante(it.representanteId)) }
+            .map { it.toDto(raquetasService.findRepresentante(it.representanteId).get()!!) }
 
         return ResponseEntity.ok(res)
 
@@ -55,10 +60,16 @@ class RaquetasController
     suspend fun findById(@PathVariable id: UUID): ResponseEntity<RaquetaDto> {
         logger.info { "GET By ID Raqueta con id: $id" }
 
-        // Nosotros usamos el UUID, pero para el DTO es id
-        val raqueta = raquetasService.findByUuid(id)
-        val res = raqueta.toDto(raquetasService.findRepresentante(raqueta.representanteId))
-        return ResponseEntity.ok(res)
+        raquetasService.findByUuid(id).mapBoth(
+            success = {
+                return ResponseEntity.ok(
+                    it.toDto(
+                        raquetasService.findRepresentante(it.representanteId).get()!!
+                    )
+                )
+            },
+            failure = { return handleErrors(it) }
+        )
     }
 
     @PostMapping("")
@@ -66,9 +77,15 @@ class RaquetasController
         // Con valid hacemos la validación de los campos
         logger.info { "POST Raqueta" }
 
-        val rep = raquetaDto.validate().toModel()
-        val res = raquetasService.save(rep).toDto(raquetasService.findRepresentante(rep.representanteId))
-        return ResponseEntity.status(HttpStatus.CREATED).body(res)
+        raquetaDto.validate().andThen {
+            raquetasService.save(it.toModel())
+        }.mapBoth(
+            success = {
+                return ResponseEntity.status(HttpStatus.CREATED)
+                    .body(it.toDto(raquetasService.findRepresentante(it.representanteId).get()!!))
+            },
+            failure = { return handleErrors(it) }
+        )
     }
 
     @PutMapping("/{id}")
@@ -79,18 +96,28 @@ class RaquetasController
         // Con valid hacemos la validación de los campos
         logger.info { "PUT Raqueta con id: $id" }
 
-        val rep = raquetaDto.validate().toModel()
-        val res = raquetasService.update(id, rep).toDto(raquetasService.findRepresentante(rep.representanteId))
-        return ResponseEntity.status(HttpStatus.OK).body(res)
-
+        raquetaDto.validate().andThen {
+            raquetasService.update(id, it.toModel())
+        }.mapBoth(
+            success = {
+                return ResponseEntity.ok(
+                    it.toDto(
+                        raquetasService.findRepresentante(it.representanteId).get()!!
+                    )
+                )
+            },
+            failure = { return handleErrors(it) }
+        )
     }
 
     @DeleteMapping("/{id}")
     suspend fun delete(@PathVariable id: UUID): ResponseEntity<RaquetaDto> {
         logger.info { "DELETE Raqueta con id: $id" }
 
-        raquetasService.deleteByUuid(id)
-        return ResponseEntity.noContent().build()
+        raquetasService.deleteByUuid(id).mapBoth(
+            success = { return ResponseEntity.noContent().build() },
+            failure = { return handleErrors(it) }
+        )
     }
 
     @GetMapping("find")
@@ -100,7 +127,7 @@ class RaquetasController
         marca.let {
             val res = raquetasService.findByMarca(marca.trim())
                 .toList()
-                .map { it.toDto(raquetasService.findRepresentante(it.representanteId)) }
+                .map { it.toDto(raquetasService.findRepresentante(it.representanteId).get()!!) }
 
             return ResponseEntity.ok(res)
         }
@@ -110,11 +137,18 @@ class RaquetasController
     suspend fun findRepresentante(@PathVariable id: UUID): ResponseEntity<RepresentanteDto> {
         logger.info { "GET By ID Representante de la raqueta con id: $id" }
 
-        val raqueta = raquetasService.findByUuid(id)
-        val res = raquetasService.findRepresentante(raqueta.representanteId).toDto()
-        return ResponseEntity.ok(res)
-
+        raquetasService.findByUuid(id).andThen {
+            raquetasService.findRepresentante(it.representanteId)
+        }.mapBoth(
+            success = {
+                return ResponseEntity.ok(it.toDto())
+            },
+            failure = {
+                return handleErrorsRepresentante(it)
+            }
+        )
     }
+
 
     @GetMapping("paging")
     suspend fun getAll(
@@ -133,7 +167,11 @@ class RaquetasController
 
         pageResult?.let {
             val dto = RaquetasPageDto(
-                content = pageResult.content.map { it.toDto(raquetasService.findRepresentante(it.representanteId)) },
+                content = pageResult.content.map {
+                    it.toDto(
+                        raquetasService.findRepresentante(it.representanteId).get()!!
+                    )
+                },
                 currentPage = pageResult.number,
                 pageSize = pageResult.size,
                 totalPages = if (pageResult.totalElements % pageResult.size == 0L) pageResult.totalElements / pageResult.size else (pageResult.totalElements / pageResult.size) + 1,
@@ -145,6 +183,44 @@ class RaquetasController
 
         } ?: run {
             return ResponseEntity.notFound().build()
+        }
+    }
+
+    private fun handleErrors(it: RaquetaError): ResponseEntity<RaquetaDto> {
+        when (it) {
+            is RaquetaError.NotFound -> throw ResponseStatusException(
+                HttpStatus.NOT_FOUND,
+                it.message
+            )
+
+            is RaquetaError.BadRequest -> throw ResponseStatusException(
+                HttpStatus.BAD_REQUEST,
+                it.message
+            )
+
+            is RaquetaError.ConflictIntegrity -> throw ResponseStatusException(
+                HttpStatus.BAD_REQUEST,
+                it.message
+            )
+
+            is RaquetaError.RepresentanteNotFound -> throw ResponseStatusException(
+                HttpStatus.BAD_REQUEST,
+                it.message
+            )
+        }
+    }
+
+    private fun handleErrorsRepresentante(it: RaquetaError): ResponseEntity<RepresentanteDto> {
+        if (it is RaquetaError.RepresentanteNotFound) {
+            throw ResponseStatusException(
+                HttpStatus.NOT_FOUND,
+                it.message
+            )
+        } else {
+            throw ResponseStatusException(
+                HttpStatus.BAD_REQUEST,
+                it.message
+            )
         }
     }
 
