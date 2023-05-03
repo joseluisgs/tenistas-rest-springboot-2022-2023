@@ -1,8 +1,9 @@
 package es.joseluisgs.tenistasrestspringboot.controllers
 
+import com.github.michaelbull.result.Err
+import com.github.michaelbull.result.Ok
 import es.joseluisgs.tenistasrestspringboot.dto.RepresentanteRequestDto
-import es.joseluisgs.tenistasrestspringboot.exceptions.RepresentanteBadRequestException
-import es.joseluisgs.tenistasrestspringboot.exceptions.RepresentanteNotFoundException
+import es.joseluisgs.tenistasrestspringboot.errors.RepresentanteError
 import es.joseluisgs.tenistasrestspringboot.mappers.toDto
 import es.joseluisgs.tenistasrestspringboot.models.Representante
 import es.joseluisgs.tenistasrestspringboot.services.representantes.RepresentantesService
@@ -32,7 +33,7 @@ class RepresentantesControllerTest {
     @InjectMockKs // @Autowired
     lateinit var controller: RepresentantesController
 
-    val representante = Representante(
+    final val representante = Representante(
         uuid = "71dac885-bfa5-465e-9bff-47a5902adae6".toUUID(),
         nombre = "TestRep",
         email = "test@mail.com"
@@ -68,7 +69,7 @@ class RepresentantesControllerTest {
 
     @Test
     fun findById() = runTest {
-        coEvery { service.findByUuid(representante.uuid) } returns representante
+        coEvery { service.findByUuid(representante.uuid) } returns Ok(representante)
 
         val result = controller.findById(representante.uuid)
         val res = result.body!!
@@ -87,7 +88,9 @@ class RepresentantesControllerTest {
 
     @Test
     fun findByIdNotFound() = runTest {
-        coEvery { service.findByUuid(representante.uuid) } throws RepresentanteNotFoundException("No se ha encontrado el representante con id: ${representante.uuid}")
+        coEvery { service.findByUuid(representante.uuid) } returns Err(
+            RepresentanteError.NotFound("No se ha encontrado el representante con id: ${representante.uuid}")
+        )
 
         val res = assertThrows<ResponseStatusException> {
             val result = controller.findById(representante.uuid)
@@ -103,7 +106,7 @@ class RepresentantesControllerTest {
 
     @Test
     fun create() = runTest {
-        coEvery { service.save(any()) } returns representante
+        coEvery { service.save(any()) } returns Ok(representante)
 
         val result = controller.create(representanteRequestDto)
         val res = result.body!!
@@ -122,7 +125,7 @@ class RepresentantesControllerTest {
 
     @Test
     fun createCampoNombreBlanco() = runTest {
-        coEvery { service.save(any()) } throws RepresentanteBadRequestException("El nombre no puede estar vacío")
+        coEvery { service.save(any()) } returns Err(RepresentanteError.BadRequest("El nombre no puede estar vacío"))
 
         val res = assertThrows<ResponseStatusException> {
             val result = controller.create(
@@ -140,7 +143,7 @@ class RepresentantesControllerTest {
 
     @Test
     fun createCampoEmailBlanco() = runTest {
-        coEvery { service.save(any()) } throws RepresentanteBadRequestException("El email no puede estar vacío o no tiene el formato correcto")
+        coEvery { service.save(any()) } returns Err(RepresentanteError.BadRequest("El email no puede estar vacío y debe ser válido"))
 
         val res = assertThrows<ResponseStatusException> {
             val result = controller.create(
@@ -149,7 +152,7 @@ class RepresentantesControllerTest {
         }
 
         assertEquals(
-            """400 BAD_REQUEST "El email no puede estar vacío o no tiene el formato correcto"""",
+            """400 BAD_REQUEST "El email no puede estar vacío y debe ser válido"""",
             res.message
         )
 
@@ -158,7 +161,7 @@ class RepresentantesControllerTest {
 
     @Test
     fun update() = runTest {
-        coEvery { service.update(any(), any()) } returns representante
+        coEvery { service.update(any(), any()) } returns Ok(representante)
 
         val result = controller.update(representante.uuid, representanteRequestDto)
         val res = result.body!!
@@ -182,7 +185,7 @@ class RepresentantesControllerTest {
                 any(),
                 any()
             )
-        } throws RepresentanteNotFoundException("No se ha encontrado el representante con id: ${representante.uuid}")
+        } returns Err(RepresentanteError.NotFound("No se ha encontrado el representante con id: ${representante.uuid}"))
 
         val res = assertThrows<ResponseStatusException> {
             val result = controller.update(representante.uuid, representanteRequestDto)
@@ -198,7 +201,7 @@ class RepresentantesControllerTest {
 
     @Test
     fun delete() = runTest {
-        coEvery { service.deleteByUuid(representante.uuid) } returns representante
+        coEvery { service.deleteByUuid(representante.uuid) } returns Ok(representante)
 
         val result = controller.delete(representante.uuid)
 
@@ -212,7 +215,7 @@ class RepresentantesControllerTest {
 
     @Test
     fun deleteNotFound() = runTest {
-        coEvery { service.deleteByUuid(representante.uuid) } throws RepresentanteNotFoundException("No se ha encontrado el representante con id: ${representante.uuid}")
+        coEvery { service.deleteByUuid(representante.uuid) } returns Err(RepresentanteError.NotFound("No se ha encontrado el representante con id: ${representante.uuid}"))
 
         val res = assertThrows<ResponseStatusException> {
             val result = controller.delete(representante.uuid)

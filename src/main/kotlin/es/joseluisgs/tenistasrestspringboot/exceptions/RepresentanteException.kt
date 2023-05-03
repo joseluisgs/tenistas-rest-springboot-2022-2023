@@ -21,16 +21,6 @@ sealed class RepresentanteException(message: String) : RuntimeException(message)
 class RepresentanteNotFoundException(message: String) : RepresentanteException(message)
 
 /**
- * RepresentanteBadRequestException
- * @param message: String Mensaje de la excepción
- * @see RepresentanteException
- * @see ResponseStatus
- * @see HttpStatus BAD_REQUEST
- */
-@ResponseStatus(HttpStatus.BAD_REQUEST)
-class RepresentanteBadRequestException(message: String) : RepresentanteException(message)
-
-/**
  * RepresentanteConflictIntegrityException
  * @param message: String Mensaje de la excepción
  * @see RepresentanteException

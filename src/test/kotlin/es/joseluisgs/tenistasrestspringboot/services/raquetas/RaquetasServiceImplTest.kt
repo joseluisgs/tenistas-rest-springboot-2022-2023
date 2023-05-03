@@ -1,9 +1,10 @@
 package es.joseluisgs.tenistasrestspringboot.services.raquetas
 
+import com.github.michaelbull.result.get
+import com.github.michaelbull.result.getError
 import es.joseluisgs.tenistasrestspringboot.config.websocket.ServerWebSocketConfig
+import es.joseluisgs.tenistasrestspringboot.errors.RaquetaError
 import es.joseluisgs.tenistasrestspringboot.exceptions.RaquetaConflictIntegrityException
-import es.joseluisgs.tenistasrestspringboot.exceptions.RaquetaNotFoundException
-import es.joseluisgs.tenistasrestspringboot.exceptions.RepresentanteNotFoundException
 import es.joseluisgs.tenistasrestspringboot.models.Raqueta
 import es.joseluisgs.tenistasrestspringboot.models.Representante
 import es.joseluisgs.tenistasrestspringboot.repositories.raquetas.RaquetasCachedRepository
@@ -86,7 +87,7 @@ class RaquetasServiceImplTest {
     fun findById() = runTest {
         coEvery { repository.findById(any()) } returns raqueta
 
-        val result = service.findById(raqueta.id!!)
+        val result = service.findById(raqueta.id!!).get()!!
 
         assertAll(
             { assertEquals(raqueta.marca, result.marca) },
@@ -100,11 +101,13 @@ class RaquetasServiceImplTest {
     fun findByIdNotFound() = runTest {
         coEvery { repository.findById(any()) } returns null
 
-        val res = assertThrows<RaquetaNotFoundException> {
-            service.findById(raqueta.id!!)
-        }
+        val res = service.findById(raqueta.id!!).getError()!!
 
-        assertEquals("No se ha encontrado la raqueta con id: ${raqueta.id}", res.message)
+        assertAll(
+            { assertTrue(res is RaquetaError.NotFound) },
+            { assertTrue(res.message.contains("No se ha encontrado la raqueta con id")) }
+        )
+
 
         coVerify { repository.findById(any()) }
 
@@ -114,7 +117,7 @@ class RaquetasServiceImplTest {
     fun findByUuid() = runTest {
         coEvery { repository.findByUuid(any()) } returns raqueta
 
-        val result = service.findByUuid(raqueta.uuid)
+        val result = service.findByUuid(raqueta.uuid).get()!!
 
         assertAll(
             { assertEquals(raqueta.marca, result.marca) },
@@ -128,11 +131,12 @@ class RaquetasServiceImplTest {
     fun findByUuidNotFound() = runTest {
         coEvery { repository.findByUuid(any()) } returns null
 
-        val res = assertThrows<RaquetaNotFoundException> {
-            service.findByUuid(raqueta.uuid)
-        }
+        val res = service.findByUuid(raqueta.uuid).getError()!!
 
-        assertEquals("No se ha encontrado la raqueta con uuid: ${raqueta.uuid}", res.message)
+        assertAll(
+            { assertTrue(res is RaquetaError.NotFound) },
+            { assertTrue(res.message.contains("No se ha encontrado la raqueta con uuid")) }
+        )
 
         coVerify { repository.findByUuid(any()) }
     }
@@ -156,7 +160,7 @@ class RaquetasServiceImplTest {
         coEvery { represetantesRepository.findByUuid(any()) } returns representante
         coEvery { repository.save(any()) } returns raqueta
 
-        val result = service.save(raqueta)
+        val result = service.save(raqueta).get()!!
 
         assertAll(
             { assertEquals(raqueta.marca, result.marca) },
@@ -169,12 +173,15 @@ class RaquetasServiceImplTest {
 
     @Test
     fun saveRepresentanteNotExists() = runTest {
-        coEvery { represetantesRepository.findByUuid(any()) } throws RepresentanteNotFoundException("No se ha encontrado el representante con id: ${raqueta.representanteId}")
+        coEvery { represetantesRepository.findByUuid(any()) } returns null
         coEvery { repository.save(any()) } returns raqueta
 
-        val res = assertThrows<RepresentanteNotFoundException> {
-            service.save(raqueta)
-        }
+        val res = service.save(raqueta).getError()!!
+
+        assertAll(
+            { assertTrue(res is RaquetaError.RepresentanteNotFound) },
+            { assertTrue(res.message.contains("No se ha encontrado el representante con id")) }
+        )
 
         assertEquals("No se ha encontrado el representante con id: ${raqueta.representanteId}", res.message)
 
@@ -186,8 +193,7 @@ class RaquetasServiceImplTest {
         coEvery { repository.findByUuid(any()) } returns raqueta
         coEvery { repository.update(any(), any()) } returns raqueta
 
-        val result = service.update(raqueta.uuid, raqueta)
-
+        val result = service.update(raqueta.uuid, raqueta).get()!!
         assertAll(
             { assertEquals(raqueta.marca, result.marca) },
             { assertEquals(raqueta.precio, result.precio) },
@@ -198,33 +204,20 @@ class RaquetasServiceImplTest {
 
     @Test
     fun updateNotFound() = runTest {
-        coEvery { repository.findByUuid(any()) } throws RaquetaNotFoundException("No se ha encontrado la raqueta con id: ${raqueta.id}")
+        coEvery { repository.findByUuid(any()) } returns null
         coEvery { repository.update(any(), any()) } returns null
+        coEvery { represetantesRepository.findByUuid(any()) } returns representante
 
-        val res = assertThrows<RaquetaNotFoundException> {
-            service.update(raqueta.uuid, raqueta)
-        }
+        val res = service.update(raqueta.uuid, raqueta).getError()!!
 
-        assertEquals("No se ha encontrado la raqueta con id: ${raqueta.id}", res.message)
+        assertAll(
+            { assertTrue(res is RaquetaError.NotFound) },
+            { assertTrue(res.message.contains("No se ha encontrado la raqueta con uuid")) }
+        )
 
         coVerify(exactly = 0) { repository.update(any(), any()) } // No se llama al método update
 
     }
-
-    /*@Test
-    fun updateRepresentanteNotExists() = runTest {
-        coEvery { represetantesRepository.findByUuid(any()) } throws RepresentanteNotFoundException("No se ha encontrado el representante con id: ${raqueta.represetanteId}")
-        coEvery { repository.update(any(), any()) } returns raqueta
-
-        val res = assertThrows {
-            service.update(raqueta.uuid, raqueta)
-        }
-
-        assertEquals("No se ha encontrado el representante con id: ${raqueta.represetanteId}", res.message)
-
-        coVerify { repository.update(any(), any()) }
-
-    }*/
 
     @Test
     fun delete() = runTest {
@@ -232,7 +225,7 @@ class RaquetasServiceImplTest {
         coEvery { repository.delete(any()) } returns raqueta
         coEvery { represetantesRepository.findByUuid(any()) } returns representante
 
-        val result = service.delete(raqueta)
+        val result = service.delete(raqueta).get()!!
 
         assertAll(
             { assertEquals(raqueta.marca, result.marca) },
@@ -247,13 +240,13 @@ class RaquetasServiceImplTest {
     fun deleteNotRaquetaConflict() = runTest {
         val uuid = "86084458-4733-4d71-a3db-34b50cd8d68f".toUUID()
         coEvery { repository.findByUuid(any()) } returns raqueta
-        coEvery { repository.delete(any()) } throws RaquetaConflictIntegrityException("No se puede borrar la raqueta con id: $uuid porque tiene tenistas asociados")
+        coEvery { repository.delete(any()) } throws RaquetaConflictIntegrityException("No se puede borrar la raqueta ya que tiene tenistas asociados")
 
         val res = assertThrows<RaquetaConflictIntegrityException> {
             service.delete(raqueta)
         }
 
-        assertEquals("No se puede borrar la raqueta con id: $uuid porque tiene tenistas asociados", res.message)
+        assertEquals("No se puede borrar la raqueta ya que tiene tenistas asociados", res.message)
 
         coVerify { repository.delete(any()) }
     }
@@ -264,7 +257,7 @@ class RaquetasServiceImplTest {
         coEvery { repository.deleteByUuid(any()) } returns raqueta
         coEvery { represetantesRepository.findByUuid(any()) } returns representante
 
-        val result = service.deleteByUuid(raqueta.uuid)
+        val result = service.deleteByUuid(raqueta.uuid).get()!!
 
         assertAll(
             { assertEquals(raqueta.marca, result.marca) },
@@ -277,14 +270,14 @@ class RaquetasServiceImplTest {
 
     @Test
     fun deleteUuidNotFound() = runTest {
-        coEvery { repository.findByUuid(any()) } throws RaquetaNotFoundException("No se ha encontrado la raqueta con id: ${raqueta.id}")
-        coEvery { repository.deleteByUuid(any()) } returns raqueta
+        coEvery { repository.findByUuid(any()) } returns null
 
-        val res = assertThrows<RaquetaNotFoundException> {
-            service.deleteByUuid(raqueta.uuid)
-        }
+        val res = service.deleteByUuid(raqueta.uuid).getError()!!
 
-        assertEquals("No se ha encontrado la raqueta con id: ${raqueta.id}", res.message)
+        assertAll(
+            { assertTrue(res is RaquetaError.NotFound) },
+            { assertTrue(res.message.contains("No se ha encontrado la raqueta con uuid")) }
+        )
 
         coVerify(exactly = 0) { repository.deleteByUuid(any()) } // No se llama al método deleteByUuid
 
@@ -321,7 +314,7 @@ class RaquetasServiceImplTest {
     fun findRepresentante() = runTest {
         coEvery { represetantesRepository.findByUuid(any()) } returns representante
 
-        val result = service.findRepresentante(raqueta.representanteId)
+        val result = service.findRepresentante(raqueta.representanteId).get()!!
 
         assertEquals(representante, result)
 
@@ -331,13 +324,13 @@ class RaquetasServiceImplTest {
 
     @Test
     fun findRepresentanteNotFound() = runTest {
-        coEvery { represetantesRepository.findByUuid(any()) } throws RepresentanteNotFoundException("No se ha encontrado el representante con id: ${raqueta.representanteId}")
+        coEvery { represetantesRepository.findByUuid(any()) } returns null
 
-        val res = assertThrows<RepresentanteNotFoundException> {
-            service.findRepresentante(raqueta.representanteId)
-        }
+        val res = service.findRepresentante(raqueta.representanteId).getError()!!
 
-        assertEquals("No se ha encontrado el representante con id: ${raqueta.representanteId}", res.message)
-
+        assertAll(
+            { assertTrue(res is RaquetaError.RepresentanteNotFound) },
+            { assertTrue(res.message.contains("No se ha encontrado el representante con id")) }
+        )
     }
 }
