@@ -1,27 +1,30 @@
 package es.joseluisgs.tenistasrestspringboot.validators
 
+import com.github.michaelbull.result.Err
+import com.github.michaelbull.result.Ok
+import com.github.michaelbull.result.Result
 import es.joseluisgs.tenistasrestspringboot.dto.TenistaCreateDto
-import es.joseluisgs.tenistasrestspringboot.exceptions.TenistaBadRequestException
+import es.joseluisgs.tenistasrestspringboot.errors.TenistaError
 import java.time.LocalDate
 
 
-fun TenistaCreateDto.validate(): TenistaCreateDto {
+fun TenistaCreateDto.validate(): Result<TenistaCreateDto, TenistaError> {
     if (this.nombre.isBlank()) {
-        throw TenistaBadRequestException("El nombre no puede estar vacío")
+        return Err(TenistaError.BadRequest("El nombre no puede estar vacío"))
     } else if (this.ranking <= 0) {
-        throw TenistaBadRequestException("El ranking debe ser mayor que 0")
+        return Err(TenistaError.BadRequest("El ranking debe ser mayor que 0"))
     } else if (LocalDate.parse(this.fechaNacimiento).isAfter(LocalDate.now())) {
-        throw TenistaBadRequestException("La fecha de nacimiento no puede ser mayor que la actual")
+        return Err(TenistaError.BadRequest("La fecha de nacimiento no puede ser posterior a la actual"))
     } else if (this.añoProfesional <= 0) {
-        throw TenistaBadRequestException("El año profesional debe ser mayor que 0")
+        return Err(TenistaError.BadRequest("El año profesional debe ser mayor que 0"))
     } else if (this.altura <= 0) {
-        throw TenistaBadRequestException("La altura debe ser mayor que 0")
+        return Err(TenistaError.BadRequest("La altura debe ser mayor que 0"))
     } else if (this.peso <= 0) {
-        throw TenistaBadRequestException("El peso debe ser mayor que 0")
+        return Err(TenistaError.BadRequest("El peso debe ser mayor que 0"))
     } else if (this.puntos <= 0) {
-        throw TenistaBadRequestException("Los puntos deben ser mayor que 0")
+        return Err(TenistaError.BadRequest("Los puntos deben ser mayor que 0"))
     } else if (this.pais.isBlank()) {
-        throw TenistaBadRequestException("El país no puede estar vacío")
+        return Err(TenistaError.BadRequest("El país no puede estar vacío"))
     }
-    return this
+    return Ok(this)
 }

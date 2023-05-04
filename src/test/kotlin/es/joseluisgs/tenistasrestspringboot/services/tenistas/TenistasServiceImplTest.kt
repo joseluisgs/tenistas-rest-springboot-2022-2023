@@ -1,8 +1,9 @@
 package es.joseluisgs.tenistasrestspringboot.services.tenistas
 
+import com.github.michaelbull.result.get
+import com.github.michaelbull.result.getError
 import es.joseluisgs.tenistasrestspringboot.config.websocket.ServerWebSocketConfig
-import es.joseluisgs.tenistasrestspringboot.exceptions.RaquetaNotFoundException
-import es.joseluisgs.tenistasrestspringboot.exceptions.TenistaNotFoundException
+import es.joseluisgs.tenistasrestspringboot.errors.TenistaError
 import es.joseluisgs.tenistasrestspringboot.models.Raqueta
 import es.joseluisgs.tenistasrestspringboot.models.Tenista
 import es.joseluisgs.tenistasrestspringboot.repositories.raquetas.RaquetasCachedRepository
@@ -20,7 +21,6 @@ import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.extension.ExtendWith
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.data.domain.PageImpl
@@ -91,7 +91,7 @@ class TenistasServiceImplTest {
     fun findById() = runTest {
         coEvery { repository.findById(any()) } returns tenista
 
-        val result = service.findById(tenista.id!!)
+        val result = service.findById(tenista.id!!).get()!!
 
         assertAll(
             { assertEquals(tenista.nombre, result.nombre) },
@@ -105,11 +105,12 @@ class TenistasServiceImplTest {
     fun findByIdNotFound() = runTest {
         coEvery { repository.findById(any()) } returns null
 
-        val res = assertThrows<TenistaNotFoundException> {
-            service.findById(tenista.id!!)
-        }
+        val res = service.findById(tenista.id!!).getError()!!
 
-        assertEquals("No se ha encontrado tenista con id: ${tenista.id}", res.message)
+        assertAll(
+            { assertTrue(res is TenistaError.NotFound) },
+            { assertTrue(res.message.contains("No se ha encontrado el tenista con id")) }
+        )
 
         coVerify { repository.findById(any()) }
 
@@ -119,7 +120,7 @@ class TenistasServiceImplTest {
     fun findByUuid() = runTest {
         coEvery { repository.findByUuid(any()) } returns tenista
 
-        val result = service.findByUuid(raqueta.uuid)
+        val result = service.findByUuid(raqueta.uuid).get()!!
 
         assertAll(
             { assertEquals(tenista.nombre, result.nombre) },
@@ -133,11 +134,12 @@ class TenistasServiceImplTest {
     fun findByUuidNotFound() = runTest {
         coEvery { repository.findByUuid(any()) } returns null
 
-        val res = assertThrows<TenistaNotFoundException> {
-            service.findByUuid(raqueta.uuid)
-        }
+        val res = service.findByUuid(raqueta.uuid).getError()!!
 
-        assertEquals("No se ha encontrado tenista con uuid: ${raqueta.uuid}", res.message)
+        assertAll(
+            { assertTrue(res is TenistaError.NotFound) },
+            { assertTrue(res.message.contains("No se ha encontrado el tenista con uuid")) }
+        )
 
         coVerify { repository.findByUuid(any()) }
     }
@@ -160,7 +162,7 @@ class TenistasServiceImplTest {
     fun findByRanking() = runTest {
         coEvery { repository.findByRanking(any()) } returns flowOf(tenista)
 
-        val result = service.findByRanking(raqueta.precio.toInt())
+        val result = service.findByRanking(raqueta.precio.toInt()).get()!!
 
         assertAll(
             { assertEquals(tenista.nombre, result.nombre) },
@@ -174,11 +176,12 @@ class TenistasServiceImplTest {
     fun findByRankingNotFound() = runTest {
         coEvery { repository.findByRanking(any()) } returns flowOf()
 
-        val res = assertThrows<TenistaNotFoundException> {
-            service.findByRanking(tenista.ranking)
-        }
+        val res = service.findByRanking(tenista.ranking).getError()!!
 
-        assertEquals("No se ha encontrado tenista con ranking: ${tenista.ranking}", res.message)
+        assertAll(
+            { assertTrue(res is TenistaError.NotFound) },
+            { assertTrue(res.message.contains("No se ha encontrado el tenista con ranking")) }
+        )
 
         coVerify { repository.findByRanking(any()) }
     }
@@ -188,7 +191,7 @@ class TenistasServiceImplTest {
         coEvery { raquetasRepository.findByUuid(any()) } returns raqueta
         coEvery { repository.save(any()) } returns tenista
 
-        val result = service.save(tenista)
+        val result = service.save(tenista).get()!!
 
         assertAll(
             { assertEquals(tenista.nombre, result.nombre) },
@@ -205,7 +208,7 @@ class TenistasServiceImplTest {
         coEvery { repository.findByUuid(any()) } returns tenista
         coEvery { repository.update(any(), any()) } returns tenista
 
-        val result = service.update(tenista.uuid, tenista)
+        val result = service.update(tenista.uuid, tenista).get()!!
 
         assertAll(
             { assertEquals(tenista.nombre, result.nombre) },
@@ -217,14 +220,16 @@ class TenistasServiceImplTest {
 
     @Test
     fun updateNotFound() = runTest {
-        coEvery { repository.findByUuid(any()) } throws TenistaNotFoundException("No se ha encontrado tenista con uuid: ${tenista.uuid}")
+        coEvery { repository.findByUuid(any()) } returns null
         coEvery { repository.update(any(), any()) } returns null
+        coEvery { raquetasRepository.findByUuid(any()) } returns raqueta
 
-        val res = assertThrows<TenistaNotFoundException> {
-            service.update(tenista.uuid, tenista)
-        }
+        val res = service.update(tenista.uuid, tenista).getError()!!
 
-        assertEquals("No se ha encontrado tenista con uuid: ${tenista.uuid}", res.message)
+        assertAll(
+            { assertTrue(res is TenistaError.NotFound) },
+            { assertTrue(res.message.contains("No se ha encontrado el tenista con uuid")) }
+        )
 
         coVerify(exactly = 0) { repository.update(any(), any()) } // No se llama al método update
 
@@ -236,7 +241,7 @@ class TenistasServiceImplTest {
         coEvery { repository.delete(any()) } returns tenista
         coEvery { raquetasRepository.findByUuid(any()) } returns raqueta
 
-        val result = service.delete(tenista)
+        val result = service.delete(tenista).get()!!
 
         assertAll(
             { assertEquals(tenista.nombre, result.nombre) },
@@ -253,7 +258,7 @@ class TenistasServiceImplTest {
         coEvery { repository.deleteByUuid(any()) } returns tenista
         coEvery { raquetasRepository.findByUuid(any()) } returns raqueta
 
-        val result = service.deleteByUuid(raqueta.uuid)
+        val result = service.deleteByUuid(raqueta.uuid).get()!!
 
         assertAll(
             { assertEquals(tenista.nombre, result.nombre) },
@@ -266,14 +271,15 @@ class TenistasServiceImplTest {
 
     @Test
     fun deleteUuidNotFound() = runTest {
-        coEvery { repository.findByUuid(any()) } throws TenistaNotFoundException("No se ha encontrado tenista con uuid: ${tenista.uuid}")
+        coEvery { repository.findByUuid(any()) } returns null
         coEvery { repository.deleteByUuid(any()) } returns tenista
 
-        val res = assertThrows<TenistaNotFoundException> {
-            service.deleteByUuid(raqueta.uuid)
-        }
+        val res = service.deleteByUuid(raqueta.uuid).getError()!!
 
-        assertEquals("No se ha encontrado tenista con uuid: ${tenista.uuid}", res.message)
+        assertAll(
+            { assertTrue(res is TenistaError.NotFound) },
+            { assertTrue(res.message.contains("No se ha encontrado el tenista con uuid")) }
+        )
 
         coVerify(exactly = 0) { repository.deleteByUuid(any()) } // No se llama al método deleteByUuid
 
@@ -310,7 +316,7 @@ class TenistasServiceImplTest {
     fun findRaqueta() = runTest {
         coEvery { raquetasRepository.findByUuid(any()) } returns raqueta
 
-        val result = service.findRaqueta(raqueta.representanteId)
+        val result = service.findRaqueta(raqueta.representanteId).get()!!
 
         assertEquals(raqueta, result)
 
@@ -320,13 +326,14 @@ class TenistasServiceImplTest {
 
     @Test
     fun findRaquetaNotFound() = runTest {
-        coEvery { raquetasRepository.findByUuid(any()) } throws RaquetaNotFoundException("No se ha encontrado la raqueta con id: ${raqueta.id}")
+        coEvery { raquetasRepository.findByUuid(any()) } returns null
 
-        val res = assertThrows<RaquetaNotFoundException> {
-            service.findRaqueta(raqueta.representanteId)
-        }
+        val res = service.findRaqueta(raqueta.representanteId).getError()!!
 
-        assertEquals("No se ha encontrado la raqueta con id: ${raqueta.id}", res.message)
+        assertAll(
+            { assertTrue(res is TenistaError.RaquetaNotFound) },
+            { assertTrue(res.message.contains("No se ha encontrado la raqueta con id")) }
+        )
 
         coVerify(exactly = 1) { raquetasRepository.findByUuid(any()) } // No se llama al método findByUuid
 

@@ -3,8 +3,6 @@ package es.joseluisgs.tenistasrestspringboot.controllers
 import es.joseluisgs.tenistasrestspringboot.config.APIConfig
 import es.joseluisgs.tenistasrestspringboot.config.security.jwt.JwtTokenUtils
 import es.joseluisgs.tenistasrestspringboot.dto.*
-import es.joseluisgs.tenistasrestspringboot.exceptions.StorageException
-import es.joseluisgs.tenistasrestspringboot.exceptions.UsuariosBadRequestException
 import es.joseluisgs.tenistasrestspringboot.mappers.toDto
 import es.joseluisgs.tenistasrestspringboot.mappers.toModel
 import es.joseluisgs.tenistasrestspringboot.models.Usuario
@@ -18,15 +16,16 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
+import org.springframework.messaging.handler.annotation.support.MethodArgumentNotValidException
 import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.security.authentication.AuthenticationManager
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
 import org.springframework.security.core.Authentication
 import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.security.core.context.SecurityContextHolder
+import org.springframework.validation.FieldError
 import org.springframework.web.bind.annotation.*
 import org.springframework.web.multipart.MultipartFile
-import org.springframework.web.server.ResponseStatusException
 
 
 private val logger = KotlinLogging.logger {}
@@ -78,18 +77,14 @@ class UsuarioController @Autowired constructor(
         logger.info { "Registro de usuario: ${usuarioDto.username}" }
 
         // Creamos el usuario
-        try {
-            val user = usuarioDto.validate().toModel()
-            // Lo guardamos
-            user.rol.forEach { println(it) }
-            val userSaved = usuariosService.save(user)
-            // Generamos el token
-            val jwtToken: String = jwtTokenUtil.generateToken(userSaved)
-            logger.info { "Token de usuario: ${jwtToken}" }
-            return ResponseEntity.ok(UserWithTokenDto(userSaved.toDto(), jwtToken))
-        } catch (e: UsuariosBadRequestException) {
-            throw ResponseStatusException(HttpStatus.BAD_REQUEST, e.message)
-        }
+        val user = usuarioDto.validate().toModel()
+        // Lo guardamos
+        user.rol.forEach { println(it) }
+        val userSaved = usuariosService.save(user)
+        // Generamos el token
+        val jwtToken: String = jwtTokenUtil.generateToken(userSaved)
+        logger.info { "Token de usuario: ${jwtToken}" }
+        return ResponseEntity.ok(UserWithTokenDto(userSaved.toDto(), jwtToken))
     }
 
     // Solo los usuarios pueden acceder a esta información
@@ -132,19 +127,15 @@ class UsuarioController @Autowired constructor(
 
         usuarioDto.validate()
 
-        val userUpdated = user.copy(
+        var userUpdated = user.copy(
             nombre = usuarioDto.nombre,
             username = usuarioDto.username,
             email = usuarioDto.email,
         )
 
         // Actualizamos el usuario
-        try {
-            val userUpdated = usuariosService.update(userUpdated)
-            return ResponseEntity.ok(userUpdated.toDto())
-        } catch (e: UsuariosBadRequestException) {
-            throw ResponseStatusException(HttpStatus.BAD_REQUEST, e.message)
-        }
+        userUpdated = usuariosService.update(userUpdated)
+        return ResponseEntity.ok(userUpdated.toDto())
     }
 
     @PatchMapping(
@@ -158,28 +149,37 @@ class UsuarioController @Autowired constructor(
         // No hay que buscar porque el usuario ya está autenticado y lo tenemos en el contexto
         logger.info { "Actualizando avatar de usuario: ${user.username}" }
 
-        try {
-            var urlImagen = user.avatar
+        var urlImagen = user.avatar
 
-            // subimos el fichero
-            if (!file.isEmpty) {
-                // Podemos pasarle el nombre del fichero con un id del usuario
-                val imagen: String = storageService.store(file, user.uuid.toString())
-                urlImagen = storageService.getUrl(imagen)
-            }
-
-            val userAvatar = user.copy(
-                avatar = urlImagen
-            )
-
-
-            // Actualizamos el usuario
-            val userUpdated = usuariosService.update(userAvatar)
-            return ResponseEntity.ok(userUpdated.toDto())
-        } catch (e: UsuariosBadRequestException) {
-            throw ResponseStatusException(HttpStatus.BAD_REQUEST, e.message)
-        } catch (e: StorageException) {
-            throw ResponseStatusException(HttpStatus.BAD_REQUEST, e.message)
+        // subimos el fichero
+        if (!file.isEmpty) {
+            // Podemos pasarle el nombre del fichero con un id del usuario
+            val imagen: String = storageService.store(file, user.uuid.toString())
+            urlImagen = storageService.getUrl(imagen)
         }
+
+        val userAvatar = user.copy(
+            avatar = urlImagen
+        )
+
+        // Actualizamos el usuario
+        val userUpdated = usuariosService.update(userAvatar)
+        return ResponseEntity.ok(userUpdated.toDto())
     }
+
+    // Para capturar los errores de validación
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    @ExceptionHandler(MethodArgumentNotValidException::class)
+    fun handleValidationExceptions(
+        ex: MethodArgumentNotValidException
+    ): Map<String, String>? {
+        val errors: MutableMap<String, String> = HashMap()
+        ex.bindingResult?.allErrors?.forEach { error ->
+            val fieldName = (error as FieldError).field
+            val errorMessage: String? = error.getDefaultMessage()
+            errors[fieldName] = errorMessage ?: ""
+        }
+        return errors
+    }
+
 }

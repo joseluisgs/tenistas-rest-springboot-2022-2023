@@ -1,7 +1,11 @@
 package es.joseluisgs.tenistasrestspringboot.controllers
 
+import com.github.michaelbull.result.andThen
+import com.github.michaelbull.result.get
+import com.github.michaelbull.result.mapBoth
 import es.joseluisgs.tenistasrestspringboot.config.APIConfig
 import es.joseluisgs.tenistasrestspringboot.dto.*
+import es.joseluisgs.tenistasrestspringboot.errors.TenistaError
 import es.joseluisgs.tenistasrestspringboot.exceptions.*
 import es.joseluisgs.tenistasrestspringboot.mappers.toDto
 import es.joseluisgs.tenistasrestspringboot.mappers.toModel
@@ -18,6 +22,8 @@ import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Sort
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
+import org.springframework.messaging.handler.annotation.support.MethodArgumentNotValidException
+import org.springframework.validation.FieldError
 import org.springframework.web.bind.annotation.*
 import org.springframework.web.server.ResponseStatusException
 import java.util.*
@@ -43,7 +49,7 @@ class TenistasController
 
         val res = tenistasService.findAll()
             .toList()
-            .map { it.toDto(tenistasService.findRaqueta(it.raquetaId)) }
+            .map { it.toDto(tenistasService.findRaqueta(it.raquetaId).get()) }
 
         return ResponseEntity.ok(res)
 
@@ -53,14 +59,17 @@ class TenistasController
     suspend fun findById(@PathVariable id: UUID): ResponseEntity<TenistaDto> {
         logger.info { "GET By ID Tenista con id: $id" }
 
-        try {
-            // Nosotros usamos el UUID, pero para el DTO es id
-            val tenista = tenistasService.findByUuid(id)
-            val res = tenista.toDto(tenistasService.findRaqueta(tenista.raquetaId))
-            return ResponseEntity.ok(res)
-        } catch (e: TenistaNotFoundException) {
-            throw ResponseStatusException(HttpStatus.NOT_FOUND, e.message)
-        }
+
+        tenistasService.findByUuid(id).mapBoth(
+            success = {
+                return ResponseEntity.ok(
+                    it.toDto(
+                        tenistasService.findRaqueta(it.raquetaId).get()
+                    )
+                )
+            },
+            failure = { return handleErrors(it) }
+        )
     }
 
     @PostMapping("")
@@ -68,15 +77,15 @@ class TenistasController
         // Con valid hacemos la validación de los campos
         logger.info { "POST Tenista" }
 
-        try {
-            val rep = tenistaDto.validate().toModel()
-            val res = tenistasService.save(rep).toDto(tenistasService.findRaqueta(rep.raquetaId))
-            return ResponseEntity.status(HttpStatus.CREATED).body(res)
-        } catch (e: TenistaBadRequestException) {
-            throw ResponseStatusException(HttpStatus.BAD_REQUEST, e.message)
-        } catch (e: RaquetaNotFoundException) {
-            throw ResponseStatusException(HttpStatus.BAD_REQUEST, e.message)
-        }
+        tenistaDto.validate().andThen {
+            tenistasService.save(it.toModel())
+        }.mapBoth(
+            success = {
+                return ResponseEntity.status(HttpStatus.CREATED)
+                    .body(it.toDto(tenistasService.findRaqueta(it.raquetaId).get()))
+            },
+            failure = { return handleErrors(it) }
+        )
     }
 
     @PutMapping("/{id}")
@@ -87,29 +96,28 @@ class TenistasController
         // Con valid hacemos la validación de los campos
         logger.info { "PUT Tenista con id: $id" }
 
-        try {
-            val rep = tenistaDto.validate().toModel()
-            val res = tenistasService.update(id, rep).toDto(tenistasService.findRaqueta(rep.raquetaId))
-            return ResponseEntity.status(HttpStatus.OK).body(res)
-        } catch (e: TenistaNotFoundException) {
-            throw ResponseStatusException(HttpStatus.NOT_FOUND, e.message)
-        } catch (e: RaquetaNotFoundException) {
-            throw ResponseStatusException(HttpStatus.BAD_REQUEST, e.message)
-        } catch (e: TenistaBadRequestException) {
-            throw ResponseStatusException(HttpStatus.BAD_REQUEST, e.message)
-        }
+        tenistaDto.validate().andThen {
+            tenistasService.update(id, it.toModel())
+        }.mapBoth(
+            success = {
+                return ResponseEntity.ok(
+                    it.toDto(
+                        tenistasService.findRaqueta(it.raquetaId).get()
+                    )
+                )
+            },
+            failure = { return handleErrors(it) }
+        )
     }
 
     @DeleteMapping("/{id}")
     suspend fun delete(@PathVariable id: UUID): ResponseEntity<TenistaDto> {
         logger.info { "DELETE Tenista con id: $id" }
 
-        try {
-            tenistasService.deleteByUuid(id)
-            return ResponseEntity.noContent().build()
-        } catch (e: TenistaNotFoundException) {
-            throw ResponseStatusException(HttpStatus.NOT_FOUND, e.message)
-        }
+        tenistasService.deleteByUuid(id).mapBoth(
+            success = { return ResponseEntity.noContent().build() },
+            failure = { return handleErrors(it) }
+        )
     }
 
     @GetMapping("find")
@@ -119,7 +127,7 @@ class TenistasController
         nombre.let {
             val res = tenistasService.findByNombre(nombre.trim())
                 .toList()
-                .map { it.toDto(tenistasService.findRaqueta(it.raquetaId)) }
+                .map { it.toDto(tenistasService.findRaqueta(it.raquetaId).get()) }
 
             return ResponseEntity.ok(res)
         }
@@ -129,35 +137,32 @@ class TenistasController
     suspend fun findRaqueta(@PathVariable id: UUID): ResponseEntity<RaquetaTenistaDto> {
         logger.info { "GET By ID Raqueta del tenista con id: $id" }
 
-        try {
-            val raqueta = tenistasService.findByUuid(id)
-            val res = tenistasService.findRaqueta(raqueta.raquetaId)
-            res?.let {
-                return ResponseEntity.ok(it.toTenistaDto())
-            } ?: throw ResponseStatusException(
-                HttpStatus.NOT_FOUND,
-                "No se encontró la raqueta o no tiene raqueta asignada el tenista con id: $id"
-            )
-        } catch (e: RaquetaNotFoundException) {
-            throw ResponseStatusException(HttpStatus.NOT_FOUND, e.message)
-        } catch (e: RepresentanteNotFoundException) {
-            throw ResponseStatusException(HttpStatus.BAD_REQUEST, e.message)
-        }
+        tenistasService.findByUuid(id).andThen {
+            tenistasService.findRaqueta(it.raquetaId)
+        }.mapBoth(
+            success = {
+                return ResponseEntity.ok(it?.toTenistaDto())
+            },
+            failure = {
+                return handleErrorsRaqueta(it)
+            }
+        )
     }
 
     @GetMapping("/ranking/{ranking}")
     suspend fun findByRanking(@PathVariable ranking: Int): ResponseEntity<TenistaDto> {
         logger.info { "GET By Ranking Tenista con ranking: $ranking" }
 
-        try {
-            val tenista = tenistasService.findByRanking(ranking)
-            val res = tenista.toDto(tenistasService.findRaqueta(tenista.raquetaId))
-            return ResponseEntity.ok(res)
-        } catch (e: TenistaNotFoundException) {
-            throw ResponseStatusException(HttpStatus.NOT_FOUND, e.message)
-        } catch (e: RepresentanteNotFoundException) {
-            throw ResponseStatusException(HttpStatus.BAD_REQUEST, e.message)
-        }
+        tenistasService.findByRanking(ranking).mapBoth(
+            success = {
+                return ResponseEntity.ok(
+                    it.toDto(
+                        tenistasService.findRaqueta(it.raquetaId).get()
+                    )
+                )
+            },
+            failure = { return handleErrors(it) }
+        )
     }
 
     @GetMapping("paging")
@@ -177,7 +182,7 @@ class TenistasController
 
         pageResult?.let {
             val dto = TenistasPageDto(
-                content = pageResult.content.map { it.toDto(tenistasService.findRaqueta(it.raquetaId)) },
+                content = pageResult.content.map { it.toDto(tenistasService.findRaqueta(it.raquetaId).get()) },
                 currentPage = pageResult.number,
                 pageSize = pageResult.size,
                 totalPages = if (pageResult.totalElements % pageResult.size == 0L) pageResult.totalElements / pageResult.size else (pageResult.totalElements / pageResult.size) + 1,
@@ -189,6 +194,59 @@ class TenistasController
 
         } ?: run {
             return ResponseEntity.notFound().build()
+        }
+    }
+
+    // Para capturar los errores de validación
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    @ExceptionHandler(MethodArgumentNotValidException::class)
+    fun handleValidationExceptions(
+        ex: MethodArgumentNotValidException
+    ): Map<String, String>? {
+        val errors: MutableMap<String, String> = HashMap()
+        ex.bindingResult?.allErrors?.forEach { error ->
+            val fieldName = (error as FieldError).field
+            val errorMessage: String? = error.getDefaultMessage()
+            errors[fieldName] = errorMessage ?: ""
+        }
+        return errors
+    }
+
+    private fun handleErrors(tenistaError: TenistaError): ResponseEntity<TenistaDto> {
+        when (tenistaError) {
+            is TenistaError.NotFound -> throw ResponseStatusException(
+                HttpStatus.NOT_FOUND,
+                tenistaError.message
+            )
+
+            is TenistaError.BadRequest -> throw ResponseStatusException(
+                HttpStatus.BAD_REQUEST,
+                tenistaError.message
+            )
+
+            is TenistaError.ConflictIntegrity -> throw ResponseStatusException(
+                HttpStatus.BAD_REQUEST,
+                tenistaError.message
+            )
+
+            is TenistaError.RaquetaNotFound -> throw ResponseStatusException(
+                HttpStatus.BAD_REQUEST,
+                tenistaError.message
+            )
+        }
+    }
+
+    private fun handleErrorsRaqueta(tenistaError: TenistaError): ResponseEntity<RaquetaTenistaDto> {
+        if (tenistaError is TenistaError.RaquetaNotFound) {
+            throw ResponseStatusException(
+                HttpStatus.NOT_FOUND,
+                tenistaError.message
+            )
+        } else {
+            throw ResponseStatusException(
+                HttpStatus.BAD_REQUEST,
+                tenistaError.message
+            )
         }
     }
 

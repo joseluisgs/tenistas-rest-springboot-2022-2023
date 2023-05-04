@@ -1,5 +1,7 @@
 package es.joseluisgs.tenistasrestspringboot.dto
 
+import jakarta.validation.constraints.Min
+import jakarta.validation.constraints.NotEmpty
 import java.time.LocalDateTime
 import java.util.*
 
@@ -14,7 +16,9 @@ data class RaquetasPageDto(
 )
 
 data class RaquetaCreateDto(
+    @NotEmpty(message = "La marca no puede estar vacía")
     val marca: String,
+    @Min(value = 0, message = "El precio no puede ser negativo")
     val precio: Double,
     val representanteId: UUID,
 )

@@ -1,8 +1,10 @@
 package es.joseluisgs.tenistasrestspringboot.services.representantes
 
+import com.github.michaelbull.result.get
+import com.github.michaelbull.result.getError
 import es.joseluisgs.tenistasrestspringboot.config.websocket.ServerWebSocketConfig
+import es.joseluisgs.tenistasrestspringboot.errors.RepresentanteError
 import es.joseluisgs.tenistasrestspringboot.exceptions.RepresentanteConflictIntegrityException
-import es.joseluisgs.tenistasrestspringboot.exceptions.RepresentanteNotFoundException
 import es.joseluisgs.tenistasrestspringboot.models.Representante
 import es.joseluisgs.tenistasrestspringboot.repositories.representantes.RepresentantesCachedRepository
 import io.mockk.MockKAnnotations
@@ -70,7 +72,7 @@ class RepresentanteServiceImplTest {
     fun findById() = runTest {
         coEvery { repository.findById(any()) } returns representante
 
-        val result = service.findById(representante.id!!)
+        val result = service.findById(representante.id!!).get()!!
 
         assertAll(
             { assertEquals(representante.nombre, result.nombre) },
@@ -84,11 +86,12 @@ class RepresentanteServiceImplTest {
     fun findByIdNotFound() = runTest {
         coEvery { repository.findById(any()) } returns null
 
-        val res = assertThrows<RepresentanteNotFoundException> {
-            service.findById(representante.id!!)
-        }
+        val res = service.findById(representante.id!!).getError()!!
 
-        assertEquals("No se ha encontrado el representante con id: ${representante.id}", res.message)
+        assertAll(
+            { assertTrue(res is RepresentanteError.NotFound) },
+            { assertTrue(res.message.contains("No se ha encontrado el representante con id")) }
+        )
 
         coVerify { repository.findById(any()) }
 
@@ -98,7 +101,7 @@ class RepresentanteServiceImplTest {
     fun findByUuid() = runTest {
         coEvery { repository.findByUuid(any()) } returns representante
 
-        val result = service.findByUuid(representante.uuid)
+        val result = service.findByUuid(representante.uuid).get()!!
 
         assertAll(
             { assertEquals(representante.nombre, result.nombre) },
@@ -112,11 +115,12 @@ class RepresentanteServiceImplTest {
     fun findByUuidNotFound() = runTest {
         coEvery { repository.findByUuid(any()) } returns null
 
-        val res = assertThrows<RepresentanteNotFoundException> {
-            service.findByUuid(representante.uuid)
-        }
+        val res = service.findByUuid(representante.uuid).getError()!!
 
-        assertEquals("No se ha encontrado el representante con uuid: ${representante.uuid}", res.message)
+        assertAll(
+            { assertTrue(res is RepresentanteError.NotFound) },
+            { assertTrue(res.message.contains("No se ha encontrado el representante con uuid")) }
+        )
 
         coVerify { repository.findByUuid(any()) }
     }
@@ -140,7 +144,7 @@ class RepresentanteServiceImplTest {
     fun save() = runTest {
         coEvery { repository.save(any()) } returns representante
 
-        val result = service.save(representante)
+        val result = service.save(representante).get()!!
 
         assertAll(
             { assertEquals(representante.nombre, result.nombre) },
@@ -156,7 +160,7 @@ class RepresentanteServiceImplTest {
         coEvery { repository.findByUuid(any()) } returns representante
         coEvery { repository.update(any(), any()) } returns representante
 
-        val result = service.update(representante.uuid, representante)
+        val result = service.update(representante.uuid, representante).get()!!
 
         assertAll(
             { assertEquals(representante.nombre, result.nombre) },
@@ -168,14 +172,15 @@ class RepresentanteServiceImplTest {
 
     @Test
     fun updateNotFound() = runTest {
-        coEvery { repository.findByUuid(any()) } throws RepresentanteNotFoundException("No se ha encontrado el representante con id: ${representante.id}")
+        coEvery { repository.findByUuid(any()) } returns null
         coEvery { repository.update(any(), any()) } returns null
 
-        val res = assertThrows<RepresentanteNotFoundException> {
-            service.update(representante.uuid, representante)
-        }
+        val res = service.update(representante.uuid, representante).getError()!!
 
-        assertEquals("No se ha encontrado el representante con id: ${representante.id}", res.message)
+        assertAll(
+            { assertTrue(res is RepresentanteError.NotFound) },
+            { assertTrue(res.message.contains("No se ha encontrado el representante con uuid")) }
+        )
 
         coVerify(exactly = 0) { repository.update(any(), any()) } // No se llama al método update
 
@@ -186,7 +191,7 @@ class RepresentanteServiceImplTest {
         coEvery { repository.findByUuid(any()) } returns representante
         coEvery { repository.delete(any()) } returns representante
 
-        val result = service.delete(representante)
+        val result = service.delete(representante).get()!!
 
         assertAll(
             { assertEquals(representante.nombre, result.nombre) },
@@ -217,7 +222,7 @@ class RepresentanteServiceImplTest {
         coEvery { repository.findByUuid(any()) } returns representante
         coEvery { repository.deleteByUuid(any()) } returns representante
 
-        val result = service.deleteByUuid(representante.uuid)
+        val result = service.deleteByUuid(representante.uuid).get()!!
 
         assertAll(
             { assertEquals(representante.nombre, result.nombre) },
@@ -230,14 +235,15 @@ class RepresentanteServiceImplTest {
 
     @Test
     fun deleteUuidNotFound() = runTest {
-        coEvery { repository.findByUuid(any()) } throws RepresentanteNotFoundException("No se ha encontrado el representante con id: ${representante.id}")
+        coEvery { repository.findByUuid(any()) } returns null
         coEvery { repository.deleteByUuid(any()) } returns representante
 
-        val res = assertThrows<RepresentanteNotFoundException> {
-            service.deleteByUuid(representante.uuid)
-        }
+        val res = service.deleteByUuid(representante.uuid).getError()!!
 
-        assertEquals("No se ha encontrado el representante con id: ${representante.id}", res.message)
+        assertAll(
+            { assertTrue(res is RepresentanteError.NotFound) },
+            { assertTrue(res.message.contains("No se ha encontrado el representante con uuid")) }
+        )
 
         coVerify(exactly = 0) { repository.deleteByUuid(any()) } // No se llama al método deleteByUuid
 

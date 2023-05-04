@@ -1,9 +1,9 @@
 package es.joseluisgs.tenistasrestspringboot.controllers
 
+import com.github.michaelbull.result.Err
+import com.github.michaelbull.result.Ok
 import es.joseluisgs.tenistasrestspringboot.dto.TenistaCreateDto
-import es.joseluisgs.tenistasrestspringboot.exceptions.RaquetaBadRequestException
-import es.joseluisgs.tenistasrestspringboot.exceptions.RaquetaNotFoundException
-import es.joseluisgs.tenistasrestspringboot.exceptions.TenistaNotFoundException
+import es.joseluisgs.tenistasrestspringboot.errors.TenistaError
 import es.joseluisgs.tenistasrestspringboot.mappers.toDto
 import es.joseluisgs.tenistasrestspringboot.models.Raqueta
 import es.joseluisgs.tenistasrestspringboot.models.Tenista
@@ -39,7 +39,7 @@ class TenistasControllerTest {
     @InjectMockKs // @Autowired
     lateinit var controller: TenistasController
 
-    val raqueta = Raqueta(
+    final val raqueta = Raqueta(
         uuid = "a765df90-e4aa-4306-b93e-20500accf8f7".toUUID(),
         marca = "Test",
         precio = 99.99,
@@ -81,7 +81,7 @@ class TenistasControllerTest {
     @Test
     fun finAll() = runTest {
         coEvery { service.findAll() } returns flowOf(tenista)
-        coEvery { service.findRaqueta(any()) } returns raqueta
+        coEvery { service.findRaqueta(any()) } returns Ok(raqueta)
 
         val result = controller.finAll()
         val res = result.body!!
@@ -102,8 +102,8 @@ class TenistasControllerTest {
 
     @Test
     fun findById() = runTest {
-        coEvery { service.findByUuid(any()) } returns tenista
-        coEvery { service.findRaqueta(any()) } returns raqueta
+        coEvery { service.findByUuid(any()) } returns Ok(tenista)
+        coEvery { service.findRaqueta(any()) } returns Ok(raqueta)
 
         val result = controller.findById(tenista.uuid)
         val res = result.body!!
@@ -123,7 +123,7 @@ class TenistasControllerTest {
 
     @Test
     fun findByIdNotFound() = runTest {
-        coEvery { service.findByUuid(any()) } throws TenistaNotFoundException("No se ha encontrado tenista con id: ${raqueta.uuid}")
+        coEvery { service.findByUuid(any()) } returns Err(TenistaError.NotFound("No se ha encontrado tenista con id: ${raqueta.uuid}"))
 
         val res = assertThrows<ResponseStatusException> {
             val result = controller.findById(raqueta.uuid)
@@ -140,8 +140,8 @@ class TenistasControllerTest {
 
     @Test
     fun create() = runTest {
-        coEvery { service.save(any()) } returns tenista
-        coEvery { service.findRaqueta(any()) } returns raqueta
+        coEvery { service.save(any()) } returns Ok(tenista)
+        coEvery { service.findRaqueta(any()) } returns Ok(raqueta)
 
         val result = controller.create(tenistaCreateDto)
         val res = result.body!!
@@ -161,15 +161,15 @@ class TenistasControllerTest {
 
     @Test
     fun createTenistaRaquetaNotFound() = runTest {
-        coEvery { service.save(any()) } throws RaquetaNotFoundException("")
-        coEvery { service.findRaqueta(any()) } throws RaquetaNotFoundException("No se ha encontrado la raqueta con id: ${raqueta.representanteId}")
+        coEvery { service.save(any()) } returns Err(TenistaError.RaquetaNotFound("No se ha encontrado raqueta con id: ${raqueta.uuid}"))
+        coEvery { service.findRaqueta(any()) } returns Err(TenistaError.RaquetaNotFound("No se ha encontrado raqueta con id: ${raqueta.uuid}"))
 
         val res = assertThrows<ResponseStatusException> {
             val result = controller.create(tenistaCreateDto)
         }
 
         assertEquals(
-            """400 BAD_REQUEST """"",
+            """400 BAD_REQUEST "No se ha encontrado raqueta con id: ${raqueta.uuid}"""",
             res.message
         )
 
@@ -178,8 +178,8 @@ class TenistasControllerTest {
 
     @Test
     fun createCampoNombreBlanco() = runTest {
-        coEvery { service.save(any()) } throws RaquetaBadRequestException("")
-        coEvery { service.findRaqueta(any()) } returns raqueta
+        coEvery { service.save(any()) } returns Err(TenistaError.BadRequest("El nombre no puede estar vacío"))
+        coEvery { service.findRaqueta(any()) } returns Ok(raqueta)
 
         val res = assertThrows<ResponseStatusException> {
             val result = controller.create(tenistaCreateDto.copy(nombre = " "))
@@ -195,8 +195,8 @@ class TenistasControllerTest {
 
     @Test
     fun createCampoRankingNegativo() = runTest {
-        coEvery { service.save(any()) } throws RaquetaBadRequestException("")
-        coEvery { service.findRaqueta(any()) } returns raqueta
+        coEvery { service.save(any()) } returns Err(TenistaError.BadRequest("El ranking debe ser mayor que 0"))
+        coEvery { service.findRaqueta(any()) } returns Ok(raqueta)
 
         val res = assertThrows<ResponseStatusException> {
             val result = controller.create(tenistaCreateDto.copy(ranking = -1))
@@ -215,8 +215,8 @@ class TenistasControllerTest {
 
     @Test
     fun update() = runTest {
-        coEvery { service.update(any(), any()) } returns tenista
-        coEvery { service.findRaqueta(any()) } returns raqueta
+        coEvery { service.update(any(), any()) } returns Ok(tenista)
+        coEvery { service.findRaqueta(any()) } returns Ok(raqueta)
 
         val result = controller.update(tenista.uuid, tenistaCreateDto)
         val res = result.body!!
@@ -241,8 +241,8 @@ class TenistasControllerTest {
                 any(),
                 any()
             )
-        } throws TenistaNotFoundException("No se ha encontrado tenista con id: ${tenista.uuid}")
-        coEvery { service.findRaqueta(any()) } returns raqueta
+        } returns Err(TenistaError.NotFound("No se ha encontrado tenista con id: ${tenista.uuid}"))
+        coEvery { service.findRaqueta(any()) } returns Ok(raqueta)
 
         val res = assertThrows<ResponseStatusException> {
             val result = controller.update(tenista.uuid, tenistaCreateDto)
@@ -258,7 +258,7 @@ class TenistasControllerTest {
 
     @Test
     fun delete() = runTest {
-        coEvery { service.deleteByUuid(tenista.uuid) } returns tenista
+        coEvery { service.deleteByUuid(tenista.uuid) } returns Ok(tenista)
 
         val result = controller.delete(tenista.uuid)
 
@@ -272,8 +272,8 @@ class TenistasControllerTest {
 
     @Test
     fun deleteNotFound() = runTest {
-        coEvery { service.findByUuid(any()) } throws TenistaNotFoundException("")
-        coEvery { service.deleteByUuid(any()) } throws TenistaNotFoundException("No se ha encontrado tenista con id: ${tenista.uuid}")
+        coEvery { service.findByUuid(any()) } returns Err(TenistaError.NotFound("No se ha encontrado tenista con id: ${tenista.uuid}"))
+        coEvery { service.deleteByUuid(any()) } returns Err(TenistaError.NotFound("No se ha encontrado tenista con id: ${tenista.uuid}"))
 
         val res = assertThrows<ResponseStatusException> {
             val result = controller.delete(tenista.uuid)
@@ -290,7 +290,7 @@ class TenistasControllerTest {
     @Test
     fun findByName() = runTest {
         coEvery { service.findByNombre(any()) } returns flowOf(tenista)
-        coEvery { service.findRaqueta(any()) } returns raqueta
+        coEvery { service.findRaqueta(any()) } returns Ok(raqueta)
 
         val result = controller.findByName(tenista.nombre)
         val res = result.body!!
@@ -328,8 +328,8 @@ class TenistasControllerTest {
 
     @Test
     fun findRaqueta() = runTest {
-        coEvery { service.findRaqueta(any()) } returns raqueta
-        coEvery { service.findByUuid(any()) } returns tenista
+        coEvery { service.findRaqueta(any()) } returns Ok(raqueta)
+        coEvery { service.findByUuid(any()) } returns Ok(tenista)
 
         val result = controller.findRaqueta(tenista.uuid)
         val res = result.body!!
@@ -348,8 +348,8 @@ class TenistasControllerTest {
 
     @Test
     fun findByRanking() = runTest {
-        coEvery { service.findByRanking(any()) } returns tenista
-        coEvery { service.findRaqueta(any()) } returns raqueta
+        coEvery { service.findByRanking(any()) } returns Ok(tenista)
+        coEvery { service.findRaqueta(any()) } returns Ok(raqueta)
 
         val result = controller.findByRanking(tenista.ranking)
         val res = result.body!!
@@ -369,7 +369,7 @@ class TenistasControllerTest {
 
     @Test
     fun findByRankingNotFound() = runTest {
-        coEvery { service.findByRanking(any()) } throws TenistaNotFoundException("No se ha encontrado tenista con ranking: ${tenista.ranking}")
+        coEvery { service.findByRanking(any()) } returns Err(TenistaError.NotFound("No se ha encontrado tenista con ranking: ${tenista.ranking}"))
 
         val res = assertThrows<ResponseStatusException> {
             val result = controller.findByRanking(tenista.ranking)

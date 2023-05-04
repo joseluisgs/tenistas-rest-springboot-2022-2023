@@ -1,12 +1,11 @@
 package es.joseluisgs.tenistasrestspringboot.controllers
 
+import com.github.michaelbull.result.*
 import es.joseluisgs.tenistasrestspringboot.config.APIConfig
 import es.joseluisgs.tenistasrestspringboot.dto.RepresentanteDto
 import es.joseluisgs.tenistasrestspringboot.dto.RepresentanteRequestDto
 import es.joseluisgs.tenistasrestspringboot.dto.RepresentantesPageDto
-import es.joseluisgs.tenistasrestspringboot.exceptions.RepresentanteBadRequestException
-import es.joseluisgs.tenistasrestspringboot.exceptions.RepresentanteConflictIntegrityException
-import es.joseluisgs.tenistasrestspringboot.exceptions.RepresentanteNotFoundException
+import es.joseluisgs.tenistasrestspringboot.errors.RepresentanteError
 import es.joseluisgs.tenistasrestspringboot.mappers.toDto
 import es.joseluisgs.tenistasrestspringboot.mappers.toModel
 import es.joseluisgs.tenistasrestspringboot.services.representantes.RepresentantesService
@@ -21,6 +20,8 @@ import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Sort
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
+import org.springframework.messaging.handler.annotation.support.MethodArgumentNotValidException
+import org.springframework.validation.FieldError
 import org.springframework.web.bind.annotation.*
 import org.springframework.web.server.ResponseStatusException
 import java.util.*
@@ -70,13 +71,11 @@ class RepresentantesController
     suspend fun findById(@PathVariable id: UUID): ResponseEntity<RepresentanteDto> {
         logger.info { "GET By ID Representante con id: $id" }
 
-        try {
-            // Nosotros usamos el UUID, pero para el DTO es id
-            val res = representanteService.findByUuid(id).toDto()
-            return ResponseEntity.ok(res)
-        } catch (e: RepresentanteNotFoundException) {
-            throw ResponseStatusException(HttpStatus.NOT_FOUND, e.message)
-        }
+        // Nosotros usamos el UUID, pero para el DTO es id
+        representanteService.findByUuid(id).mapBoth(
+            success = { return ResponseEntity.ok(it.toDto()) },
+            failure = { return handleErrors(it) }
+        )
     }
 
     /**
@@ -90,14 +89,14 @@ class RepresentantesController
         // Con valid hacemos la validación de los campos
         logger.info { "POST Representante" }
 
-        try {
-            val rep = representanteDto.validate().toModel()
-            val res = representanteService.save(rep).toDto()
-            return ResponseEntity.status(HttpStatus.CREATED).body(res)
-        } catch (e: RepresentanteBadRequestException) {
-            throw ResponseStatusException(HttpStatus.BAD_REQUEST, e.message)
-        }
+        representanteDto.validate().andThen {
+            representanteService.save(it.toModel())
+        }.mapBoth(
+            success = { return ResponseEntity.status(HttpStatus.CREATED).body(it.toDto()) },
+            failure = { return handleErrors(it) }
+        )
     }
+
 
     /**
      * PUT: Modifica un nuevo representante
@@ -115,15 +114,12 @@ class RepresentantesController
         // Con valid hacemos la validación de los campos
         logger.info { "PUT Representante con id: $id" }
 
-        try {
-            val rep = representanteDto.validate().toModel()
-            val res = representanteService.update(id, rep).toDto()
-            return ResponseEntity.status(HttpStatus.OK).body(res)
-        } catch (e: RepresentanteNotFoundException) {
-            throw ResponseStatusException(HttpStatus.NOT_FOUND, e.message)
-        } catch (e: RepresentanteBadRequestException) {
-            throw ResponseStatusException(HttpStatus.BAD_REQUEST, e.message)
-        }
+        representanteDto.validate().andThen {
+            representanteService.update(id, it.toModel())
+        }.mapBoth(
+            success = { return ResponseEntity.ok(it.toDto()) },
+            failure = { return handleErrors(it) }
+        )
     }
 
     /**
@@ -137,15 +133,10 @@ class RepresentantesController
     suspend fun delete(@PathVariable id: UUID): ResponseEntity<RepresentanteDto> {
         logger.info { "DELETE Representante con id: $id" }
 
-        try {
-            representanteService.deleteByUuid(id)
-            return ResponseEntity.noContent().build()
-        } catch (e: RepresentanteNotFoundException) {
-            throw ResponseStatusException(HttpStatus.NOT_FOUND, e.message)
-        } catch (e: RepresentanteConflictIntegrityException) {
-            // Puedes usar CONFLICT semánticamente es correcto
-            throw ResponseStatusException(HttpStatus.BAD_REQUEST, e.message)
-        }
+        representanteService.deleteByUuid(id).mapBoth(
+            success = { return ResponseEntity.noContent().build() },
+            failure = { return handleErrors(it) }
+        )
     }
 
     /**
@@ -202,5 +193,40 @@ class RepresentantesController
             return ResponseEntity.notFound().build()
         }
     }
+
+    private fun handleErrors(representanteError: RepresentanteError): ResponseEntity<RepresentanteDto> {
+        when (representanteError) {
+            is RepresentanteError.NotFound -> throw ResponseStatusException(
+                HttpStatus.NOT_FOUND,
+                representanteError.message
+            )
+
+            is RepresentanteError.BadRequest -> throw ResponseStatusException(
+                HttpStatus.BAD_REQUEST,
+                representanteError.message
+            )
+
+            is RepresentanteError.ConflictIntegrity -> throw ResponseStatusException(
+                HttpStatus.BAD_REQUEST,
+                representanteError.message
+            )
+        }
+    }
+
+    // Para capturar los errores de validación
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    @ExceptionHandler(MethodArgumentNotValidException::class)
+    fun handleValidationExceptions(
+        ex: MethodArgumentNotValidException
+    ): Map<String, String>? {
+        val errors: MutableMap<String, String> = HashMap()
+        ex.bindingResult?.allErrors?.forEach { error ->
+            val fieldName = (error as FieldError).field
+            val errorMessage: String? = error.getDefaultMessage()
+            errors[fieldName] = errorMessage ?: ""
+        }
+        return errors
+    }
+
 
 }

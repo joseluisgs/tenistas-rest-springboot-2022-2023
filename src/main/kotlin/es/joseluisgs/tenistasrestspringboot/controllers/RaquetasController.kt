@@ -1,7 +1,11 @@
 package es.joseluisgs.tenistasrestspringboot.controllers
 
+import com.github.michaelbull.result.andThen
+import com.github.michaelbull.result.get
+import com.github.michaelbull.result.mapBoth
 import es.joseluisgs.tenistasrestspringboot.config.APIConfig
 import es.joseluisgs.tenistasrestspringboot.dto.*
+import es.joseluisgs.tenistasrestspringboot.errors.RaquetaError
 import es.joseluisgs.tenistasrestspringboot.exceptions.*
 import es.joseluisgs.tenistasrestspringboot.mappers.toDto
 import es.joseluisgs.tenistasrestspringboot.mappers.toModel
@@ -17,9 +21,12 @@ import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Sort
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
+import org.springframework.messaging.handler.annotation.support.MethodArgumentNotValidException
+import org.springframework.validation.FieldError
 import org.springframework.web.bind.annotation.*
 import org.springframework.web.server.ResponseStatusException
 import java.util.*
+
 
 private val logger = KotlinLogging.logger {}
 
@@ -43,7 +50,7 @@ class RaquetasController
 
         val res = raquetasService.findAll()
             .toList()
-            .map { it.toDto(raquetasService.findRepresentante(it.representanteId)) }
+            .map { it.toDto(raquetasService.findRepresentante(it.representanteId).get()!!) }
 
         return ResponseEntity.ok(res)
 
@@ -53,16 +60,16 @@ class RaquetasController
     suspend fun findById(@PathVariable id: UUID): ResponseEntity<RaquetaDto> {
         logger.info { "GET By ID Raqueta con id: $id" }
 
-        try {
-            // Nosotros usamos el UUID, pero para el DTO es id
-            val raqueta = raquetasService.findByUuid(id)
-            val res = raqueta.toDto(raquetasService.findRepresentante(raqueta.representanteId))
-            return ResponseEntity.ok(res)
-        } catch (e: RaquetaNotFoundException) {
-            throw ResponseStatusException(HttpStatus.NOT_FOUND, e.message)
-        } catch (e: RepresentanteNotFoundException) {
-            throw ResponseStatusException(HttpStatus.NOT_FOUND, e.message)
-        }
+        raquetasService.findByUuid(id).mapBoth(
+            success = {
+                return ResponseEntity.ok(
+                    it.toDto(
+                        raquetasService.findRepresentante(it.representanteId).get()!!
+                    )
+                )
+            },
+            failure = { return handleErrors(it) }
+        )
     }
 
     @PostMapping("")
@@ -70,15 +77,15 @@ class RaquetasController
         // Con valid hacemos la validación de los campos
         logger.info { "POST Raqueta" }
 
-        try {
-            val rep = raquetaDto.validate().toModel()
-            val res = raquetasService.save(rep).toDto(raquetasService.findRepresentante(rep.representanteId))
-            return ResponseEntity.status(HttpStatus.CREATED).body(res)
-        } catch (e: RaquetaBadRequestException) {
-            throw ResponseStatusException(HttpStatus.BAD_REQUEST, e.message)
-        } catch (e: RepresentanteNotFoundException) {
-            throw ResponseStatusException(HttpStatus.BAD_REQUEST, e.message)
-        }
+        raquetaDto.validate().andThen {
+            raquetasService.save(it.toModel())
+        }.mapBoth(
+            success = {
+                return ResponseEntity.status(HttpStatus.CREATED)
+                    .body(it.toDto(raquetasService.findRepresentante(it.representanteId).get()!!))
+            },
+            failure = { return handleErrors(it) }
+        )
     }
 
     @PutMapping("/{id}")
@@ -89,32 +96,28 @@ class RaquetasController
         // Con valid hacemos la validación de los campos
         logger.info { "PUT Raqueta con id: $id" }
 
-        try {
-            val rep = raquetaDto.validate().toModel()
-            val res = raquetasService.update(id, rep).toDto(raquetasService.findRepresentante(rep.representanteId))
-            return ResponseEntity.status(HttpStatus.OK).body(res)
-        } catch (e: RaquetaNotFoundException) {
-            throw ResponseStatusException(HttpStatus.NOT_FOUND, e.message)
-        } catch (e: RepresentanteNotFoundException) {
-            throw ResponseStatusException(HttpStatus.BAD_REQUEST, e.message)
-        } catch (e: RaquetaBadRequestException) {
-            throw ResponseStatusException(HttpStatus.BAD_REQUEST, e.message)
-        }
+        raquetaDto.validate().andThen {
+            raquetasService.update(id, it.toModel())
+        }.mapBoth(
+            success = {
+                return ResponseEntity.ok(
+                    it.toDto(
+                        raquetasService.findRepresentante(it.representanteId).get()!!
+                    )
+                )
+            },
+            failure = { return handleErrors(it) }
+        )
     }
 
     @DeleteMapping("/{id}")
     suspend fun delete(@PathVariable id: UUID): ResponseEntity<RaquetaDto> {
         logger.info { "DELETE Raqueta con id: $id" }
 
-        try {
-            raquetasService.deleteByUuid(id)
-            return ResponseEntity.noContent().build()
-        } catch (e: RaquetaNotFoundException) {
-            throw ResponseStatusException(HttpStatus.NOT_FOUND, e.message)
-        } catch (e: RaquetaConflictIntegrityException) {
-            // Puedes usar CONFLICT semánticamente es correcto
-            throw ResponseStatusException(HttpStatus.BAD_REQUEST, e.message)
-        }
+        raquetasService.deleteByUuid(id).mapBoth(
+            success = { return ResponseEntity.noContent().build() },
+            failure = { return handleErrors(it) }
+        )
     }
 
     @GetMapping("find")
@@ -124,7 +127,7 @@ class RaquetasController
         marca.let {
             val res = raquetasService.findByMarca(marca.trim())
                 .toList()
-                .map { it.toDto(raquetasService.findRepresentante(it.representanteId)) }
+                .map { it.toDto(raquetasService.findRepresentante(it.representanteId).get()!!) }
 
             return ResponseEntity.ok(res)
         }
@@ -134,16 +137,18 @@ class RaquetasController
     suspend fun findRepresentante(@PathVariable id: UUID): ResponseEntity<RepresentanteDto> {
         logger.info { "GET By ID Representante de la raqueta con id: $id" }
 
-        try {
-            val raqueta = raquetasService.findByUuid(id)
-            val res = raquetasService.findRepresentante(raqueta.representanteId).toDto()
-            return ResponseEntity.ok(res)
-        } catch (e: RaquetaNotFoundException) {
-            throw ResponseStatusException(HttpStatus.NOT_FOUND, e.message)
-        } catch (e: RepresentanteNotFoundException) {
-            throw ResponseStatusException(HttpStatus.BAD_REQUEST, e.message)
-        }
+        raquetasService.findByUuid(id).andThen {
+            raquetasService.findRepresentante(it.representanteId)
+        }.mapBoth(
+            success = {
+                return ResponseEntity.ok(it.toDto())
+            },
+            failure = {
+                return handleErrorsRepresentante(it)
+            }
+        )
     }
+
 
     @GetMapping("paging")
     suspend fun getAll(
@@ -162,7 +167,11 @@ class RaquetasController
 
         pageResult?.let {
             val dto = RaquetasPageDto(
-                content = pageResult.content.map { it.toDto(raquetasService.findRepresentante(it.representanteId)) },
+                content = pageResult.content.map {
+                    it.toDto(
+                        raquetasService.findRepresentante(it.representanteId).get()!!
+                    )
+                },
                 currentPage = pageResult.number,
                 pageSize = pageResult.size,
                 totalPages = if (pageResult.totalElements % pageResult.size == 0L) pageResult.totalElements / pageResult.size else (pageResult.totalElements / pageResult.size) + 1,
@@ -175,6 +184,59 @@ class RaquetasController
         } ?: run {
             return ResponseEntity.notFound().build()
         }
+    }
+
+    private fun handleErrors(raquetaError: RaquetaError): ResponseEntity<RaquetaDto> {
+        when (raquetaError) {
+            is RaquetaError.NotFound -> throw ResponseStatusException(
+                HttpStatus.NOT_FOUND,
+                raquetaError.message
+            )
+
+            is RaquetaError.BadRequest -> throw ResponseStatusException(
+                HttpStatus.BAD_REQUEST,
+                raquetaError.message
+            )
+
+            is RaquetaError.ConflictIntegrity -> throw ResponseStatusException(
+                HttpStatus.BAD_REQUEST,
+                raquetaError.message
+            )
+
+            is RaquetaError.RepresentanteNotFound -> throw ResponseStatusException(
+                HttpStatus.BAD_REQUEST,
+                raquetaError.message
+            )
+        }
+    }
+
+    private fun handleErrorsRepresentante(raquetaError: RaquetaError): ResponseEntity<RepresentanteDto> {
+        if (raquetaError is RaquetaError.RepresentanteNotFound) {
+            throw ResponseStatusException(
+                HttpStatus.NOT_FOUND,
+                raquetaError.message
+            )
+        } else {
+            throw ResponseStatusException(
+                HttpStatus.BAD_REQUEST,
+                raquetaError.message
+            )
+        }
+    }
+
+    // Para capturar los errores de validación
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    @ExceptionHandler(MethodArgumentNotValidException::class)
+    fun handleValidationExceptions(
+        ex: MethodArgumentNotValidException
+    ): Map<String, String>? {
+        val errors: MutableMap<String, String> = HashMap()
+        ex.bindingResult?.allErrors?.forEach { error ->
+            val fieldName = (error as FieldError).field
+            val errorMessage: String? = error.getDefaultMessage()
+            errors[fieldName] = errorMessage ?: ""
+        }
+        return errors
     }
 
 

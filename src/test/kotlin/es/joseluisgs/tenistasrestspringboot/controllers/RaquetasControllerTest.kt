@@ -1,11 +1,11 @@
 package es.joseluisgs.tenistasrestspringboot.controllers
 
+import com.github.michaelbull.result.Err
+import com.github.michaelbull.result.Ok
 import es.joseluisgs.tenistasrestspringboot.dto.RaquetaCreateDto
 import es.joseluisgs.tenistasrestspringboot.dto.RaquetaDto
 import es.joseluisgs.tenistasrestspringboot.dto.RepresentanteDto
-import es.joseluisgs.tenistasrestspringboot.exceptions.RaquetaBadRequestException
-import es.joseluisgs.tenistasrestspringboot.exceptions.RaquetaNotFoundException
-import es.joseluisgs.tenistasrestspringboot.exceptions.RepresentanteNotFoundException
+import es.joseluisgs.tenistasrestspringboot.errors.RaquetaError
 import es.joseluisgs.tenistasrestspringboot.models.Raqueta
 import es.joseluisgs.tenistasrestspringboot.models.Representante
 import es.joseluisgs.tenistasrestspringboot.services.raquetas.RaquetasService
@@ -68,7 +68,7 @@ class RaquetasControllerTest {
     @Test
     fun finAll() = runTest {
         coEvery { service.findAll() } returns flowOf(raqueta)
-        coEvery { service.findRepresentante(any()) } returns representante
+        coEvery { service.findRepresentante(any()) } returns Ok(representante)
 
         val result = controller.finAll()
         val res = result.body!!
@@ -91,8 +91,8 @@ class RaquetasControllerTest {
 
     @Test
     fun findById() = runTest {
-        coEvery { service.findByUuid(any()) } returns raqueta
-        coEvery { service.findRepresentante(any()) } returns representante
+        coEvery { service.findByUuid(any()) } returns Ok(raqueta)
+        coEvery { service.findRepresentante(any()) } returns Ok(representante)
 
         val result = controller.findById(raqueta.uuid)
         val res = result.body!!
@@ -114,7 +114,7 @@ class RaquetasControllerTest {
 
     @Test
     fun findByIdNotFound() = runTest {
-        coEvery { service.findByUuid(any()) } throws RaquetaNotFoundException("No se ha encontrado la raqueta con id: ${raqueta.uuid}")
+        coEvery { service.findByUuid(any()) } returns Err(RaquetaError.NotFound("No se ha encontrado la raqueta con id: ${raqueta.uuid}"))
 
         val res = assertThrows<ResponseStatusException> {
             val result = controller.findById(raqueta.uuid)
@@ -131,8 +131,8 @@ class RaquetasControllerTest {
 
     @Test
     fun create() = runTest {
-        coEvery { service.save(any()) } returns raqueta
-        coEvery { service.findRepresentante(any()) } returns representante
+        coEvery { service.save(any()) } returns Ok(raqueta)
+        coEvery { service.findRepresentante(any()) } returns Ok(representante)
 
         val result = controller.create(
             RaquetaCreateDto(
@@ -158,8 +158,8 @@ class RaquetasControllerTest {
 
     @Test
     fun createRaquetaRepresentanteNotFound() = runTest {
-        coEvery { service.save(any()) } throws RepresentanteNotFoundException("")
-        coEvery { service.findRepresentante(any()) } throws RepresentanteNotFoundException("No se ha encontrado el representante con id: ${raqueta.representanteId}")
+        coEvery { service.save(any()) } returns Err(RaquetaError.RepresentanteNotFound("No se ha encontrado el representante con id: ${raqueta.representanteId}"))
+        coEvery { service.findRepresentante(any()) } returns Err(RaquetaError.RepresentanteNotFound("No se ha encontrado el representante con id: ${raqueta.representanteId}"))
 
         val res = assertThrows<ResponseStatusException> {
             val result = controller.create(
@@ -172,7 +172,7 @@ class RaquetasControllerTest {
         }
 
         assertEquals(
-            """400 BAD_REQUEST """"",
+            """400 BAD_REQUEST "No se ha encontrado el representante con id: ${raqueta.representanteId}"""",
             res.message
         )
 
@@ -181,8 +181,8 @@ class RaquetasControllerTest {
 
     @Test
     fun createCampoNombreBlanco() = runTest {
-        coEvery { service.save(any()) } throws RaquetaBadRequestException("")
-        coEvery { service.findRepresentante(any()) } returns representante
+        coEvery { service.save(any()) } returns Err(RaquetaError.BadRequest("La marca no puede estar vacía"))
+        coEvery { service.findRepresentante(any()) } returns Ok(representante)
 
         val res = assertThrows<ResponseStatusException> {
             val result = controller.create(
@@ -204,8 +204,8 @@ class RaquetasControllerTest {
 
     @Test
     fun createCampoPrecioNegativo() = runTest {
-        coEvery { service.save(any()) } throws RaquetaBadRequestException("")
-        coEvery { service.findRepresentante(any()) } returns representante
+        coEvery { service.save(any()) } returns Err(RaquetaError.BadRequest("El precio no puede ser negativo"))
+        coEvery { service.findRepresentante(any()) } returns Ok(representante)
 
         val res = assertThrows<ResponseStatusException> {
             val result = controller.create(
@@ -228,9 +228,9 @@ class RaquetasControllerTest {
 
     @Test
     fun update() = runTest {
-        coEvery { service.findByUuid(any()) } returns raqueta
-        coEvery { service.update(any(), any()) } returns raqueta
-        coEvery { service.findRepresentante(any()) } returns representante
+        coEvery { service.findByUuid(any()) } returns Ok(raqueta)
+        coEvery { service.update(any(), any()) } returns Ok(raqueta)
+        coEvery { service.findRepresentante(any()) } returns Ok(representante)
 
         val result = controller.update(
             raqueta.uuid,
@@ -257,13 +257,13 @@ class RaquetasControllerTest {
 
     @Test
     fun updateNotFound() = runTest {
-        coEvery { service.findByUuid(any()) } throws RaquetaNotFoundException("")
+        coEvery { service.findByUuid(any()) } returns Err(RaquetaError.NotFound("No se ha encontrado la raqueta con id: ${raqueta.uuid}"))
         coEvery {
             service.update(
                 any(),
                 any()
             )
-        } throws RaquetaNotFoundException("No se ha encontrado la raqueta con id: ${raqueta.uuid}")
+        } returns Err(RaquetaError.NotFound("No se ha encontrado la raqueta con id: ${raqueta.uuid}"))
 
         val res = assertThrows<ResponseStatusException> {
             val result = controller.update(
@@ -288,8 +288,8 @@ class RaquetasControllerTest {
 
     @Test
     fun delete() = runTest {
-        coEvery { service.findByUuid(any()) } returns raqueta
-        coEvery { service.deleteByUuid(any()) } returns raqueta
+        coEvery { service.findByUuid(any()) } returns Ok(raqueta)
+        coEvery { service.deleteByUuid(any()) } returns Ok(raqueta)
 
         val result = controller.delete(raqueta.uuid)
 
@@ -301,8 +301,8 @@ class RaquetasControllerTest {
 
     @Test
     fun deleteNotFound() = runTest {
-        coEvery { service.findByUuid(any()) } throws RaquetaNotFoundException("")
-        coEvery { service.deleteByUuid(any()) } throws RaquetaNotFoundException("No se ha encontrado la raqueta con id: ${raqueta.uuid}")
+        coEvery { service.findByUuid(any()) } returns Err(RaquetaError.NotFound("No se ha encontrado la raqueta con id: ${raqueta.uuid}"))
+        coEvery { service.deleteByUuid(any()) } returns Err(RaquetaError.NotFound("No se ha encontrado la raqueta con id: ${raqueta.uuid}"))
 
         val res = assertThrows<ResponseStatusException> {
             val result = controller.delete(raqueta.uuid)
@@ -319,7 +319,7 @@ class RaquetasControllerTest {
     @Test
     fun findByMarca() = runTest {
         coEvery { service.findByMarca(any()) } returns flowOf(raqueta)
-        coEvery { service.findRepresentante(any()) } returns representante
+        coEvery { service.findRepresentante(any()) } returns Ok(representante)
 
         val result = controller.findByName(raqueta.marca)
         val res = result.body!!
@@ -358,8 +358,8 @@ class RaquetasControllerTest {
 
     @Test
     fun findRepresentante() = runTest {
-        coEvery { service.findByUuid(any()) } returns raqueta
-        coEvery { service.findRepresentante(any()) } returns representante
+        coEvery { service.findByUuid(any()) } returns Ok(raqueta)
+        coEvery { service.findRepresentante(any()) } returns Ok(representante)
 
         val result = controller.findRepresentante(raqueta.representanteId)
         val res = result.body!!

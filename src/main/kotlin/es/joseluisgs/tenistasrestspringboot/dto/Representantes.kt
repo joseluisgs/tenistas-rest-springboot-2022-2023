@@ -1,5 +1,7 @@
 package es.joseluisgs.tenistasrestspringboot.dto
 
+import jakarta.validation.constraints.Email
+import jakarta.validation.constraints.NotEmpty
 import java.time.LocalDateTime
 import java.util.*
 
@@ -36,6 +38,8 @@ data class RepresentanteDto(
  * Representante DTO para crear
  */
 data class RepresentanteRequestDto(
+    @NotEmpty(message = "El nombre no puede estar vacío")
     val nombre: String,
+    @Email(message = "El email debe ser válido")
     val email: String,
 )

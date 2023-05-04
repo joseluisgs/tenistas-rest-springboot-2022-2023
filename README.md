@@ -44,6 +44,8 @@ Api REST de Tenistas con Spring Boot para acceso a Datos de 2º de DAM. Curso 20
       - [Peticiones con formularios](#peticiones-con-formularios)
       - [Peticiones multiparte](#peticiones-multiparte)
       - [Request validation](#request-validation)
+    - [Excepciones personalizadas](#excepciones-personalizadas)
+    - [Gestiones de Errores con Result](#gestiones-de-errores-con-result)
     - [WebSockets](#websockets)
     - [SSL y Certificados](#ssl-y-certificados)
     - [Autenticación y Autorización con JWT](#autenticación-y-autorización-con-jwt)
@@ -58,6 +60,7 @@ Api REST de Tenistas con Spring Boot para acceso a Datos de 2º de DAM. Curso 20
   - [Caché](#caché)
   - [Notificaciones en tiempo real](#notificaciones-en-tiempo-real)
   - [Proveedor de Dependencias](#proveedor-de-dependencias)
+  - [Railway Oriented Programming](#railway-oriented-programming)
   - [Seguridad de las comunicaciones](#seguridad-de-las-comunicaciones)
     - [SSL/TLS](#ssltls)
     - [Autenticación y Autorización con JWT](#autenticación-y-autorización-con-jwt-1)
@@ -113,6 +116,8 @@ Si quieres colaborar, puedes hacerlo contactando [conmigo](#contacto).
 - Asincronía: [Coroutines](https://kotlinlang.org/docs/coroutines-overview.html) - Librería de Kotlin para la
   programación asíncrona.
 - Reactividad: [Srping Reactive](https://spring.io/reactive) - Extensiones para reactividad en Spring Boot.
+- Result: [Railway Oriented Programming](https://fsharpforfunandprofit.com/rop/) - Patrón de programación para el
+  control de errores.
 - Logger: [Kotlin Logging](https://github.com/MicroUtils/kotlin-logging) - Framework para la gestión de logs.
 - Caché: Sistema de [caché](https://www.baeldung.com/spring-cache-tutorial) de Spring Boot.
 - Base de datos: [H2](https://www.h2database.com/) - Base de datos relacional que te permite trabajar en memoria,
@@ -684,7 +689,92 @@ podemos usar las anotaciones de restricción de [javax.validation.constraints](h
 fun createProduct(@Valid @RequestBody producto: Producto): ResponseEntity<Producto> {
     return ResponseEntity.status(HttpStatus.CREATED).body(productosRepository.save(producto))
 }
-``` 
+```
+
+Para que salte la excepción de validación debemos usar la anotación @Validated en el controlador.
+
+```kotlin
+@ResponseStatus(HttpStatus.BAD_REQUEST)
+@ExceptionHandler(MethodArgumentNotValidException::class)
+fun handleValidationExceptions(
+    ex: MethodArgumentNotValidException
+): Map<String, String>? {
+    val errors: MutableMap<String, String> = HashMap()
+    ex.bindingResult?.allErrors?.forEach { error ->
+        val fieldName = (error as FieldError).field
+        val errorMessage: String? = error.getDefaultMessage()
+        errors[fieldName] = errorMessage ?: ""
+    }
+    return errors
+}
+```
+
+### Excepciones personalizadas
+Aunque no es la mejor técnica, pues hay otras mejores como Railway Oriented Programming, podemos usar excepciones personalizadas para controlar los errores de nuestra aplicación.
+
+Podemos lanzarlas con throw, y capturarlas con try/catch, o podemos usar la anotación @ExceptionHandler para capturarlas en un controlador. Además tenemos ResponseStatusException para lanzar excepciones con un código de estado.
+
+Si tipamos las excepciones, podemos usar @ResponseStatus para indicar el código de estado de la excepción.
+
+```kotlin
+sealed class RaquetaException(message: String) : RuntimeException(message)
+
+// También podemos usar la anotación @ResponseStatus para indicar el código de error
+// devolverá un 404 y el mensaje de la excepción
+@ResponseStatus(HttpStatus.NOT_FOUND)
+class RaquetaNotFoundException(message: String) : RaquetaException(message)
+```
+
+```kotlin
+override suspend fun findById(id: Long): Raqueta {
+  logger.debug { "Servicio de raquetas findById con id: $id" }
+
+  return raquetasRepository.findById(id)
+      ?: throw RaquetaNotFoundException("No se ha encontrado la raqueta con id: $id")
+}
+```
+### Gestiones de Errores con Result
+Para evitar que las excepciones se propaguen por la aplicación, podemos usar el patrón Result, que nos permite devolver un valor o un error, siguiendo la filosofía de Railway Oriented Programming. De esta manera, podemos controlar los errores en la capa de servicio, y devolver un valor o un error, que será gestionado en la capa de controladores. De esta manera tendremos un control de errores centralizado, y evitaremos que las excepciones se propaguen por la aplicación.
+
+Además, tener una jerarquía de errores nos permite tener un control de errores más granular, y poder devolver un código de error más específico.
+
+
+```kotlin
+override suspend fun findById(id: Long): Result<Raqueta> {
+  logger.debug { "Servicio de raquetas findById con id: $id" }
+
+  return raquetasRepository.findById(id)
+      ?.let { Result.Success(it) }
+      ?: Result.Failure(RaquetaNotFoundException("No se ha encontrado la raqueta con id: $id"))
+}
+```
+
+```kotlin
+override suspend fun findByUuid(uuid: UUID): Result<Raqueta, RaquetaError> {
+    logger.debug { "Servicio de raquetas findByUuid con uuid: $uuid" }
+
+    return raquetasRepository.findByUuid(uuid)
+        ?.let { Ok(it) }
+        ?: Err(RaquetaError.NotFound("No se ha encontrado la raqueta con uuid: $uuid"))
+}
+
+@GetMapping("/{id}")
+suspend fun findById(@PathVariable id: UUID): ResponseEntity<RaquetaDto> {
+    logger.info { "GET By ID Raqueta con id: $id" }
+
+    raquetasService.findByUuid(id).mapBoth(
+        success = {
+            return ResponseEntity.ok(
+                it.toDto(
+                    raquetasService.findRepresentante(it.representanteId).get()!!
+                )
+            )
+        },
+        failure = { return handleErrors(it) }
+    )
+}
+
+```
 
 ### WebSockets
 
@@ -1015,6 +1105,15 @@ Usaremos el propio [Autowired](https://www.baeldung.com/spring-autowire) de Spri
 clases que las necesiten. De esta manera, no tendremos que crear objetos de las clases que necesitemos, sino que Spring
 se encargará de crearlos y de inyectarlos en las clases que las necesiten.
 
+## Railway Oriented Programming
+[Railway Oriented Programming](https://fsharpforfunandprofit.com/rop/) es un patrón de diseño que nos permite escribir código más limpio y mantenible. Este patrón se basa en el concepto de [programación funcional](https://es.wikipedia.org/wiki/Programaci%C3%B3n_funcional) y en el uso de [monadas](https://es.wikipedia.org/wiki/Monada_(programaci%C3%B3n_funcional)). 
+
+Es una técnica de programación funcional que nos permite manejar errores de forma más sencilla y segura. En lugar de usar excepciones, se usan valores de retorno o tipos de error para indicar si una operación ha tenido éxito o no. En el caso de que la operación haya fallado, se devuelve un valor que indica el error.
+
+Se van encadenando operaciones que pueden fallar, y en caso de que alguna de ellas falle, se devuelve el error. De esta forma, se evita el uso de excepciones, que pueden ser difíciles de manejar. Tampoco tenemos que esperar que se ejecuten todas las operaciones para saber si ha fallado alguna, sino que en cuanto una operación falle, se devuelve el error.
+
+![rop](./images/railway.png)
+
 ## Seguridad de las comunicaciones
 
 ### SSL/TLS
@@ -1104,19 +1203,19 @@ La documentación de los endpoints se puede consultar en HTML realizada con Swag
 
 ## Recursos
 
-- Twitter: https://twitter.com/joseluisgonsan
+- Twitter: https://twitter.com/JoseLuisGS_
 - GitHub: https://github.com/joseluisgs
 - Web: https://joseluisgs.github.io
 - Discord del módulo: https://discord.gg/RRGsXfFDya
 - Aula DAMnificad@s: https://discord.gg/XT8G5rRySU
 
+
 ## Autor
 
-Codificado con :sparkling_heart: por [José Luis González Sánchez](https://twitter.com/joseluisgonsan)
+Codificado con :sparkling_heart: por [José Luis González Sánchez](https://twitter.com/JoseLuisGS_)
 
-[![Twitter](https://img.shields.io/twitter/follow/JoseLuisGS_?style=social)](https://twitter.com/joseluisgonsan)
+[![Twitter](https://img.shields.io/twitter/follow/JoseLuisGS_?style=social)](https://twitter.com/JoseLuisGS_)
 [![GitHub](https://img.shields.io/github/followers/joseluisgs?style=social)](https://github.com/joseluisgs)
-[![GitHub](https://img.shields.io/github/stars/joseluisgs?style=social)](https://github.com/joseluisgs)
 
 ### Contacto
 
@@ -1124,7 +1223,7 @@ Codificado con :sparkling_heart: por [José Luis González Sánchez](https://twi
   Cualquier cosa que necesites házmelo saber por si puedo ayudarte 💬.
 </p>
 <p>
- <a href="https://joseluisgs.github.io/" target="_blank">
+ <a href="https://joseluisgs.github.dev/" target="_blank">
         <img src="https://joseluisgs.github.io/img/favicon.png" 
     height="30">
     </a>  &nbsp;&nbsp;
@@ -1132,7 +1231,7 @@ Codificado con :sparkling_heart: por [José Luis González Sánchez](https://twi
         <img src="https://distreau.com/github.svg" 
     height="30">
     </a> &nbsp;&nbsp;
-        <a href="https://twitter.com/joseluisgonsan" target="_blank">
+        <a href="https://twitter.com/JoseLuisGS_" target="_blank">
         <img src="https://i.imgur.com/U4Uiaef.png" 
     height="30">
     </a> &nbsp;&nbsp;
@@ -1147,11 +1246,7 @@ Codificado con :sparkling_heart: por [José Luis González Sánchez](https://twi
     <a href="https://g.dev/joseluisgs" target="_blank">
         <img loading="lazy" src="https://googlediscovery.com/wp-content/uploads/google-developers.png" 
     height="30">
-    </a>  &nbsp;&nbsp;
-<a href="https://www.youtube.com/@joseluisgs" target="_blank">
-        <img loading="lazy" src="https://upload.wikimedia.org/wikipedia/commons/e/ef/Youtube_logo.png" 
-    height="30">
-    </a>  
+    </a>    
 </p>
 
 ### ¿Un café?
@@ -1160,14 +1255,6 @@ Codificado con :sparkling_heart: por [José Luis González Sánchez](https://twi
 
 ## Licencia de uso
 
-Este repositorio y todo su contenido está licenciado bajo licencia **Creative Commons**, si desea saber más, vea
-la [LICENSE](https://joseluisgs.dev/docs/license/). Por favor si compartes, usas o modificas este proyecto cita a su
-autor, y usa las mismas condiciones para su uso docente, formativo o educativo y no comercial.
+Este repositorio y todo su contenido está licenciado bajo licencia **Creative Commons**, si desea saber más, vea la [LICENSE](https://joseluisgs.github.io/docs/license/). Por favor si compartes, usas o modificas este proyecto cita a su autor, y usa las mismas condiciones para su uso docente, formativo o educativo y no comercial.
 
-<a rel="license" href="http://creativecommons.org/licenses/by-nc-sa/4.0/"><img alt="Licencia de Creative Commons" style="border-width:0" src="https://i.creativecommons.org/l/by-nc-sa/4.0/88x31.png" /></a><br /><span xmlns:dct="http://purl.org/dc/terms/" property="dct:title">
-JoseLuisGS</span>
-by <a xmlns:cc="http://creativecommons.org/ns#" href="https://joseluisgs.dev/" property="cc:attributionName" rel="cc:attributionURL">
-José Luis González Sánchez</a> is licensed under
-a <a rel="license" href="http://creativecommons.org/licenses/by-nc-sa/4.0/">Creative Commons
-Reconocimiento-NoComercial-CompartirIgual 4.0 Internacional License</a>.<br />Creado a partir de la obra
-en <a xmlns:dct="http://purl.org/dc/terms/" href="https://github.com/joseluisgs" rel="dct:source">https://github.com/joseluisgs</a>.
+<a rel="license" href="http://creativecommons.org/licenses/by-nc-sa/4.0/"><img alt="Licencia de Creative Commons" style="border-width:0" src="https://i.creativecommons.org/l/by-nc-sa/4.0/88x31.png" /></a><br /><span xmlns:dct="http://purl.org/dc/terms/" property="dct:title">JoseLuisGS</span> by <a xmlns:cc="http://creativecommons.org/ns#" href="https://joseluisgs.github.io/" property="cc:attributionName" rel="cc:attributionURL">José Luis González Sánchez</a> is licensed under a <a rel="license" href="http://creativecommons.org/licenses/by-nc-sa/4.0/">Creative Commons Reconocimiento-NoComercial-CompartirIgual 4.0 Internacional License</a>.<br />Creado a partir de la obra en <a xmlns:dct="http://purl.org/dc/terms/" href="https://github.com/joseluisgs" rel="dct:source">https://github.com/joseluisgs</a>.
