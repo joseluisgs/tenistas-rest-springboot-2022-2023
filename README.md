@@ -740,16 +740,15 @@ Además, tener una jerarquía de errores nos permite tener un control de errores
 
 
 ```kotlin
-override suspend fun findById(id: Long): Result<Raqueta> {
-  logger.debug { "Servicio de raquetas findById con id: $id" }
 
-  return raquetasRepository.findById(id)
-      ?.let { Result.Success(it) }
-      ?: Result.Failure(RaquetaNotFoundException("No se ha encontrado la raqueta con id: $id"))
+sealed class RaquetaError(val message: String) {
+    class NotFound(message: String) : RaquetaError(message)
+    class BadRequest(message: String) : RaquetaError(message)
+    class ConflictIntegrity(message: String) : RaquetaError(message)
+    class RepresentanteNotFound(message: String) : RaquetaError(message)
 }
-```
 
-```kotlin
+
 override suspend fun findByUuid(uuid: UUID): Result<Raqueta, RaquetaError> {
     logger.debug { "Servicio de raquetas findByUuid con uuid: $uuid" }
 
